@@ -1,0 +1,60 @@
+# ChirpStack v4 Configuration for RV Trax
+
+[logging]
+  level = "info"
+
+[postgresql]
+  dsn = "postgres://rvtrax:rvtrax_dev@postgres:5432/rvtrax?sslmode=disable"
+  max_open_connections = 10
+  min_idle_connections = 5
+
+[redis]
+  servers = ["redis://redis:6379"]
+  tls_enabled = false
+  cluster = false
+
+[network]
+  net_id = "000000"
+  enabled_regions = ["us915_0"]
+
+[monitoring]
+  bind = ""
+
+[api]
+  bind = "0.0.0.0:8080"
+  secret = "rvtrax-chirpstack-secret-change-in-production"
+
+[integration]
+  enabled = ["mqtt"]
+
+  [integration.mqtt]
+    server = "tcp://mosquitto:1883"
+    json = true
+
+[regions]
+
+  [[regions.region]]
+    id = "us915_0"
+    name = "US915"
+
+    [regions.region.common_name]
+      value = "US915"
+
+    [regions.region.gateway]
+
+      [regions.region.gateway.backend]
+        enabled = "mqtt"
+
+        [regions.region.gateway.backend.mqtt]
+          event_topic = "us915_0/gateway/+/event/+"
+          command_topic = "us915_0/gateway/{{ gateway_id }}/command/{{ command }}"
+          server = "tcp://mosquitto:1883"
+
+    [regions.region.network]
+      installation_margin = 10
+      rx1_delay = 1
+      rx1_dr_offset = 0
+      rx2_dr = 0
+      rx2_frequency = 923300000
+      gateway_prefer_min_margin = 10
+      downlink_tx_power = -1

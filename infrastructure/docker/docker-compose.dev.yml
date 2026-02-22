@@ -1,0 +1,60 @@
+# Development overrides — use with: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+services:
+  api:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.dev
+    container_name: rvtrax-api-dev
+    ports:
+      - "${API_PORT:-3001}:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://rvtrax:rvtrax_dev@postgres:5432/rvtrax
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev-jwt-secret-change-in-production-64chars-minimum-padding1234
+      COOKIE_SECRET: dev-cookie-secret-change-in-production
+      API_HOST: "0.0.0.0"
+      API_PORT: "3001"
+      NODE_ENV: development
+      LOG_LEVEL: debug
+      CORS_ORIGIN: "http://localhost:3000"
+      ADMIN_TOKEN: dev-admin-token
+    volumes:
+      - ../../:/app
+      - /app/node_modules
+    working_dir: /app
+    command: pnpm --filter @rv-trax/api dev
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3001/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
+      interval: 15s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  iot-ingest:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.dev
+    container_name: rvtrax-iot-ingest-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://rvtrax:rvtrax_dev@postgres:5432/rvtrax
+      REDIS_URL: redis://redis:6379
+      MQTT_BROKER_URL: mqtt://mosquitto:1883
+      NODE_ENV: development
+      LOG_LEVEL: debug
+    volumes:
+      - ../../:/app
+      - /app/node_modules
+    working_dir: /app
+    command: pnpm --filter @rv-trax/iot-ingest dev
