@@ -363,3 +363,141 @@ export const updateWidgetConfigSchema = z.object({
 });
 
 export type UpdateWidgetConfigInput = z.infer<typeof updateWidgetConfigSchema>;
+
+// ── Alert Rules ────────────────────────────────────────────────────────────
+
+const alertChannelValues = ['in_app', 'push', 'email', 'sms'] as const;
+const userRoleValuesArr = Object.values(UserRole) as [string, ...string[]];
+const alertSevValues = Object.values(AlertSeverity) as [string, ...string[]];
+
+export const ALERT_RULE_TYPE_SCHEMAS: Record<string, z.ZodType> = {
+  geofence_exit: z.object({ geo_fence_id: z.string().uuid().optional() }),
+  geofence_enter: z.object({ geo_fence_id: z.string().uuid().optional() }),
+  after_hours_movement: z.object({
+    start_hour: z.number().int().min(0).max(23),
+    end_hour: z.number().int().min(0).max(23),
+    timezone: z.string().min(1),
+  }),
+  aged_inventory: z.object({ days_threshold: z.number().int().positive().default(90) }),
+  tracker_battery_low: z.object({ threshold_pct: z.number().int().min(1).max(100).default(20) }),
+  tracker_offline: z.object({ hours_threshold: z.number().positive().default(4) }),
+  gateway_offline: z.object({ minutes_threshold: z.number().positive().default(5) }),
+};
+
+export const KNOWN_ALERT_RULE_TYPES = Object.keys(ALERT_RULE_TYPE_SCHEMAS);
+
+export const createAlertRuleSchema = z.object({
+  rule_type: z.string().min(1),
+  parameters: z.record(z.unknown()).default({}),
+  severity: z.enum(alertSevValues).default('warning'),
+  channels: z.array(z.enum(alertChannelValues)).default(['in_app']),
+  recipient_roles: z.array(z.enum(userRoleValuesArr)).optional(),
+  recipient_user_ids: z.array(z.string().uuid()).optional(),
+});
+
+export type CreateAlertRuleInput = z.infer<typeof createAlertRuleSchema>;
+
+export const updateAlertRuleSchema = z.object({
+  parameters: z.record(z.unknown()).optional(),
+  severity: z.enum(alertSevValues).optional(),
+  channels: z.array(z.enum(alertChannelValues)).optional(),
+  recipient_roles: z.array(z.enum(userRoleValuesArr)).optional(),
+  recipient_user_ids: z.array(z.string().uuid()).optional(),
+  is_active: z.boolean().optional(),
+});
+
+export type UpdateAlertRuleInput = z.infer<typeof updateAlertRuleSchema>;
+
+// ── Alert Actions ──────────────────────────────────────────────────────────
+
+export const alertQuerySchema = z.object({
+  status: z.string().optional(),
+  severity: z.string().optional(),
+  alert_type: z.string().optional(),
+  unit_id: z.string().uuid().optional(),
+  from: z.string().optional(),
+  to: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  cursor: z.string().optional(),
+});
+
+export type AlertQueryInput = z.infer<typeof alertQuerySchema>;
+
+export const snoozeAlertSchema = z.object({
+  duration: z.enum(['1h', '4h', '24h']),
+});
+
+export type SnoozeAlertInput = z.infer<typeof snoozeAlertSchema>;
+
+export const bulkAcknowledgeSchema = z.object({
+  alert_ids: z.array(z.string().uuid()).min(1).max(100),
+});
+
+export type BulkAcknowledgeInput = z.infer<typeof bulkAcknowledgeSchema>;
+
+// ── Gateway ────────────────────────────────────────────────────────────────
+
+export const createGatewaySchema = z.object({
+  gateway_eui: z.string().min(1, 'Gateway EUI is required'),
+  name: z.string().optional(),
+  lot_id: z.string().uuid().optional(),
+  backhaul_type: z.string().optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+});
+
+export type CreateGatewayInput = z.infer<typeof createGatewaySchema>;
+
+export const updateGatewaySchema = z.object({
+  name: z.string().optional(),
+  lot_id: z.string().uuid().optional(),
+  backhaul_type: z.string().optional(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+});
+
+export type UpdateGatewayInput = z.infer<typeof updateGatewaySchema>;
+
+// ── Device Token ───────────────────────────────────────────────────────────
+
+export const registerDeviceTokenSchema = z.object({
+  token: z.string().min(1).max(4096),
+  platform: z.enum(['ios', 'android', 'web']),
+});
+
+export type RegisterDeviceTokenInput = z.infer<typeof registerDeviceTokenSchema>;
+
+// ── White-Label Branding ───────────────────────────────────────────────────
+
+export const updateBrandingSchema = z.object({
+  logo_url: z.string().url().optional(),
+  primary_color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Color must be a hex string (#RRGGBB)').optional(),
+  app_name: z.string().min(1).max(100).optional(),
+});
+
+export type UpdateBrandingInput = z.infer<typeof updateBrandingSchema>;
+
+export const setCustomDomainSchema = z.object({
+  domain: z.string().min(1, 'Domain is required'),
+});
+
+export type SetCustomDomainInput = z.infer<typeof setCustomDomainSchema>;
+
+// ── Location Queries ───────────────────────────────────────────────────────
+
+export const locationHistoryQuerySchema = z.object({
+  from: z.string().optional(),
+  to: z.string().optional(),
+  interval: z.enum(['raw', 'hourly', 'daily']).default('raw'),
+});
+
+export type LocationHistoryQueryInput = z.infer<typeof locationHistoryQuerySchema>;
+
+export const movementHistoryQuerySchema = z.object({
+  from: z.string().optional(),
+  to: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+  cursor: z.string().optional(),
+});
+
+export type MovementHistoryQueryInput = z.infer<typeof movementHistoryQuerySchema>;

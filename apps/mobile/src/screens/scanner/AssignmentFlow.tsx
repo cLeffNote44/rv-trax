@@ -162,7 +162,7 @@ export const AssignmentFlow: React.FC = () => {
     return (
       <View style={styles.centered}>
         <View style={styles.successCircle}>
-          <Text style={styles.successCheck}>{'\\u2713'}</Text>
+          <Text style={styles.successCheck}>{'\u2713'}</Text>
         </View>
         <Text style={styles.successTitle}>Assignment Complete</Text>
         <Text style={styles.successSubtext}>

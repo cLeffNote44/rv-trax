@@ -6,15 +6,20 @@ import ky, { type KyInstance, type NormalizedOptions } from 'ky';
 import { API_URL } from '@env';
 import type {
   Alert,
+  AlertRule,
+  Gateway,
+  GeoFence,
   LocationRecord,
   Lot,
   LotSpot,
   PaginatedResponse,
+  StagingPlan,
   Tracker,
   TrackerAssignment,
   Unit,
   UnitNote,
   User,
+  WorkOrder,
 } from '@rv-trax/shared';
 
 // ---------------------------------------------------------------------------
@@ -134,6 +139,23 @@ export const api: KyInstance = ky.create({
 // Error parser
 // ---------------------------------------------------------------------------
 
+/**
+ * Serialize params object to Record<string, string>, handling arrays and numbers.
+ */
+function serializeParams(params?: Record<string, unknown>): Record<string, string> {
+  if (!params) return {};
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      result[key] = value.join(',');
+    } else {
+      result[key] = String(value);
+    }
+  }
+  return result;
+}
+
 async function parseError(error: unknown): Promise<never> {
   if (error instanceof AppError) throw error;
 
@@ -225,7 +247,7 @@ export const apiClient = {
 
   // ── Units ─────────────────────────────────────────────────────────────────
   getUnits: (params?: UnitListParams) =>
-    request(api.get('api/v1/units', { searchParams: params as Record<string, string> }).json<PaginatedResponse<Unit>>()),
+    request(api.get('api/v1/units', { searchParams: serializeParams(params) }).json<PaginatedResponse<Unit>>()),
 
   getUnit: (id: string) =>
     request(api.get(`api/v1/units/${id}`).json<Unit>()),
@@ -238,7 +260,7 @@ export const apiClient = {
 
   // ── Trackers ──────────────────────────────────────────────────────────────
   getTrackers: (params?: TrackerListParams) =>
-    request(api.get('api/v1/trackers', { searchParams: params as Record<string, string> }).json<PaginatedResponse<Tracker>>()),
+    request(api.get('api/v1/trackers', { searchParams: serializeParams(params) }).json<PaginatedResponse<Tracker>>()),
 
   assignTracker: (trackerId: string, unitId: string) =>
     request(api.post(`api/v1/trackers/${trackerId}/assign`, { json: { unit_id: unitId } }).json<TrackerAssignment>()),
@@ -277,6 +299,63 @@ export const apiClient = {
   acknowledgeAlert: (id: string) =>
     request(api.post(`api/v1/alerts/${id}/acknowledge`).json<void>()),
 
+  // ── Geofences ──────────────────────────────────────────────────────────────
+  getGeofences: (lotId: string) =>
+    request(api.get(`api/v1/lots/${lotId}/geofences`).json<{ data: GeoFence[] }>()),
+
+  // ── Alert Rules ───────────────────────────────────────────────────────────
+  getAlertRules: () =>
+    request(api.get('api/v1/alert-rules').json<{ data: AlertRule[] }>()),
+
+  // ── Alert Actions ─────────────────────────────────────────────────────────
+  dismissAlert: (id: string) =>
+    request(api.post(`api/v1/alerts/${id}/dismiss`).json<void>()),
+
+  snoozeAlert: (id: string, duration: '1h' | '4h' | '24h') =>
+    request(api.post(`api/v1/alerts/${id}/snooze`, { json: { duration } }).json<void>()),
+
+  // ── Work Orders ───────────────────────────────────────────────────────────
+  getWorkOrders: () =>
+    request(api.get('api/v1/work-orders').json<{ data: WorkOrder[] }>()),
+
+  getWorkOrder: (id: string) =>
+    request(api.get(`api/v1/work-orders/${id}`).json<{ data: WorkOrder }>()),
+
+  createWorkOrder: (data: { unit_id: string; order_type: string; priority?: string; notes?: string }) =>
+    request(api.post('api/v1/work-orders', { json: data }).json<{ data: WorkOrder }>()),
+
+  completeWorkOrder: (id: string) =>
+    request(api.post(`api/v1/work-orders/${id}/complete`).json<{ data: WorkOrder }>()),
+
+  // ── Staging Plans ─────────────────────────────────────────────────────────
+  getStagingPlans: () =>
+    request(api.get('api/v1/staging-plans').json<{ data: StagingPlan[] }>()),
+
+  activateStagingPlan: (id: string) =>
+    request(api.post(`api/v1/staging-plans/${id}/activate`).json<void>()),
+
+  // ── Gateways ──────────────────────────────────────────────────────────────
+  getGateways: () =>
+    request(api.get('api/v1/gateways').json<{ data: Gateway[] }>()),
+
+  // ── Settings ──────────────────────────────────────────────────────────────
+  getDealershipSettings: () =>
+    request(api.get('api/v1/settings').json<{ data: Record<string, unknown> }>()),
+
+  // ── Movement History ──────────────────────────────────────────────────────
+  getMovementHistory: (unitId: string, params?: { from?: string; to?: string; limit?: number }) =>
+    request(
+      api
+        .get(`api/v1/units/${unitId}/movement-history`, {
+          searchParams: params as Record<string, string>,
+        })
+        .json<{ data: Record<string, unknown>[] }>(),
+    ),
+
+  // ── Live Positions ────────────────────────────────────────────────────────
+  getLivePositions: (lotId: string) =>
+    request(api.get(`api/v1/lots/${lotId}/live-positions`).json<{ data: Record<string, unknown>[] }>()),
+
   // ── Device Registration ───────────────────────────────────────────────────
   registerDeviceToken: (token: string, platform: string) =>
     request(
@@ -284,4 +363,7 @@ export const apiClient = {
         .post('api/v1/devices/register', { json: { token, platform } })
         .json<void>(),
     ),
+
+  unregisterDeviceToken: () =>
+    request(api.delete('api/v1/devices/unregister').json<void>()),
 } as const;

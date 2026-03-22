@@ -15,13 +15,13 @@ import { colors } from '@/theme/colors';
 // Screens
 // ---------------------------------------------------------------------------
 
-import { MapMainScreen } from '@/screens/map/MapMainScreen';
-import { SearchMainScreen } from '@/screens/search/SearchMainScreen';
+import { MapScreen } from '@/screens/map/MapScreen';
+import { SearchScreen } from '@/screens/search/SearchScreen';
 import { ScannerScreen } from '@/screens/scanner/ScannerScreen';
-import { AssignTrackerScreen } from '@/screens/scan/AssignTrackerScreen';
-import { TasksMainScreen } from '@/screens/tasks/TasksMainScreen';
+import { AssignmentFlow } from '@/screens/scanner/AssignmentFlow';
+import { TasksScreen } from '@/screens/tasks/TasksScreen';
 import { AccountScreen } from '@/screens/account/AccountScreen';
-import { UnitDetailScreen } from '@/screens/UnitDetailScreen';
+import { UnitDetailScreen } from '@/screens/unit/UnitDetailScreen';
 
 // ---------------------------------------------------------------------------
 // Nested Stack: Map
@@ -31,7 +31,7 @@ const MapStack = createNativeStackNavigator<MapStackParamList>();
 
 const MapStackScreen: React.FC = () => (
   <MapStack.Navigator screenOptions={{ headerShown: false }}>
-    <MapStack.Screen name="MapMain" component={MapMainScreen} />
+    <MapStack.Screen name="MapMain" component={MapScreen} />
     <MapStack.Screen name="UnitDetail" component={UnitDetailScreen} />
   </MapStack.Navigator>
 );
@@ -44,7 +44,7 @@ const SearchStack = createNativeStackNavigator<SearchStackParamList>();
 
 const SearchStackScreen: React.FC = () => (
   <SearchStack.Navigator screenOptions={{ headerShown: false }}>
-    <SearchStack.Screen name="SearchMain" component={SearchMainScreen} />
+    <SearchStack.Screen name="SearchMain" component={SearchScreen} />
     <SearchStack.Screen name="UnitDetail" component={UnitDetailScreen} />
   </SearchStack.Navigator>
 );
@@ -58,7 +58,7 @@ const ScanStack = createNativeStackNavigator<ScanStackParamList>();
 const ScanStackScreen: React.FC = () => (
   <ScanStack.Navigator screenOptions={{ headerShown: false }}>
     <ScanStack.Screen name="ScanMain" component={ScannerScreen} />
-    <ScanStack.Screen name="AssignTracker" component={AssignTrackerScreen} />
+    <ScanStack.Screen name="AssignTracker" component={AssignmentFlow} />
   </ScanStack.Navigator>
 );
 
@@ -70,7 +70,7 @@ const TasksStack = createNativeStackNavigator<TasksStackParamList>();
 
 const TasksStackScreen: React.FC = () => (
   <TasksStack.Navigator screenOptions={{ headerShown: false }}>
-    <TasksStack.Screen name="TasksMain" component={TasksMainScreen} />
+    <TasksStack.Screen name="TasksMain" component={TasksScreen} />
     <TasksStack.Screen name="UnitDetail" component={UnitDetailScreen} />
   </TasksStack.Navigator>
 );

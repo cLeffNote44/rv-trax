@@ -25,6 +25,7 @@ import * as webhooks from './schema/webhooks.js';
 import * as dmsIntegrations from './schema/dms-integrations.js';
 import * as transfers from './schema/transfers.js';
 import * as widgetConfigs from './schema/widget-configs.js';
+import * as deviceTokens from './schema/device-tokens.js';
 
 const schema = {
   ...dealerships,
@@ -52,10 +53,27 @@ const schema = {
   ...dmsIntegrations,
   ...transfers,
   ...widgetConfigs,
+  ...deviceTokens,
 };
 
-export function createDb(url: string) {
-  const client = postgres(url);
+export interface DbOptions {
+  /** Max connections in pool (default: 10) */
+  max?: number;
+  /** Idle connection timeout in seconds (default: 30) */
+  idleTimeout?: number;
+  /** Connection timeout in seconds (default: 10) */
+  connectTimeout?: number;
+  /** Enable SSL (default: false) */
+  ssl?: boolean;
+}
+
+export function createDb(url: string, options?: DbOptions) {
+  const client = postgres(url, {
+    max: options?.max ?? 10,
+    idle_timeout: options?.idleTimeout ?? 30,
+    connect_timeout: options?.connectTimeout ?? 10,
+    ssl: options?.ssl ? 'require' : undefined,
+  });
   const db = drizzle(client, { schema });
   return { db, client };
 }

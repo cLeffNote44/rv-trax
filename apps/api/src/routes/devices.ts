@@ -5,12 +5,7 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { eq, and } from 'drizzle-orm';
 import { deviceTokens } from '@rv-trax/db';
-import { z } from 'zod';
-
-const registerTokenSchema = z.object({
-  token: z.string().min(1).max(4096),
-  platform: z.enum(['ios', 'android', 'web']),
-});
+import { registerDeviceTokenSchema } from '@rv-trax/shared';
 
 export default async function deviceRoutes(app: FastifyInstance): Promise<void> {
   // All routes require auth
@@ -19,7 +14,7 @@ export default async function deviceRoutes(app: FastifyInstance): Promise<void> 
   // ── POST /register — register or refresh a device push token ────────────
 
   app.post('/register', async (request: FastifyRequest, reply: FastifyReply) => {
-    const body = registerTokenSchema.parse(request.body);
+    const body = registerDeviceTokenSchema.parse(request.body);
     const userId = request.user.sub;
 
     // Deactivate any previous tokens for this user on this platform

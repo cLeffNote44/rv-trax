@@ -6,48 +6,35 @@ import type { Database } from '@rv-trax/db';
 import { gateways, alerts } from '@rv-trax/db';
 import { eq } from 'drizzle-orm';
 import type Redis from 'ioredis';
+import type { FastifyBaseLogger } from 'fastify';
 import { GatewayStatus, AlertSeverity, AlertStatus } from '@rv-trax/shared';
 
-// ── Configuration ----------------------------------------------------------
-
-/** If a gateway has not been seen for this long, consider it offline. */
 const GATEWAY_OFFLINE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
-
-/** How often to check gateways. */
 const CHECK_INTERVAL_MS = 60 * 1000; // 60 seconds
 
 let monitorTimer: ReturnType<typeof setInterval> | null = null;
+let _log: FastifyBaseLogger | null = null;
 
-/**
- * Start the background gateway monitor.
- * Every CHECK_INTERVAL_MS it checks all gateways and transitions them
- * between online/offline states, creating alerts as appropriate.
- */
-export function startGatewayMonitor(db: Database, redis: Redis): void {
-  if (monitorTimer) {
-    return; // Already running
-  }
+export function startGatewayMonitor(db: Database, redis: Redis, log: FastifyBaseLogger): void {
+  if (monitorTimer) return;
+  _log = log;
 
   monitorTimer = setInterval(async () => {
     try {
       await checkGateways(db, redis);
     } catch (err) {
-      // Log but do not crash the interval
-      console.error('[gateway-monitor] Error during gateway check:', err);
+      _log?.error({ err }, 'Gateway monitor check failed');
     }
   }, CHECK_INTERVAL_MS);
 
-  console.log('[gateway-monitor] Started (interval: 60s)');
+  log.info('Gateway monitor started (interval: 60s)');
 }
 
-/**
- * Stop the background gateway monitor.
- */
 export function stopGatewayMonitor(): void {
   if (monitorTimer) {
     clearInterval(monitorTimer);
     monitorTimer = null;
-    console.log('[gateway-monitor] Stopped');
+    _log?.info('Gateway monitor stopped');
   }
 }
 

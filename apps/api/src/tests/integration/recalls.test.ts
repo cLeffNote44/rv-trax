@@ -54,7 +54,7 @@ describe('Recall Routes', () => {
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
       expect(data['title']).toBe('Test Recall');
-      expect(data['dealershipId']).toBe(dealershipId);
+      expect(data['dealership_id']).toBe(dealershipId);
       expect(data['status']).toBe('open');
     });
 
@@ -80,7 +80,7 @@ describe('Recall Routes', () => {
       expect(response.statusCode).toBe(201);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['matchedUnitCount']).toBeGreaterThanOrEqual(1);
+      expect(data['matched_unit_count']).toBeGreaterThanOrEqual(1);
     });
 
     it('rejects creation without auth', async () => {

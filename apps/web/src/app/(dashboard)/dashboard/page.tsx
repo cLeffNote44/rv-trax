@@ -137,21 +137,21 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
+    <div className="mx-auto max-w-7xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Dashboard</h1>
+        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
           Overview of your lot inventory and tracker health
         </p>
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => (
             <div
               key={i}
-              className="h-[120px] animate-pulse rounded-xl border border-slate-200 bg-slate-50"
+              className="h-[120px] animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
             />
           ))
         ) : metrics ? (
@@ -192,55 +192,55 @@ export default function DashboardPage() {
       {/* Second Row: Tracker Health + Quick Search + Alerts */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Tracker Health */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-[var(--color-text-primary)]">
             Tracker Health
           </h2>
           <TrackerHealth />
         </div>
 
         {/* Quick Search */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-[var(--color-text-primary)]">
             Quick Search
           </h2>
           <form onSubmit={handleSearch}>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Stock #, VIN, make, model..."
-                className="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] py-2.5 pl-10 pr-4 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-brand-500)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-500)]/20"
               />
             </div>
             <button
               type="submit"
-              className="mt-3 w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+              className="mt-3 w-full rounded-lg bg-[var(--color-brand-600)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-brand-700)]"
             >
               Search Inventory
             </button>
           </form>
           <div className="mt-4 space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+            <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
               Quick links
             </p>
             <Link
               href="/inventory?status=new_arrival"
-              className="block text-sm text-blue-600 hover:text-blue-800"
+              className="block text-sm text-[var(--color-brand-500)] hover:text-[var(--color-brand-400)]"
             >
               New Arrivals
             </Link>
             <Link
               href="/inventory?status=pdi_pending"
-              className="block text-sm text-blue-600 hover:text-blue-800"
+              className="block text-sm text-[var(--color-brand-500)] hover:text-[var(--color-brand-400)]"
             >
               PDI Pending
             </Link>
             <Link
               href="/inventory?status=hold"
-              className="block text-sm text-blue-600 hover:text-blue-800"
+              className="block text-sm text-[var(--color-brand-500)] hover:text-[var(--color-brand-400)]"
             >
               Units on Hold
             </Link>
@@ -248,31 +248,31 @@ export default function DashboardPage() {
         </div>
 
         {/* Alerts Card */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">Alerts</h2>
+            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Alerts</h2>
             <Link
               href="/alerts"
-              className="text-sm font-medium text-blue-600 hover:text-blue-800"
+              className="text-sm font-medium text-[var(--color-brand-500)] hover:text-[var(--color-brand-400)]"
             >
               View All
             </Link>
           </div>
           {loading ? (
             <div className="space-y-3 animate-pulse">
-              <div className="h-10 rounded bg-slate-100" />
-              <div className="h-10 rounded bg-slate-100" />
-              <div className="h-10 rounded bg-slate-100" />
+              <div className="h-10 rounded bg-[var(--color-bg-tertiary)]" />
+              <div className="h-10 rounded bg-[var(--color-bg-tertiary)]" />
+              <div className="h-10 rounded bg-[var(--color-bg-tertiary)]" />
             </div>
           ) : alertSummary ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-3">
-                <AlertTriangle className="h-5 w-5 text-slate-600" />
+              <div className="flex items-center gap-3 rounded-lg bg-[var(--color-bg-secondary)] p-3">
+                <AlertTriangle className="h-5 w-5 text-[var(--color-text-secondary)]" />
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">
+                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
                     {alertSummary.total}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[var(--color-text-secondary)]">
                     Unacknowledged alerts
                   </p>
                 </div>
@@ -281,34 +281,34 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between rounded-lg px-3 py-2">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                    <span className="text-sm text-slate-600">Critical</span>
+                    <span className="text-sm text-[var(--color-text-secondary)]">Critical</span>
                   </div>
-                  <span className="text-sm font-semibold text-slate-900">
+                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">
                     {alertSummary.critical}
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg px-3 py-2">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                    <span className="text-sm text-slate-600">Warning</span>
+                    <span className="text-sm text-[var(--color-text-secondary)]">Warning</span>
                   </div>
-                  <span className="text-sm font-semibold text-slate-900">
+                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">
                     {alertSummary.warning}
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg px-3 py-2">
                   <div className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                    <span className="text-sm text-slate-600">Info</span>
+                    <span className="text-sm text-[var(--color-text-secondary)]">Info</span>
                   </div>
-                  <span className="text-sm font-semibold text-slate-900">
+                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">
                     {alertSummary.info}
                   </span>
                 </div>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-slate-500">Unable to load alerts</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">Unable to load alerts</p>
           )}
         </div>
       </div>
@@ -316,27 +316,27 @@ export default function DashboardPage() {
       {/* Third Row: Activity Feed + Lot Map Thumbnail */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Activity */}
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-[var(--color-text-primary)]">
             Recent Activity
           </h2>
           <ActivityFeed />
         </div>
 
         {/* Mini Lot Map */}
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] shadow-sm">
           <div className="p-5">
-            <h2 className="mb-2 text-lg font-semibold text-slate-900">
+            <h2 className="mb-2 text-lg font-semibold text-[var(--color-text-primary)]">
               Lot Map
             </h2>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[var(--color-text-secondary)]">
               See your units on the interactive lot map
             </p>
           </div>
-          <div className="relative flex h-[260px] items-center justify-center bg-slate-100">
+          <div className="relative flex h-[260px] items-center justify-center bg-[var(--color-bg-tertiary)]">
             <div className="text-center">
-              <MapPin className="mx-auto h-12 w-12 text-slate-300" />
-              <p className="mt-2 text-sm text-slate-400">
+              <MapPin className="mx-auto h-12 w-12 text-[var(--color-text-tertiary)]" />
+              <p className="mt-2 text-sm text-[var(--color-text-tertiary)]">
                 Interactive lot map preview
               </p>
             </div>
@@ -344,7 +344,7 @@ export default function DashboardPage() {
           <div className="p-4">
             <Link
               href="/map"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-brand-500)] hover:text-[var(--color-brand-400)]"
             >
               View Lot Map
               <svg

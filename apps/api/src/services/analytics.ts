@@ -315,6 +315,7 @@ export async function getMovementAnalytics(
   // --- idle_units (no movement in 60+ days) ---
   const sixtyDaysAgo = new Date();
   sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+  const sixtyDaysAgoStr = sixtyDaysAgo.toISOString();
 
   const idleRows = await db
     .select({
@@ -327,7 +328,7 @@ export async function getMovementAnalytics(
     .where(and(eq(units.dealershipId, dealershipId), ACTIVE_FILTER))
     .groupBy(units.id, units.stockNumber)
     .having(
-      sql`MAX(${movementEvents.occurredAt}) IS NULL OR MAX(${movementEvents.occurredAt}) < ${sixtyDaysAgo}`,
+      sql`MAX(${movementEvents.occurredAt}) IS NULL OR MAX(${movementEvents.occurredAt}) < ${sixtyDaysAgoStr}`,
     );
 
   const idle_units: MovementAnalytics['idle_units'] = idleRows.map((r) => {
@@ -346,23 +347,21 @@ export async function getMovementAnalytics(
   });
 
   // --- average_moves_before_sale ---
-  const [avgMovesRow] = await db
-    .select({
-      avgMoves: sql<number>`COALESCE(AVG(move_counts.cnt), 0)`.as('avg_moves'),
-    })
-    .from(
-      sql`(
-        SELECT ${movementEvents.unitId}, COUNT(*)::int as cnt
-        FROM ${movementEvents}
-        INNER JOIN ${units} ON ${units.id} = ${movementEvents.unitId}
-        WHERE ${units.dealershipId} = ${dealershipId}
-          AND ${units.soldAt} IS NOT NULL
-        GROUP BY ${movementEvents.unitId}
-      ) AS move_counts`,
-    );
+  const avgMovesResult = await db.execute<{ avg_moves: string }>(sql`
+    SELECT COALESCE(AVG(move_counts.cnt), 0)::numeric AS avg_moves
+    FROM (
+      SELECT ${movementEvents.unitId}, COUNT(*)::int AS cnt
+      FROM ${movementEvents}
+      INNER JOIN ${units} ON ${units.id} = ${movementEvents.unitId}
+      WHERE ${units.dealershipId} = ${dealershipId}
+        AND ${units.soldAt} IS NOT NULL
+      GROUP BY ${movementEvents.unitId}
+    ) AS move_counts
+  `);
 
+  const avgMovesVal = avgMovesResult[0]?.avg_moves ?? '0';
   const average_moves_before_sale =
-    Math.round((avgMovesRow?.avgMoves ?? 0) * 10) / 10;
+    Math.round(Number(avgMovesVal) * 10) / 10;
 
   return {
     most_moved_units,

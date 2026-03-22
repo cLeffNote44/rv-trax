@@ -86,10 +86,10 @@ describe('Geofence Routes', () => {
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
       expect(data['name']).toBe('Main Boundary');
-      expect(data['fenceType']).toBe('lot_boundary');
+      expect(data['fence_type']).toBe('lot_boundary');
       expect(data['color']).toBe('#FF0000');
-      expect(data['dealershipId']).toBe(dealershipId);
-      expect(data['lotId']).toBe(lotId);
+      expect(data['dealership_id']).toBe(dealershipId);
+      expect(data['lot_id']).toBe(lotId);
       expect(typeof data['id']).toBe('string');
     });
 
@@ -113,7 +113,7 @@ describe('Geofence Routes', () => {
       expect(response.statusCode).toBe(201);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['fenceType']).toBe('zone');
+      expect(data['fence_type']).toBe('zone');
     });
 
     it('rejects without auth with 401', async () => {
@@ -339,7 +339,7 @@ describe('Geofence Routes', () => {
       expect(response.statusCode).toBe(200);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['isActive']).toBe(false);
+      expect(data['is_active']).toBe(false);
     });
 
     it('returns 404 for non-existent geofence', async () => {

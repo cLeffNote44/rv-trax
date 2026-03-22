@@ -58,8 +58,8 @@ describe('Work Order Routes', () => {
       expect(response.statusCode).toBe(201);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['unitId']).toBe(unitId);
-      expect(data['orderType']).toBe('pdi');
+      expect(data['unit_id']).toBe(unitId);
+      expect(data['order_type']).toBe('pdi');
       expect(data['priority']).toBe('normal');
       expect(data['status']).toBe('pending');
       expect(data['notes']).toBe('Test WO');
@@ -82,7 +82,7 @@ describe('Work Order Routes', () => {
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
       expect(data['status']).toBe('assigned');
-      expect(data['assignedTo']).toBe(userId);
+      expect(data['assigned_to']).toBe(userId);
     });
 
     it('rejects creation with non-existent unit', async () => {
@@ -284,7 +284,7 @@ describe('Work Order Routes', () => {
       expect(res2.statusCode).toBe(200);
       const data2 = (res2.json() as Record<string, unknown>)['data'] as Record<string, unknown>;
       expect(data2['status']).toBe('complete');
-      expect(data2['completedAt']).toBeTruthy();
+      expect(data2['completed_at']).toBeTruthy();
     });
 
     it('transitions pending -> cancelled', async () => {

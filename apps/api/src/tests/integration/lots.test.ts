@@ -57,7 +57,7 @@ describe('Lot Routes', () => {
       expect(body).toHaveProperty('data');
       const data = body['data'] as Record<string, unknown>;
       expect(data['name']).toBe('Main Lot');
-      expect(data['dealershipId']).toBe(dealershipId);
+      expect(data['dealership_id']).toBe(dealershipId);
       expect(typeof data['id']).toBe('string');
     });
 

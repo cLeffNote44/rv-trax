@@ -48,7 +48,7 @@ export const ForgotPasswordScreen: React.FC = () => {
       <View style={styles.container}>
         <View style={styles.inner}>
           <View style={styles.successIconBox}>
-            <Text style={styles.checkMark}>{'\\u2713'}</Text>
+            <Text style={styles.checkMark}>{'\u2713'}</Text>
           </View>
           <Text style={styles.successTitle}>Check your email</Text>
           <Text style={styles.successMessage}>

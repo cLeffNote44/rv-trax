@@ -242,21 +242,25 @@ export default async function billingRoutes(app: FastifyInstance): Promise<void>
       const stripe = getStripe();
       const webhookSecret = process.env['STRIPE_WEBHOOK_SECRET'];
 
-      if (stripe && webhookSecret) {
-        const sig = request.headers['stripe-signature'];
-        const rawBody = (request as any).rawBody as Buffer;
+      if (!stripe || !webhookSecret) {
+        app.log.warn('Stripe webhook received but STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET is not configured');
+        return reply.status(503).send({ error: 'Stripe integration not configured' });
+      }
 
-        if (!sig || !rawBody) {
-          app.log.warn('Stripe webhook: missing signature or raw body');
-          return reply.status(400).send({ error: 'Missing signature' });
-        }
+      const sig = request.headers['stripe-signature'];
+      const rawBody = (request as any).rawBody as Buffer;
 
-        try {
-          stripe.webhooks.constructEvent(rawBody, sig as string, webhookSecret);
-        } catch (err: any) {
-          app.log.warn(`Stripe webhook signature verification failed: ${err.message}`);
-          return reply.status(400).send({ error: 'Invalid signature' });
-        }
+      if (!sig || !rawBody) {
+        app.log.warn('Stripe webhook: missing signature or raw body');
+        return reply.status(400).send({ error: 'Missing signature' });
+      }
+
+      try {
+        stripe.webhooks.constructEvent(rawBody, sig as string, webhookSecret);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        app.log.warn(`Stripe webhook signature verification failed: ${message}`);
+        return reply.status(400).send({ error: 'Invalid signature' });
       }
 
       const body = request.body as {

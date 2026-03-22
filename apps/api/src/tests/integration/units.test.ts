@@ -54,13 +54,13 @@ describe('Unit Routes', () => {
       const body = response.json() as Record<string, unknown>;
       expect(body).toHaveProperty('data');
       const data = body['data'] as Record<string, unknown>;
-      expect(data['stockNumber']).toBe('TEST-001');
+      expect(data['stock_number']).toBe('TEST-001');
       expect(data['year']).toBe(2025);
       expect(data['make']).toBe('Jayco');
       expect(data['model']).toBe('Eagle');
-      expect(data['unitType']).toBe('travel_trailer');
+      expect(data['unit_type']).toBe('travel_trailer');
       expect(data['status']).toBe('available');
-      expect(data['dealershipId']).toBe(dealershipId);
+      expect(data['dealership_id']).toBe(dealershipId);
       expect(typeof data['id']).toBe('string');
     });
 
@@ -294,7 +294,7 @@ describe('Unit Routes', () => {
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
       expect(data['id']).toBe(unitId);
-      expect(data['stockNumber']).toBe('GET-001');
+      expect(data['stock_number']).toBe('GET-001');
       expect(data).toHaveProperty('tracker'); // null when no tracker assigned
       expect(data['tracker']).toBeNull();
     });
@@ -388,7 +388,7 @@ describe('Unit Routes', () => {
       expect(data['make']).toBe('Winnebago');
       expect(data['status']).toBe('sold');
       // Stock number should remain unchanged
-      expect(data['stockNumber']).toBe('PATCH-001');
+      expect(data['stock_number']).toBe('PATCH-001');
     });
 
     it('rejects conflicting stock number with 409', async () => {

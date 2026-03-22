@@ -22,7 +22,7 @@ export default function ServicePage() {
 
   const links = [
     {
-      href: '/service/work-orders',
+      href: '/service/work-orders' as const,
       title: 'Work Orders',
       description: 'Manage PDI, repairs, detail, and other service work orders for your units.',
       icon: <Wrench className="h-6 w-6" />,
@@ -30,7 +30,7 @@ export default function ServicePage() {
       countLabel: 'open',
     },
     {
-      href: '/service/recalls',
+      href: '/service/recalls' as const,
       title: 'Recalls',
       description: 'Track manufacturer recalls and manage affected units in your inventory.',
       icon: <AlertTriangle className="h-6 w-6" />,

@@ -4,6 +4,7 @@ node_modules/
 
 # Build
 dist/
+.next/
 .turbo/
 *.tsbuildinfo
 
@@ -31,3 +32,16 @@ infrastructure/docker/data/
 # Logs
 *.log
 logs/
+pnpm-debug.log*
+
+# Mobile build artifacts
+apps/mobile/android/app/build/
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+
+# Misc
+*.tgz
+.eslintcache
+.env.production
+.env.staging
+.claude/

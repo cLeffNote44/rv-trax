@@ -128,7 +128,6 @@ export async function checkGeoFences(
 
   // Process each state-change event
   for (const event of events) {
-    // 1. Insert geo_fence_events record
     await db
       .insert(geoFenceEvents)
       .values({
@@ -137,8 +136,8 @@ export async function checkGeoFences(
         eventType: event.eventType,
         occurredAt: new Date(),
       })
-      .catch((err) => {
-        console.error('[geofence] Failed to insert geo_fence_event:', err);
+      .catch(() => {
+        // Non-fatal: event record is supplementary to the alert
       });
 
     // 2. Check alert rules
@@ -165,7 +164,7 @@ export async function checkGeoFences(
       const title = `Unit ${event.eventType === 'enter' ? 'entered' : 'exited'} ${event.fenceName}`;
       const message = `Geo-fence ${event.eventType} detected at (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
 
-      await db
+      const insertedAlerts = await db
         .insert(alerts)
         .values({
           dealershipId,
@@ -176,31 +175,32 @@ export async function checkGeoFences(
           message,
           unitId,
           geoFenceId: event.fenceId,
-          status: 'new',
+          status: 'new_alert',
         })
-        .catch((err) => {
-          console.error('[geofence] Failed to insert alert:', err);
+        .returning({ id: alerts.id })
+        .catch(() => [] as { id: string }[]);
+
+      const alertId = insertedAlerts[0]?.id;
+
+      if (alertId) {
+        const alertPayload = JSON.stringify({
+          id: alertId,
+          type: ruleType,
+          severity: rule.severity,
+          title,
+          message,
+          unitId,
+          fenceId: event.fenceId,
+          fenceName: event.fenceName,
+          lat,
+          lng,
+          timestamp: new Date().toISOString(),
         });
 
-      // Publish alert to Redis pub/sub
-      const alertPayload = JSON.stringify({
-        type: ruleType,
-        severity: rule.severity,
-        title,
-        message,
-        unitId,
-        fenceId: event.fenceId,
-        fenceName: event.fenceName,
-        lat,
-        lng,
-        timestamp: new Date().toISOString(),
-      });
-
-      await redis
-        .publish(`alerts:${dealershipId}`, alertPayload)
-        .catch((err) => {
-          console.error('[geofence] Failed to publish alert:', err);
-        });
+        await redis
+          .publish(`alerts:${dealershipId}`, alertPayload)
+          .catch(() => { /* non-fatal */ });
+      }
     }
   }
 

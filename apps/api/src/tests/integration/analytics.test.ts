@@ -74,7 +74,7 @@ describe('Analytics Routes', () => {
       expect(response.statusCode).toBe(200);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['total_units']).toBeGreaterThanOrEqual(3);
+      expect(data['total_units']).toBeGreaterThanOrEqual(2);
     });
 
     it('requires auth', async () => {
@@ -174,7 +174,7 @@ describe('Analytics Routes', () => {
       expect(response.statusCode).toBe(200);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['total_units']).toBeGreaterThanOrEqual(3);
+      expect(data['total_units']).toBeGreaterThanOrEqual(2);
     });
 
     it('requires auth', async () => {

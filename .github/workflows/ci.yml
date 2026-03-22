@@ -159,6 +159,35 @@ jobs:
     name: Test (IoT Ingest)
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: timescale/timescaledb-ha:pg16
+        env:
+          POSTGRES_USER: rvtrax
+          POSTGRES_PASSWORD: rvtrax_dev
+          POSTGRES_DB: rvtrax
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rvtrax"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://rvtrax:rvtrax_dev@localhost:5432/rvtrax
+      REDIS_URL: redis://localhost:6379
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -49,11 +49,11 @@ describe('Report Routes', () => {
       expect(response.statusCode).toBe(201);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['reportType']).toBe('inventory_summary');
+      expect(data['report_type']).toBe('inventory_summary');
       expect(data['format']).toBe('csv');
       expect(data['schedule']).toBe('weekly');
-      expect(data['isActive']).toBe(true);
-      expect(data).toHaveProperty('nextRunAt');
+      expect(data['is_active']).toBe(true);
+      expect(data).toHaveProperty('next_run_at');
 
       // Recipients should be returned as an array
       const recipients = data['recipients'] as string[];

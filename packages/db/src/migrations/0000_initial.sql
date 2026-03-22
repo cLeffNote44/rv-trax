@@ -124,6 +124,10 @@ CREATE TABLE IF NOT EXISTS "units" (
   "arrived_at" timestamptz DEFAULT now(),
   "sold_at" timestamptz,
   "archived_at" timestamptz,
+  "current_lat" numeric,
+  "current_lng" numeric,
+  "last_moved_at" timestamptz,
+  "thumbnail_url" text,
   "created_at" timestamptz NOT NULL DEFAULT now(),
   "updated_at" timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT "uq_units_dealership_stock" UNIQUE ("dealership_id", "stock_number")

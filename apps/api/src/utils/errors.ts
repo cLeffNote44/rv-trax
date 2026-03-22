@@ -3,6 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { ZodIssue } from 'zod';
 
 // ── AppError ----------------------------------------------------------------
 
@@ -68,6 +69,19 @@ export function registerErrorHandler(app: FastifyInstance): void {
             code: error.code,
             message: error.message,
             details: error.details ?? null,
+            request_id: requestId,
+          },
+        });
+      }
+
+      // Handle Zod validation errors (name check avoids monorepo instanceof issues)
+      if (error.name === 'ZodError' && 'issues' in error) {
+        const issues = (error as unknown as { issues: ZodIssue[] }).issues;
+        return reply.status(422).send({
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: issues.map((i) => i.message).join(', '),
+            details: issues,
             request_id: requestId,
           },
         });

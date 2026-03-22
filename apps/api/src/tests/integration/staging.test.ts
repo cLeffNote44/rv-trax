@@ -54,10 +54,10 @@ describe('Staging Plan Routes', () => {
       expect(body).toHaveProperty('data');
       const data = body['data'] as Record<string, unknown>;
       expect(data['name']).toBe('Summer Layout');
-      expect(data['lotId']).toBe(lotId);
-      expect(data['dealershipId']).toBe(dealershipId);
-      expect(data['isActive']).toBe(false);
-      expect(data['isTemplate']).toBe(false);
+      expect(data['lot_id']).toBe(lotId);
+      expect(data['dealership_id']).toBe(dealershipId);
+      expect(data['is_active']).toBe(false);
+      expect(data['is_template']).toBe(false);
     });
 
     it('creates a staging plan with is_template=true', async () => {
@@ -76,7 +76,7 @@ describe('Staging Plan Routes', () => {
       expect(response.statusCode).toBe(201);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['isTemplate']).toBe(true);
+      expect(data['is_template']).toBe(true);
     });
 
     it('rejects creation with non-existent lot', async () => {
@@ -268,7 +268,7 @@ describe('Staging Plan Routes', () => {
       expect(response.statusCode).toBe(200);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['isActive']).toBe(true);
+      expect(data['is_active']).toBe(true);
     });
 
     it('rejects activation of already-active plan', async () => {
@@ -329,7 +329,7 @@ describe('Staging Plan Routes', () => {
       expect(response.statusCode).toBe(200);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['isActive']).toBe(false);
+      expect(data['is_active']).toBe(false);
     });
 
     it('rejects deactivation of already-inactive plan', async () => {
@@ -375,7 +375,7 @@ describe('Staging Plan Routes', () => {
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
       expect(data['name']).toBe('Original Plan (Copy)');
-      expect(data['isActive']).toBe(false);
+      expect(data['is_active']).toBe(false);
       expect(data['id']).not.toBe(planId);
     });
 

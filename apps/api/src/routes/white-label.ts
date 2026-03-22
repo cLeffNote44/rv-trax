@@ -5,26 +5,15 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { eq } from 'drizzle-orm';
 import { dealerships } from '@rv-trax/db';
-import { UserRole, AuditAction } from '@rv-trax/shared';
+import {
+  UserRole,
+  AuditAction,
+  updateBrandingSchema,
+  setCustomDomainSchema,
+} from '@rv-trax/shared';
 import { enforceTenant } from '../middleware/tenant.js';
 import { notFound, forbidden } from '../utils/errors.js';
 import { logAction } from '../services/audit.js';
-import { z } from 'zod';
-
-// ── Local schemas -----------------------------------------------------------
-
-const updateBrandingSchema = z.object({
-  logo_url: z.string().url().optional(),
-  primary_color: z
-    .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, 'Color must be a hex string (#RRGGBB)')
-    .optional(),
-  app_name: z.string().min(1).max(100).optional(),
-});
-
-const setCustomDomainSchema = z.object({
-  domain: z.string().min(1, 'Domain is required'),
-});
 
 // ── Redis key helper --------------------------------------------------------
 

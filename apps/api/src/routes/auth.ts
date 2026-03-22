@@ -255,6 +255,43 @@ export default async function authRoutes(app: FastifyInstance): Promise<void> {
     });
   });
 
+  // ── GET /me — return the current authenticated user -------------------------
+
+  app.get('/me', {
+    preHandler: [app.authenticate],
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const userId = request.user.sub;
+    const dealershipId = request.user.dealershipId;
+
+    const [user] = await app.db
+      .select({
+        id: users.id,
+        dealershipId: users.dealershipId,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        avatarUrl: users.avatarUrl,
+        isActive: users.isActive,
+        lastLoginAt: users.lastLoginAt,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      })
+      .from(users)
+      .where(
+        and(
+          eq(users.id, userId),
+          eq(users.dealershipId, dealershipId),
+        ),
+      )
+      .limit(1);
+
+    if (!user) {
+      throw unauthorized('User not found');
+    }
+
+    return reply.status(200).send(user);
+  });
+
   // ── POST /logout -----------------------------------------------------------
 
   app.post('/logout', {

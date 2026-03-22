@@ -83,7 +83,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       <div className="flex items-center gap-2">
         {/* Notification bell */}
         <button
-          onClick={() => router.push('/dashboard/alerts')}
+          onClick={() => router.push('/alerts')}
           className="relative rounded-lg p-2 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-tertiary)]"
           aria-label="View alerts"
         >
@@ -125,7 +125,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <button
                 onClick={() => {
                   setShowUserMenu(false);
-                  router.push('/dashboard/settings');
+                  router.push('/settings');
                 }}
                 className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]"
               >
@@ -135,7 +135,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <button
                 onClick={() => {
                   setShowUserMenu(false);
-                  router.push('/dashboard/settings');
+                  router.push('/settings');
                 }}
                 className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)]"
               >

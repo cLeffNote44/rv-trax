@@ -79,14 +79,14 @@ export default function TrackerHealth() {
   if (loading) {
     return (
       <div className="flex h-[220px] items-center justify-center">
-        <div className="h-32 w-32 animate-pulse rounded-full bg-slate-200" />
+        <div className="h-32 w-32 animate-pulse rounded-full bg-[var(--color-bg-tertiary)]" />
       </div>
     );
   }
 
   if (!summary) {
     return (
-      <div className="flex h-[220px] items-center justify-center text-sm text-slate-500">
+      <div className="flex h-[220px] items-center justify-center text-sm text-[var(--color-text-secondary)]">
         Unable to load tracker data
       </div>
     );
@@ -107,7 +107,7 @@ export default function TrackerHealth() {
 
   if (total === 0) {
     return (
-      <div className="flex h-[220px] items-center justify-center text-sm text-slate-500">
+      <div className="flex h-[220px] items-center justify-center text-sm text-[var(--color-text-secondary)]">
         No trackers registered
       </div>
     );
@@ -138,15 +138,17 @@ export default function TrackerHealth() {
             <Tooltip
               contentStyle={{
                 borderRadius: '8px',
-                border: '1px solid #e2e8f0',
+                border: '1px solid var(--color-border)',
+                backgroundColor: 'var(--color-bg-primary)',
+                color: 'var(--color-text-primary)',
                 fontSize: '13px',
               }}
             />
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-slate-900">{total}</span>
-          <span className="text-xs text-slate-500">Total</span>
+          <span className="text-2xl font-bold text-[var(--color-text-primary)]">{total}</span>
+          <span className="text-xs text-[var(--color-text-secondary)]">Total</span>
         </div>
       </div>
       <div className="space-y-3">
@@ -165,8 +167,8 @@ export default function TrackerHealth() {
                 className="h-3 w-3 rounded-full"
                 style={{ backgroundColor: color }}
               />
-              <span className="text-sm text-slate-600">{key}</span>
-              <span className="ml-auto text-sm font-semibold text-slate-900">
+              <span className="text-sm text-[var(--color-text-secondary)]">{key}</span>
+              <span className="ml-auto text-sm font-semibold text-[var(--color-text-primary)]">
                 {val}
               </span>
             </div>

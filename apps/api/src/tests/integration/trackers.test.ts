@@ -53,10 +53,10 @@ describe('Tracker Routes', () => {
       expect(response.statusCode).toBe(201);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['deviceEui']).toBe('EUI-TEST-001');
+      expect(data['device_eui']).toBe('EUI-TEST-001');
       expect(data['label']).toBe('Test Tracker 001');
       expect(data['status']).toBe('unassigned');
-      expect(data['dealershipId']).toBe(dealershipId);
+      expect(data['dealership_id']).toBe(dealershipId);
     });
 
     it('rejects duplicate device_eui with 409', async () => {
@@ -145,7 +145,7 @@ describe('Tracker Routes', () => {
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
       expect(data['id']).toBe(trackerId);
-      expect(data['deviceEui']).toBe('EUI-TEST-DETAIL');
+      expect(data['device_eui']).toBe('EUI-TEST-DETAIL');
       expect(data['assigned_unit']).toBeNull();
     });
 
@@ -189,8 +189,8 @@ describe('Tracker Routes', () => {
       expect(response.statusCode).toBe(201);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['trackerId']).toBe(trackerId);
-      expect(data['unitId']).toBe(unit.id);
+      expect(data['tracker_id']).toBe(trackerId);
+      expect(data['unit_id']).toBe(unit.id);
     });
 
     it('rejects assigning an already-assigned tracker with 409', async () => {

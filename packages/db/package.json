@@ -8,9 +8,9 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/migrate.ts",
+    "db:migrate": "tsx --env-file=../../.env src/migrate.ts",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx src/seed/run.ts",
+    "db:seed": "tsx --env-file=../../.env src/seed/run.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {

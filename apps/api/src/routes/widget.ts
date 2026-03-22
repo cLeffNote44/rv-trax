@@ -145,7 +145,14 @@ export default async function widgetRoutes(app: FastifyInstance): Promise<void> 
 
   // ── Section B: Public widget data endpoint (NO auth) -----------------------
 
-  app.get('/data/:dealershipId', async (request: FastifyRequest, reply: FastifyReply) => {
+  app.get('/data/:dealershipId', {
+    config: {
+      rateLimit: {
+        max: 30,
+        timeWindow: '1 minute',
+      },
+    },
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
     const { dealershipId } = request.params as { dealershipId: string };
 
     // Set CORS headers to allow any origin

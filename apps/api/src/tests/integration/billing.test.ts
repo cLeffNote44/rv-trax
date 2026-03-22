@@ -48,14 +48,14 @@ describe('Billing Routes', () => {
       expect(response.statusCode).toBe(200);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['dealershipId']).toBe(dealershipId);
-      expect(data).toHaveProperty('subscriptionTier');
-      expect(data).toHaveProperty('subscriptionStatus');
-      expect(data).toHaveProperty('unitCount');
-      expect(data).toHaveProperty('unitLimit');
-      expect(data).toHaveProperty('lotCount');
-      expect(data).toHaveProperty('lotLimit');
-      expect(data).toHaveProperty('isOverLimit');
+      expect(data['dealership_id']).toBe(dealershipId);
+      expect(data).toHaveProperty('subscription_tier');
+      expect(data).toHaveProperty('subscription_status');
+      expect(data).toHaveProperty('unit_count');
+      expect(data).toHaveProperty('unit_limit');
+      expect(data).toHaveProperty('lot_count');
+      expect(data).toHaveProperty('lot_limit');
+      expect(data).toHaveProperty('is_over_limit');
     });
 
     it('returns correct unit and lot counts', async () => {
@@ -72,8 +72,8 @@ describe('Billing Routes', () => {
       expect(response.statusCode).toBe(200);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['unitCount']).toBe(2);
-      expect(data['lotCount']).toBe(1);
+      expect(data['unit_count']).toBe(2);
+      expect(data['lot_count']).toBe(1);
     });
 
     it('reports isOverLimit=false for starter tier within limits', async () => {
@@ -87,7 +87,7 @@ describe('Billing Routes', () => {
       expect(response.statusCode).toBe(200);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['isOverLimit']).toBe(false);
+      expect(data['is_over_limit']).toBe(false);
     });
 
     it('requires auth', async () => {
@@ -123,8 +123,8 @@ describe('Billing Routes', () => {
       expect(response.statusCode).toBe(200);
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
-      expect(data['unitLimit']).toBe(100);
-      expect(data['lotLimit']).toBe(1);
+      expect(data['unit_limit']).toBe(100);
+      expect(data['lot_limit']).toBe(1);
     });
 
     it('shows correct limits for professional tier', async () => {
@@ -138,8 +138,8 @@ describe('Billing Routes', () => {
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
       // Factory defaults to 'professional' tier: 300 units, 3 lots
-      expect(data['unitLimit']).toBe(300);
-      expect(data['lotLimit']).toBe(3);
+      expect(data['unit_limit']).toBe(300);
+      expect(data['lot_limit']).toBe(3);
     });
   });
 });

@@ -38,7 +38,7 @@ export const LoginScreen: React.FC = () => {
 
     try {
       await login(email.trim(), password);
-    } catch (err: any) {
+    } catch (err: unknown) {
       const message =
         err?.message?.includes('Invalid') || err?.status === 401
           ? 'Invalid email or password.'

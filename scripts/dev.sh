@@ -23,8 +23,12 @@ echo "    Redis is ready."
 if [ ! -f "$ROOT_DIR/.env" ]; then
   echo "==> Creating .env from .env.example..."
   cp "$ROOT_DIR/.env.example" "$ROOT_DIR/.env"
-  # Patch DATABASE_URL for local dev
-  sed -i 's|postgresql://rvtrax:rvtrax_dev@localhost:5432/rvtrax|postgresql://rvtrax:rvtrax_dev@localhost:5432/rvtrax|' "$ROOT_DIR/.env"
+  # Generate a random JWT_SECRET if it's still the placeholder
+  if grep -q 'change-this-to-a-random-64-char-string' "$ROOT_DIR/.env"; then
+    JWT=$(openssl rand -hex 32 2>/dev/null || head -c 64 /dev/urandom | base64 | tr -dc 'a-zA-Z0-9' | head -c 64)
+    sed -i "s|change-this-to-a-random-64-char-string|${JWT}|" "$ROOT_DIR/.env"
+    echo "    Generated random JWT_SECRET"
+  fi
 fi
 
 # Source .env

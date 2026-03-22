@@ -6,6 +6,9 @@ import type { Database } from '@rv-trax/db';
 import { alertRules, alerts } from '@rv-trax/db';
 import { eq, and, gte } from 'drizzle-orm';
 import type Redis from 'ioredis';
+import type { FastifyBaseLogger } from 'fastify';
+import { AlertSeverity, AlertStatus } from '@rv-trax/shared';
+import { dispatchAlert } from './notifications/index.js';
 
 // ── Alert trigger types ----------------------------------------------------
 
@@ -99,6 +102,7 @@ export async function evaluateAlertRules(
   event: AlertTrigger,
   db: Database,
   redis: Redis,
+  log?: FastifyBaseLogger,
 ): Promise<AlertRecord[]> {
   // Fetch active alert rules for the dealership
   const rules = await db
@@ -148,6 +152,45 @@ export async function evaluateAlertRules(
     }
 
     createdAlerts.push(alert);
+
+    // Dispatch notifications for this alert
+    if (log) {
+      try {
+        await dispatchAlert(
+          {
+            id: alert.id,
+            dealership_id: alert.dealershipId,
+            alert_rule_id: alert.ruleId,
+            severity: alert.severity as AlertSeverity,
+            title: alert.title,
+            message: alert.message ?? '',
+            unit_id: alert.unitId,
+            tracker_id: alert.trackerId,
+            status: alert.status as AlertStatus,
+            acknowledged_by: null,
+            acknowledged_at: null,
+            snoozed_until: null,
+            created_at: alert.createdAt.toISOString(),
+            updated_at: alert.createdAt.toISOString(),
+          },
+          {
+            id: rule.id,
+            dealershipId: rule.dealershipId,
+            ruleType: rule.ruleType,
+            severity: rule.severity,
+            channels: rule.channels as string | null,
+            recipientRoles: rule.recipientRoles as string | null,
+            recipientUserIds: rule.recipientUserIds as string | null,
+            isActive: rule.isActive,
+          },
+          db,
+          redis,
+          log,
+        );
+      } catch (err) {
+        log.error({ alertId: alert.id, err }, 'Failed to dispatch notification for alert');
+      }
+    }
   }
 
   return createdAlerts;

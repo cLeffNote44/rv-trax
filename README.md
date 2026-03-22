@@ -41,7 +41,7 @@ RV Trax solves a common problem for RV dealerships: knowing exactly where every 
 
 | Package | Description | Tech |
 |---------|-------------|------|
-| `apps/api` | REST API + WebSocket server | Fastify 5, Drizzle ORM, JWT |
+| `apps/api` | REST API + WebSocket server | Fastify 5, Drizzle ORM, JWT, Pino |
 | `apps/web` | Management dashboard | Next.js 15, React 19, Tailwind, Mapbox |
 | `apps/mobile` | Field operations app | React Native 0.76, React Navigation 7 |
 | `apps/iot-ingest` | Tracker telemetry pipeline | MQTT, Redis Streams, Kalman filter |
@@ -109,20 +109,22 @@ rv-trax/
 ├── apps/
 │   ├── api/                    # Fastify REST API (80+ endpoints)
 │   │   └── src/
-│   │       ├── routes/         # 24 route modules (auth, units, trackers, etc.)
+│   │       ├── routes/         # 28 route modules (auth, units, trackers, etc.)
 │   │       ├── middleware/     # Auth, tenant isolation, rate limiting
-│   │       ├── services/       # Business logic (WebSocket, alerts, etc.)
+│   │       ├── services/       # Business logic (WebSocket, alerts, notifications)
+│   │       ├── plugins/        # Fastify plugins (db, auth)
+│   │       ├── websocket/      # WebSocket server for real-time updates
 │   │       └── server.ts       # Entry point
 │   ├── web/                    # Next.js dashboard
 │   │   └── src/
 │   │       ├── app/            # 15+ pages (dashboard, map, inventory, etc.)
-│   │       ├── components/     # UI library, shared components
-│   │       └── stores/         # Zustand state management
+│   │       ├── components/     # UI library (Button, Input, Dialog, etc.)
+│   │       └── providers/      # Auth & WebSocket context providers
 │   ├── mobile/                 # React Native app
 │   │   └── src/
-│   │       ├── screens/        # 16+ screens across 5 tabs
+│   │       ├── screens/        # 9 screens across 5 tabs
 │   │       ├── navigation/     # Stack + tab navigators
-│   │       ├── stores/         # Zustand stores (auth, units, map, etc.)
+│   │       ├── stores/         # Zustand stores (auth, units, map)
 │   │       ├── services/       # API client, WebSocket, offline storage
 │   │       └── hooks/          # Auth, location, offline, debounce
 │   └── iot-ingest/             # IoT telemetry pipeline
@@ -140,7 +142,8 @@ rv-trax/
 │   │       └── constants/      # App-wide constants
 │   └── db/                     # Database layer
 │       └── src/
-│           ├── schema/         # 22 Drizzle ORM table definitions
+│           ├── schema/         # 26 Drizzle ORM table definitions
+│           ├── seed/           # Demo data seeder
 │           └── migrations/     # SQL migrations
 ├── infrastructure/
 │   ├── docker/                 # docker-compose.yml (Postgres, Redis, MQTT, ChirpStack)
@@ -186,7 +189,7 @@ All endpoints prefixed with `/api/v1/` unless noted. Full OpenAPI docs at `/api/
 
 ## Database
 
-**22 tables** powered by PostgreSQL + TimescaleDB (via Drizzle ORM):
+**36 tables** across 26 schema files, powered by PostgreSQL + TimescaleDB (via Drizzle ORM):
 
 - **Business**: `dealership_groups`, `dealerships`, `users`, `refresh_tokens`
 - **Inventory**: `units`, `lots`, `lot_spots`, `unit_photos`, `unit_notes`
@@ -199,6 +202,7 @@ All endpoints prefixed with `/api/v1/` unless noted. Full OpenAPI docs at `/api/
 - **Integration**: `api_keys`, `webhook_endpoints`, `webhook_deliveries`, `dms_integrations`, `dms_sync_logs`
 - **Billing**: `billing_events`, `scheduled_reports`, `feature_flags`, `widget_configs`
 - **Multi-location**: `unit_transfers`
+- **Notifications**: `device_tokens`
 
 ## IoT Pipeline
 
@@ -272,6 +276,9 @@ See [`.env.example`](.env.example) for the full list. Key variables:
 | `API_PORT` | No | `3000` | API server port |
 | `MQTT_BROKER_URL` | No | `mqtt://localhost:1883` | ChirpStack MQTT |
 | `CORS_ORIGINS` | No | `localhost:3001,8081` | Allowed origins |
+| `NEXT_PUBLIC_API_URL` | No | `http://localhost:3000/api/v1` | Web dashboard API URL |
+| `NEXT_PUBLIC_WS_URL` | No | `ws://localhost:3000/ws` | Web dashboard WebSocket URL |
+| `COOKIE_SECRET` | Yes | — | Cookie signing secret |
 | `STRIPE_SECRET_KEY` | No | — | Billing integration |
 | `R2_ACCOUNT_ID` | No | — | Cloudflare R2 file storage |
 | `SES_REGION` | No | — | AWS SES email |
@@ -328,7 +335,7 @@ pnpm run db:studio    # Open Drizzle Studio (DB browser)
 | Database | PostgreSQL 16 + TimescaleDB |
 | Cache | Redis 7 |
 | Auth | JWT (access + refresh tokens) + bcrypt |
-| Web | Next.js 15, React 19, Tailwind CSS 4, Mapbox GL |
+| Web | Next.js 15, React 19, Tailwind CSS 4, Mapbox GL, React Context |
 | Mobile | React Native 0.76, React Navigation 7, Zustand |
 | IoT | MQTT (ChirpStack), Redis Streams, Kalman filter |
 | Validation | Zod |
@@ -338,9 +345,10 @@ pnpm run db:studio    # Open Drizzle Studio (DB browser)
 
 ## Codebase Stats
 
-- **265 source files** across 6 packages
+- **265+ source files** across 6 packages
 - **~50,700 lines** of TypeScript
-- **80+ API endpoints** with OpenAPI documentation
-- **22 database tables** with full referential integrity
+- **80+ API endpoints** with OpenAPI documentation (Swagger UI at `/api/docs`)
+- **36 database tables** across 26 schema files with full referential integrity
+- **28 route modules** organized across 11 development phases
 - **11-stage IoT pipeline** with Kalman filtering
 - **0 TypeScript errors** across all packages

@@ -9,8 +9,9 @@
 
 import type Redis from 'ioredis';
 import type { Database } from '@rv-trax/db';
-import { users as usersTable } from '@rv-trax/db';
-import { eq, and, inArray, sql } from 'drizzle-orm';
+import { users as usersTable, dealerships as dealershipsTable } from '@rv-trax/db';
+import { eq, and, inArray } from 'drizzle-orm';
+import type { FastifyBaseLogger } from 'fastify';
 import type { Alert, User } from '@rv-trax/shared';
 import { AlertSeverity } from '@rv-trax/shared';
 import type { NotificationResult, AlertContext } from './types.js';
@@ -55,29 +56,23 @@ export async function dispatchAlert(
   rule: AlertRuleRow,
   db: Database,
   redis: Redis,
+  log: FastifyBaseLogger,
   context?: AlertContext,
 ): Promise<NotificationResult[]> {
   const results: NotificationResult[] = [];
 
-  // 1. Resolve recipients
-  const recipients = await resolveRecipients(rule, db);
+  const recipients = await resolveRecipients(rule, db, log);
   if (recipients.length === 0) {
-    console.warn(
-      `[notify] No recipients found for alert=${alert.id} rule=${rule.id}`,
-    );
+    log.warn({ alertId: alert.id, ruleId: rule.id }, 'No recipients found for alert rule');
     return results;
   }
 
-  // 2. Parse channels from the rule
   const channels = parseChannels(rule.channels);
   if (channels.length === 0) {
-    console.warn(
-      `[notify] No channels configured for rule=${rule.id}`,
-    );
+    log.warn({ ruleId: rule.id }, 'No channels configured for alert rule');
     return results;
   }
 
-  // 3. Dispatch to each recipient on each channel
   for (const user of recipients) {
     for (const channel of channels) {
       try {
@@ -88,14 +83,12 @@ export async function dispatchAlert(
           channel,
           db,
           redis,
+          log,
           context,
         );
         results.push(result);
       } catch (err) {
-        console.error(
-          `[notify] Error dispatching alert=${alert.id} to user=${user.id} channel=${channel}:`,
-          err,
-        );
+        log.error({ alertId: alert.id, userId: user.id, channel, err }, 'Error dispatching notification');
         results.push({
           channel,
           success: false,
@@ -105,11 +98,11 @@ export async function dispatchAlert(
     }
   }
 
-  // 4. Log summary
   const succeeded = results.filter((r) => r.success).length;
   const failed = results.filter((r) => !r.success).length;
-  console.info(
-    `[notify] Alert ${alert.id}: dispatched ${succeeded} ok, ${failed} failed, ${recipients.length} recipients, ${channels.length} channels`,
+  log.info(
+    { alertId: alert.id, succeeded, failed, recipients: recipients.length, channels: channels.length },
+    'Alert dispatch complete',
   );
 
   return results;
@@ -128,10 +121,10 @@ export async function dispatchAlert(
 async function resolveRecipients(
   rule: AlertRuleRow,
   db: Database,
+  log: FastifyBaseLogger,
 ): Promise<User[]> {
   const userMap = new Map<string, User>();
 
-  // Resolve by role
   if (rule.recipientRoles) {
     const roles = parseCommaSeparated(rule.recipientRoles);
     if (roles.length > 0) {
@@ -152,12 +145,11 @@ async function resolveRecipients(
           userMap.set(user.id, user);
         }
       } catch (err) {
-        console.error('[notify] Error querying users by role:', err);
+        log.error({ err, roles }, 'Error querying users by role');
       }
     }
   }
 
-  // Resolve by explicit user IDs
   if (rule.recipientUserIds) {
     const userIds = parseCommaSeparated(rule.recipientUserIds);
     if (userIds.length > 0) {
@@ -177,7 +169,7 @@ async function resolveRecipients(
           userMap.set(user.id, user);
         }
       } catch (err) {
-        console.error('[notify] Error querying users by ID:', err);
+        log.error({ err, userIds }, 'Error querying users by ID');
       }
     }
   }
@@ -197,9 +189,9 @@ async function dispatchToRecipient(
   channel: string,
   db: Database,
   redis: Redis,
+  log: FastifyBaseLogger,
   context?: AlertContext,
 ): Promise<NotificationResult> {
-  // Check rate limit (except in_app which is unlimited)
   const rateLimit = await checkRateLimit(user.id, channel, redis);
   if (!rateLimit.allowed) {
     return {
@@ -209,7 +201,6 @@ async function dispatchToRecipient(
     };
   }
 
-  // Check if user has channel enabled (user preferences stored in Redis)
   const channelEnabled = await isChannelEnabledForUser(user.id, channel, redis);
   if (!channelEnabled) {
     return {
@@ -219,7 +210,6 @@ async function dispatchToRecipient(
     };
   }
 
-  // For non-critical alerts, check digest mode preference
   if (
     alert.severity !== AlertSeverity.CRITICAL &&
     channel === 'email'
@@ -234,13 +224,12 @@ async function dispatchToRecipient(
     }
   }
 
-  // Dispatch based on channel
   switch (channel) {
     case 'in_app':
       return dispatchInApp(alert, user, redis);
 
     case 'push':
-      return dispatchPush(alert, user, db, redis, context);
+      return dispatchPush(alert, user, db, redis, log, context);
 
     case 'email':
       return dispatchEmail(alert, user, db, redis, context);
@@ -273,6 +262,7 @@ async function dispatchPush(
   user: User,
   db: Database,
   redis: Redis,
+  log: FastifyBaseLogger,
   context?: AlertContext,
 ): Promise<NotificationResult> {
   const title = getAlertTitle(alert);
@@ -293,6 +283,7 @@ async function dispatchPush(
     },
     db,
     redis,
+    log,
   );
 
   return { channel: 'push', success };
@@ -453,40 +444,35 @@ function mapDbUserToUser(row: Record<string, unknown>): User {
   };
 }
 
-/**
- * Looks up a dealership for a user to populate email templates.
- */
 async function lookupDealershipForUser(
   user: User,
   db: Database,
 ): Promise<import('@rv-trax/shared').Dealership | null> {
   try {
-    const result = await db.execute(sql`
-      SELECT * FROM dealerships WHERE id = ${user.dealership_id} LIMIT 1
-    `);
+    const rows = await db
+      .select()
+      .from(dealershipsTable)
+      .where(eq(dealershipsTable.id, user.dealership_id))
+      .limit(1);
 
-    const rows = (Array.isArray(result) ? result : (result as any).rows) as
-      Array<Record<string, unknown>> | undefined;
-    if (!rows || rows.length === 0) return null;
-
-    const row = rows[0];
-    if (!row) return null;
+    if (rows.length === 0) return null;
+    const row = rows[0]!;
 
     return {
-      id: row['id'] as string,
-      group_id: (row['group_id'] as string) ?? null,
-      name: row['name'] as string,
-      address: row['address'] as string,
-      city: row['city'] as string,
-      state: row['state'] as string,
-      zip: row['zip'] as string,
+      id: row.id,
+      group_id: row.groupId ?? null,
+      name: row.name,
+      address: row.address,
+      city: row.city,
+      state: row.state,
+      zip: row.zip,
       phone: null,
-      timezone: row['timezone'] as string,
-      subscription_tier: row['subscription_tier'] as import('@rv-trax/shared').Dealership['subscription_tier'],
-      subscription_status: row['subscription_status'] as import('@rv-trax/shared').Dealership['subscription_status'],
-      stripe_customer_id: (row['stripe_customer_id'] as string) ?? null,
-      created_at: row['created_at'] ? String(row['created_at']) : '',
-      updated_at: row['updated_at'] ? String(row['updated_at']) : '',
+      timezone: row.timezone,
+      subscription_tier: row.subscriptionTier as import('@rv-trax/shared').Dealership['subscription_tier'],
+      subscription_status: row.subscriptionStatus as import('@rv-trax/shared').Dealership['subscription_status'],
+      stripe_customer_id: row.stripeCustomerId ?? null,
+      created_at: row.createdAt.toISOString(),
+      updated_at: row.updatedAt.toISOString(),
     };
   } catch {
     return null;

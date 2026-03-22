@@ -6,6 +6,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { Redis } from 'ioredis';
 import type { Database } from '@rv-trax/db';
 import { z } from 'zod';
+import { timingSafeEqual } from 'crypto';
 import { normalizeChirpStackWebhook } from '../mqtt/parser.js';
 import { validateAndEnqueue } from '../validation/validator.js';
 import type { AppConfig, TrackerEvent } from '../types.js';
@@ -63,10 +64,18 @@ export default async function webhookRoutes(
   // ── POST /chirpstack — ChirpStack HTTP integration webhook ────────────
 
   app.post('/chirpstack', async (request: FastifyRequest, reply: FastifyReply) => {
-    // Optional shared secret verification
+    // Optional shared secret verification (timing-safe comparison)
     if (config.chirpstackWebhookSecret) {
       const signature = request.headers['x-chirpstack-signature'];
-      if (signature !== config.chirpstackWebhookSecret) {
+      if (!signature || typeof signature !== 'string') {
+        return reply.status(401).send({
+          error: 'Unauthorized',
+          message: 'Invalid or missing X-ChirpStack-Signature header',
+        });
+      }
+      const expected = Buffer.from(config.chirpstackWebhookSecret);
+      const received = Buffer.from(signature);
+      if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
         return reply.status(401).send({
           error: 'Unauthorized',
           message: 'Invalid or missing X-ChirpStack-Signature header',

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch --env-file=../../.env src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
@@ -16,6 +16,7 @@
     "@aws-sdk/client-sesv2": "^3.995.0",
     "@fastify/cookie": "^11.0.0",
     "@fastify/cors": "^11.0.0",
+    "@fastify/csrf-protection": "^7.1.0",
     "@fastify/helmet": "^13.0.0",
     "@fastify/jwt": "^9.0.0",
     "@fastify/multipart": "^9.0.0",

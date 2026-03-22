@@ -7,6 +7,7 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import cookie from '@fastify/cookie';
+import csrf from '@fastify/csrf-protection';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import multipart from '@fastify/multipart';
@@ -43,7 +44,7 @@ import widgetRoutes from './routes/widget.js';
 import deviceRoutes from './routes/devices.js';
 
 const API_HOST = process.env['API_HOST'] ?? '0.0.0.0';
-const API_PORT = parseInt(process.env['API_PORT'] ?? '3001', 10);
+const API_PORT = parseInt(process.env['API_PORT'] ?? '3000', 10);
 const PKG_VERSION = '0.1.0';
 
 async function buildApp() {
@@ -63,7 +64,7 @@ async function buildApp() {
 
   // ── Third-party plugins ---------------------------------------------------
   await app.register(cors, {
-    origin: process.env['CORS_ORIGIN'] ?? 'http://localhost:3000',
+    origin: (process.env['CORS_ORIGINS'] ?? process.env['CORS_ORIGIN'] ?? 'http://localhost:3001').split(',').map(s => s.trim()),
     credentials: true,
   });
 
@@ -72,7 +73,7 @@ async function buildApp() {
   });
 
   await app.register(rateLimit, {
-    max: 100,
+    max: process.env['NODE_ENV'] === 'production' ? 100 : 1000,
     timeWindow: '1 minute',
   });
 
@@ -88,6 +89,17 @@ async function buildApp() {
   await app.register(multipart, {
     limits: {
       fileSize: 10 * 1024 * 1024, // 10 MB
+    },
+  });
+
+  await app.register(csrf, {
+    sessionPlugin: '@fastify/cookie',
+    cookieOpts: {
+      signed: true,
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env['NODE_ENV'] === 'production',
+      path: '/',
     },
   });
 
@@ -123,6 +135,39 @@ async function buildApp() {
     });
   }
 
+  // ── camelCase → snake_case response serialisation -------------------------
+  // Drizzle returns camelCase but the shared types (and frontend) expect snake_case.
+  function toSnake(str: string): string {
+    return str.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+  }
+
+  function convertKeys(obj: unknown): unknown {
+    if (Array.isArray(obj)) return obj.map(convertKeys);
+    if (obj !== null && typeof obj === 'object' && !(obj instanceof Date)) {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+        out[toSnake(k)] = convertKeys(v);
+      }
+      return out;
+    }
+    return obj;
+  }
+
+  app.addHook('onSend', async (_request, reply, payload) => {
+    if (
+      typeof payload === 'string' &&
+      reply.getHeader('content-type')?.toString().includes('application/json')
+    ) {
+      try {
+        const parsed = JSON.parse(payload);
+        return JSON.stringify(convertKeys(parsed));
+      } catch {
+        return payload;
+      }
+    }
+    return payload;
+  });
+
   // ── Custom plugins --------------------------------------------------------
   await app.register(dbPlugin);
   await app.register(authPlugin);
@@ -141,7 +186,8 @@ async function buildApp() {
     const checks: Record<string, 'ok' | 'fail'> = { db: 'fail', redis: 'fail' };
 
     try {
-      await app.db.execute({ sql: 'SELECT 1' } as any);
+      const { sql: rawSql } = await import('drizzle-orm');
+      await app.db.execute(rawSql`SELECT 1` as any);
       checks['db'] = 'ok';
     } catch { /* db unreachable */ }
 

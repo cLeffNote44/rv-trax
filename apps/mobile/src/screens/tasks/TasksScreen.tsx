@@ -127,7 +127,7 @@ export const TasksScreen: React.FC = () => {
         });
         setTasks((prev) =>
           prev.map((t) =>
-            t.id === task.id ? { ...t, status: 'complete' as any } : t,
+            t.id === task.id ? { ...t, status: 'complete' } : t,
           ),
         );
       } catch {
@@ -227,7 +227,7 @@ export const TasksScreen: React.FC = () => {
             )}
             {isComplete && (
               <View style={styles.completedCheck}>
-                <Text style={styles.completedCheckText}>{'\\u2713'}</Text>
+                <Text style={styles.completedCheckText}>{'\u2713'}</Text>
               </View>
             )}
           </View>

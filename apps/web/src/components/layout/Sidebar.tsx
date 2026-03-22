@@ -30,22 +30,22 @@ import { getUnreadAlertCount } from '@/lib/api';
 
 interface NavItem {
   label: string;
-  href: string;
+  href: import('next').Route;
   icon: React.ElementType;
   badge?: number;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Lot Map', href: '/dashboard/map', icon: Map },
-  { label: 'Inventory', href: '/dashboard/inventory', icon: Package },
-  { label: 'Trackers', href: '/dashboard/trackers', icon: Radio },
-  { label: 'Gateways', href: '/dashboard/gateways', icon: Wifi },
-  { label: 'Alerts', href: '/dashboard/alerts', icon: Bell },
-  { label: 'Service', href: '/dashboard/service', icon: Wrench },
-  { label: 'Staging', href: '/dashboard/staging', icon: LayoutList },
-  { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { label: 'Lot Map', href: '/map', icon: Map },
+  { label: 'Inventory', href: '/inventory', icon: Package },
+  { label: 'Trackers', href: '/trackers', icon: Radio },
+  { label: 'Gateways', href: '/gateways', icon: Wifi },
+  { label: 'Alerts', href: '/alerts', icon: Bell },
+  { label: 'Service', href: '/service', icon: Wrench },
+  { label: 'Staging', href: '/staging', icon: LayoutList },
+  { label: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
 // ---------------------------------------------------------------------------

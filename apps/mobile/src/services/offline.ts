@@ -104,17 +104,17 @@ export function getCachedUnits(): Unit[] {
 
 export function searchCachedUnits(query: string): Unit[] {
   const d = getDb();
-  const pattern = `%${query}%`;
+  const likePattern = `%${query}%`;
   const result = d.execute(
     `SELECT data FROM units_cache
      WHERE data LIKE ? OR data LIKE ? OR data LIKE ? OR data LIKE ?
      ORDER BY updated_at DESC
      LIMIT 50;`,
     [
-      `%"stock_number":"${pattern}%`,
-      `%"vin":"${pattern}%`,
-      `%"make":"${pattern}%`,
-      `%"model":"${pattern}%`,
+      `%"stock_number":"${likePattern}`,
+      `%"vin":"${likePattern}`,
+      `%"make":"${likePattern}`,
+      `%"model":"${likePattern}`,
     ],
   );
 

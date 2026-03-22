@@ -248,7 +248,16 @@ export default async function lotRoutes(app: FastifyInstance): Promise<void> {
     }
 
     const buffer = await file.toBuffer();
-    const ext = file.filename.split('.').pop() ?? 'png';
+
+    // Enforce 10MB file size limit
+    if (buffer.length > 10 * 1024 * 1024) {
+      throw badRequest('Map image must be smaller than 10MB');
+    }
+
+    // Validate file extension against allowlist
+    const ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'];
+    const rawExt = (file.filename.split('.').pop() ?? 'png').toLowerCase().replace(/[^a-z]/g, '');
+    const ext = ALLOWED_EXTENSIONS.includes(rawExt) ? rawExt : 'png';
     const filename = `lot-${id}-map-${Date.now()}.${ext}`;
 
     // Write file to local uploads directory (swap with S3 in production)

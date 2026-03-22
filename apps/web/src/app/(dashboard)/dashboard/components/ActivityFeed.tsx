@@ -29,19 +29,19 @@ const actionIconMap: Record<string, typeof Activity> = {
 };
 
 const actionColorMap: Record<string, string> = {
-  create: 'bg-emerald-100 text-emerald-600',
-  update: 'bg-blue-100 text-blue-600',
-  delete: 'bg-red-100 text-red-600',
-  assign: 'bg-purple-100 text-purple-600',
-  unassign: 'bg-slate-100 text-slate-600',
-  login: 'bg-sky-100 text-sky-600',
-  logout: 'bg-slate-100 text-slate-500',
-  invite: 'bg-indigo-100 text-indigo-600',
-  status_change: 'bg-amber-100 text-amber-600',
+  create: 'bg-emerald-500/15 text-emerald-500',
+  update: 'bg-blue-500/15 text-blue-500',
+  delete: 'bg-red-500/15 text-red-500',
+  assign: 'bg-purple-500/15 text-purple-500',
+  unassign: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
+  login: 'bg-sky-500/15 text-sky-500',
+  logout: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)]',
+  invite: 'bg-indigo-500/15 text-indigo-500',
+  status_change: 'bg-amber-500/15 text-amber-500',
 };
 
 function formatActionDescription(entry: AuditLogEntry): string {
-  const entity = entry.entity_type.replace(/_/g, ' ');
+  const entity = (entry.entity_type ?? 'record').replace(/_/g, ' ');
   switch (entry.action) {
     case 'create':
       return `Created ${entity}`;
@@ -103,10 +103,10 @@ export default function ActivityFeed() {
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-start gap-3 animate-pulse">
-            <div className="h-8 w-8 rounded-full bg-slate-200" />
+            <div className="h-8 w-8 rounded-full bg-[var(--color-bg-tertiary)]" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-3/4 rounded bg-slate-200" />
-              <div className="h-3 w-1/3 rounded bg-slate-100" />
+              <div className="h-4 w-3/4 rounded bg-[var(--color-bg-tertiary)]" />
+              <div className="h-3 w-1/3 rounded bg-[var(--color-bg-secondary)]" />
             </div>
           </div>
         ))}
@@ -116,7 +116,7 @@ export default function ActivityFeed() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center py-8 text-sm text-slate-500">
+      <div className="flex items-center justify-center py-8 text-sm text-[var(--color-text-secondary)]">
         {error}
       </div>
     );
@@ -124,7 +124,7 @@ export default function ActivityFeed() {
 
   if (entries.length === 0) {
     return (
-      <div className="flex items-center justify-center py-8 text-sm text-slate-500">
+      <div className="flex items-center justify-center py-8 text-sm text-[var(--color-text-secondary)]">
         No recent activity
       </div>
     );
@@ -140,7 +140,7 @@ export default function ActivityFeed() {
         return (
           <div
             key={entry.id}
-            className="flex items-start gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-slate-50"
+            className="flex items-start gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-[var(--color-bg-secondary)]"
           >
             <div
               className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${colorClass}`}
@@ -148,10 +148,10 @@ export default function ActivityFeed() {
               <IconComponent className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-[var(--color-text-primary)]">
                 {formatActionDescription(entry)}
               </p>
-              <p className="mt-0.5 text-xs text-slate-400">
+              <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
                 {formatRelativeTime(entry.created_at)}
               </p>
             </div>

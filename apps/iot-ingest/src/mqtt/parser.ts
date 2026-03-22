@@ -169,9 +169,10 @@ export function normalizeChirpStackEvent(
   }
 
   // Prefer device EUI from payload; fall back to topic
-  const deviceEui =
-    uplink.deviceInfo.devEui.toLowerCase() ??
-    parseDeviceEuiFromTopic(topic)?.toLowerCase();
+  const rawEui = uplink.deviceInfo.devEui;
+  const deviceEui = rawEui
+    ? rawEui.toLowerCase()
+    : parseDeviceEuiFromTopic(topic)?.toLowerCase();
 
   if (!deviceEui) {
     return null;

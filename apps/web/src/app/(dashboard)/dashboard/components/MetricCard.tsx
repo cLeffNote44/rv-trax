@@ -13,17 +13,17 @@ interface MetricCardProps {
 }
 
 const colorMap = {
-  default: 'bg-slate-100 text-slate-600',
-  green: 'bg-emerald-100 text-emerald-600',
-  red: 'bg-red-100 text-red-600',
-  yellow: 'bg-amber-100 text-amber-600',
-  blue: 'bg-blue-100 text-blue-600',
+  default: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
+  green: 'bg-emerald-500/15 text-emerald-500',
+  red: 'bg-red-500/15 text-red-500',
+  yellow: 'bg-amber-500/15 text-amber-500',
+  blue: 'bg-blue-500/15 text-blue-500',
 } as const;
 
 const trendColorMap = {
-  up: 'text-emerald-600',
-  down: 'text-red-600',
-  neutral: 'text-slate-500',
+  up: 'text-[var(--color-success)]',
+  down: 'text-[var(--color-error)]',
+  neutral: 'text-[var(--color-text-tertiary)]',
 } as const;
 
 export default function MetricCard({
@@ -42,11 +42,11 @@ export default function MetricCard({
         : 'down';
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
+    <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-slate-500">{title}</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+          <p className="text-sm font-medium text-[var(--color-text-secondary)]">{title}</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-[var(--color-text-primary)]">
             {value}
           </p>
           {trend !== undefined && (
@@ -91,7 +91,7 @@ export default function MetricCard({
                 {trend}%
               </span>
               {trendLabel && (
-                <span className="text-xs text-slate-400">{trendLabel}</span>
+                <span className="text-xs text-[var(--color-text-tertiary)]">{trendLabel}</span>
               )}
             </div>
           )}

@@ -5,64 +5,15 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { eq, and } from 'drizzle-orm';
 import { alertRules } from '@rv-trax/db';
-import { UserRole, AlertSeverity } from '@rv-trax/shared';
+import {
+  UserRole,
+  createAlertRuleSchema,
+  updateAlertRuleSchema,
+  ALERT_RULE_TYPE_SCHEMAS,
+  KNOWN_ALERT_RULE_TYPES,
+} from '@rv-trax/shared';
 import { enforceTenant } from '../middleware/tenant.js';
 import { notFound, validationError, badRequest } from '../utils/errors.js';
-import { z } from 'zod';
-
-// ── Known rule types and their parameter schemas ----------------------------
-
-const RULE_TYPE_SCHEMAS: Record<string, z.ZodType> = {
-  geofence_exit: z.object({
-    geo_fence_id: z.string().uuid().optional(),
-  }),
-  geofence_enter: z.object({
-    geo_fence_id: z.string().uuid().optional(),
-  }),
-  after_hours_movement: z.object({
-    start_hour: z.number().int().min(0).max(23),
-    end_hour: z.number().int().min(0).max(23),
-    timezone: z.string().min(1),
-  }),
-  aged_inventory: z.object({
-    days_threshold: z.number().int().positive().default(90),
-  }),
-  tracker_battery_low: z.object({
-    threshold_pct: z.number().int().min(1).max(100).default(20),
-  }),
-  tracker_offline: z.object({
-    hours_threshold: z.number().positive().default(4),
-  }),
-  gateway_offline: z.object({
-    minutes_threshold: z.number().positive().default(5),
-  }),
-};
-
-const KNOWN_RULE_TYPES = Object.keys(RULE_TYPE_SCHEMAS);
-
-const severityValues = Object.values(AlertSeverity) as [string, ...string[]];
-const channelValues = ['in_app', 'push', 'email', 'sms'] as const;
-const roleValues = Object.values(UserRole) as [string, ...string[]];
-
-// ── Schemas -----------------------------------------------------------------
-
-const createAlertRuleSchema = z.object({
-  rule_type: z.string().min(1),
-  parameters: z.record(z.unknown()).default({}),
-  severity: z.enum(severityValues).default('warning'),
-  channels: z.array(z.enum(channelValues)).default(['in_app']),
-  recipient_roles: z.array(z.enum(roleValues)).optional(),
-  recipient_user_ids: z.array(z.string().uuid()).optional(),
-});
-
-const updateAlertRuleSchema = z.object({
-  parameters: z.record(z.unknown()).optional(),
-  severity: z.enum(severityValues).optional(),
-  channels: z.array(z.enum(channelValues)).optional(),
-  recipient_roles: z.array(z.enum(roleValues)).optional(),
-  recipient_user_ids: z.array(z.string().uuid()).optional(),
-  is_active: z.boolean().optional(),
-});
 
 // ---------------------------------------------------------------------------
 // Route registration
@@ -80,14 +31,14 @@ export default async function alertRuleRoutes(app: FastifyInstance): Promise<voi
     const body = createAlertRuleSchema.parse(request.body);
 
     // Validate rule_type is known
-    if (!KNOWN_RULE_TYPES.includes(body.rule_type)) {
+    if (!KNOWN_ALERT_RULE_TYPES.includes(body.rule_type)) {
       throw validationError(
-        `Unknown rule_type "${body.rule_type}". Valid types: ${KNOWN_RULE_TYPES.join(', ')}`,
+        `Unknown rule_type "${body.rule_type}". Valid types: ${KNOWN_ALERT_RULE_TYPES.join(', ')}`,
       );
     }
 
     // Validate parameters match expected schema for the rule type
-    const paramSchema = RULE_TYPE_SCHEMAS[body.rule_type]!;
+    const paramSchema = ALERT_RULE_TYPE_SCHEMAS[body.rule_type]!;
     const paramResult = paramSchema.safeParse(body.parameters);
     if (!paramResult.success) {
       throw validationError(
@@ -161,7 +112,7 @@ export default async function alertRuleRoutes(app: FastifyInstance): Promise<voi
 
     if (body.parameters !== undefined) {
       // Validate parameters against the existing rule type
-      const paramSchema = RULE_TYPE_SCHEMAS[existing.ruleType];
+      const paramSchema = ALERT_RULE_TYPE_SCHEMAS[existing.ruleType];
       if (paramSchema) {
         const paramResult = paramSchema.safeParse(body.parameters);
         if (!paramResult.success) {

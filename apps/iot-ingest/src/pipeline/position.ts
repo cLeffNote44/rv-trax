@@ -26,16 +26,17 @@ export async function calculatePosition(
   let result: PositionResult | null = null;
 
   // 1. Try GPS if we have coordinates and accuracy is reasonable
+  //    When accuracy_meters is null (e.g. ChirpStack doesn't provide it),
+  //    treat the GPS fix as valid with a default accuracy of 10m.
   if (
     event.latitude !== null &&
     event.longitude !== null &&
-    event.accuracy_meters !== null &&
-    event.accuracy_meters < 20
+    (event.accuracy_meters === null || event.accuracy_meters < 20)
   ) {
     result = {
       latitude: event.latitude,
       longitude: event.longitude,
-      accuracy: event.accuracy_meters,
+      accuracy: event.accuracy_meters ?? 10,
       source: 'gps' as LocationSource,
     };
   }

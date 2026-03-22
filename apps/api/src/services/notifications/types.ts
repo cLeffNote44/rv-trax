@@ -96,7 +96,7 @@ export interface ResolvedRecipient {
   channels: string[];
 }
 
-// ── FCM Message (for push.ts placeholder) ────────────────────────────────────
+// ── FCM Message ──────────────────────────────────────────────────────────────
 
 export interface FcmMessage {
   token: string;

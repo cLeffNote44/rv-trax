@@ -100,7 +100,9 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
       });
     } else {
       removeToken();
-      if (typeof window !== 'undefined') {
+      // Only redirect if not already on the login page — avoids infinite loops.
+      // The AuthProvider will handle redirect for authenticated pages.
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
         window.location.href = '/login';
       }
       throw new ApiError('Session expired', 'AUTH_EXPIRED', 401);
@@ -166,8 +168,15 @@ export function logout(): Promise<void> {
   return apiFetch<void>('/auth/logout', { method: 'POST' });
 }
 
-export function getMe(): Promise<User> {
-  return apiFetch<User>('/auth/me');
+export async function getMe(): Promise<User> {
+  // Use a direct fetch without the 401-redirect logic to avoid
+  // infinite redirect loops when checking auth state on mount
+  const url = `${BASE_URL}/auth/me`;
+  const res = await fetch(url, { credentials: 'include' });
+  if (!res.ok) {
+    throw new Error('Not authenticated');
+  }
+  return res.json() as Promise<User>;
 }
 
 // ---------------------------------------------------------------------------

@@ -3,34 +3,18 @@
 // ---------------------------------------------------------------------------
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { eq, and, ne, count, desc, gt, gte, lte, inArray } from 'drizzle-orm';
+import { eq, and, ne, count, desc, lt, gte, lte, inArray } from 'drizzle-orm';
 import { alerts, units, trackers, gateways, geoFences } from '@rv-trax/db';
-import { AlertSeverity, AlertStatus } from '@rv-trax/shared';
+import {
+  AlertSeverity,
+  AlertStatus,
+  alertQuerySchema,
+  snoozeAlertSchema,
+  bulkAcknowledgeSchema,
+} from '@rv-trax/shared';
 import { enforceTenant } from '../middleware/tenant.js';
 import { notFound, badRequest } from '../utils/errors.js';
 import { decodeCursor, encodeCursor } from '../utils/pagination.js';
-import { z } from 'zod';
-
-// ── Schemas -----------------------------------------------------------------
-
-const alertQuerySchema = z.object({
-  status: z.string().optional(),
-  severity: z.string().optional(),
-  alert_type: z.string().optional(),
-  unit_id: z.string().uuid().optional(),
-  from: z.string().optional(),
-  to: z.string().optional(),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
-  cursor: z.string().optional(),
-});
-
-const snoozeSchema = z.object({
-  duration: z.enum(['1h', '4h', '24h']),
-});
-
-const bulkAcknowledgeSchema = z.object({
-  alert_ids: z.array(z.string().uuid()).min(1).max(100),
-});
 
 // ── Duration map ------------------------------------------------------------
 
@@ -84,7 +68,7 @@ export default async function alertRoutes(app: FastifyInstance): Promise<void> {
 
     if (query.cursor) {
       const decodedId = decodeCursor(query.cursor);
-      conditions.push(gt(alerts.id, decodedId));
+      conditions.push(lt(alerts.id, decodedId));
     }
 
     const where = and(...conditions);
@@ -343,7 +327,7 @@ export default async function alertRoutes(app: FastifyInstance): Promise<void> {
 
   app.post('/:id/snooze', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
-    const body = snoozeSchema.parse(request.body);
+    const body = snoozeAlertSchema.parse(request.body);
 
     const [existing] = await app.db
       .select({ id: alerts.id })
@@ -360,7 +344,10 @@ export default async function alertRoutes(app: FastifyInstance): Promise<void> {
       throw notFound('Alert not found');
     }
 
-    const durationMs = SNOOZE_DURATIONS[body.duration]!;
+    const durationMs = SNOOZE_DURATIONS[body.duration];
+    if (!durationMs) {
+      throw badRequest(`Invalid snooze duration: ${body.duration}. Must be one of: 1h, 4h, 24h`);
+    }
     const snoozedUntil = new Date(Date.now() + durationMs);
 
     const [updated] = await app.db

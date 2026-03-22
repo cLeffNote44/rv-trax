@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { Fragment, useState, useMemo } from 'react';
 import {
   createColumnHelper,
   type ColumnDef,
@@ -324,9 +324,8 @@ export function TrackerTable({
             </tr>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <>
+              <Fragment key={row.id}>
                 <tr
-                  key={row.id}
                   className={cn(
                     'border-b border-[var(--color-border)] transition-colors hover:bg-[var(--color-bg-secondary)]',
                     'cursor-pointer'
@@ -354,7 +353,7 @@ export function TrackerTable({
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))
           )}
         </tbody>

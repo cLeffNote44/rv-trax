@@ -58,8 +58,8 @@ describe('Admin Routes', () => {
       const first = data[0] as Record<string, unknown>;
       expect(first).toHaveProperty('id');
       expect(first).toHaveProperty('name');
-      expect(first).toHaveProperty('subscriptionTier');
-      expect(first).toHaveProperty('unitCount');
+      expect(first).toHaveProperty('subscription_tier');
+      expect(first).toHaveProperty('unit_count');
     });
 
     it('returns 403 without admin token', async () => {

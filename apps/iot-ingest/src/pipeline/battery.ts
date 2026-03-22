@@ -85,7 +85,7 @@ export async function checkBattery(
       message,
       unitId: unit.id,
       trackerId: tracker.id,
-      status: 'new',
+      status: 'new_alert',
     })
     .returning({ id: alerts.id });
 
@@ -106,8 +106,8 @@ export async function checkBattery(
       timestamp: new Date().toISOString(),
     });
 
-    await redis.publish(`alerts:${dealership.id}`, alertPayload).catch((err) => {
-      console.error('[battery] Failed to publish alert to Redis:', err);
+    await redis.publish(`alerts:${dealership.id}`, alertPayload).catch(() => {
+      // Redis pub/sub failure is non-fatal; alert is already persisted in DB
     });
   }
 

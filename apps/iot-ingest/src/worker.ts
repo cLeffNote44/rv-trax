@@ -283,7 +283,7 @@ function deserializeStreamFields(fields: string[]): TrackerEvent {
     snr: parseFloat(map.snr ?? '0'),
     battery_mv: parseInt(map.battery_mv ?? '0', 10),
     battery_pct: parseInt(map.battery_pct ?? '0', 10),
-    motion_detected: map.motion_detected === 'true',
+    motion_detected: map.motion_detected === '1' || map.motion_detected === 'true',
     gateway_id: map.gateway_id ?? '',
     gateway_rssi: parseInt(map.gateway_rssi ?? map.rssi ?? '-100', 10),
     raw_payload: map.raw_payload ?? null,

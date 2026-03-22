@@ -50,7 +50,7 @@ export async function registerPhase4Routes(app: FastifyInstance): Promise<void> 
 
   // ── Gateway monitor --------------------------------------------------------
 
-  startGatewayMonitor(app.db, app.redis);
+  startGatewayMonitor(app.db, app.redis, app.log);
 
   // Stop on close
   app.addHook('onClose', async () => {

@@ -340,7 +340,7 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
     const valuesToInsert: Array<typeof units.$inferInsert> = [];
 
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i]!.split(',').map((v) => v.trim());
+      const values = parseCSVLine(lines[i]!);
       const row: Record<string, string> = {};
       headers.forEach((h, idx) => {
         row[h] = values[idx] ?? '';
@@ -480,6 +480,40 @@ function getSortColumn(sortBy: string) {
     case 'updated_at': return units.updatedAt;
     default: return units.createdAt;
   }
+}
+
+/**
+ * Parse a single CSV line, respecting quoted fields that may contain commas.
+ */
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]!;
+    if (inQuotes) {
+      if (char === '"' && line[i + 1] === '"') {
+        current += '"';
+        i++; // Skip escaped quote
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        current += char;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+  }
+  result.push(current.trim());
+  return result;
 }
 
 function escapeCsv(value: string): string {

@@ -124,8 +124,8 @@ declare module '@react-native-community/netinfo' {
 }
 
 declare module 'react-native-maps' {
-  import type { Component, PropsWithChildren, ReactNode } from 'react';
-  import type { StyleProp, ViewProps, ViewStyle } from 'react-native';
+  import type { Component, ReactNode } from 'react';
+  import type { StyleProp, ViewStyle } from 'react-native';
 
   export interface Region {
     latitude: number;

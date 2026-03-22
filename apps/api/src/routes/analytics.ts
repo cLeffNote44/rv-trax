@@ -17,8 +17,8 @@ import {
 // ── Local query schema ----------------------------------------------------
 
 const analyticsQuerySchema = z.object({
-  from: z.string().optional(),
-  to: z.string().optional(),
+  from: z.string().datetime({ offset: true }).or(z.string().date()).optional(),
+  to: z.string().datetime({ offset: true }).or(z.string().date()).optional(),
   lot_id: z.string().uuid().optional(),
 });
 

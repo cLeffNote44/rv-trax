@@ -13,19 +13,21 @@
     "db:migrate": "turbo run db:migrate --filter=@rv-trax/db",
     "db:seed": "turbo run db:seed --filter=@rv-trax/db",
     "db:studio": "turbo run db:studio --filter=@rv-trax/db",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "clean": "turbo run clean && rm -rf node_modules"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
+    "playwright": "^1.58.2",
     "prettier": "^3.4.0",
     "turbo": "^2.3.0",
     "typescript": "^5.7.0"
   },
   "pnpm": {
     "overrides": {
-      "@types/react": "^18.3.0",
       "drizzle-orm": "^0.38.0"
     }
   },

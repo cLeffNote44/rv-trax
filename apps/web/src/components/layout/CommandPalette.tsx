@@ -14,7 +14,7 @@ import type { Unit } from '@rv-trax/shared';
 interface PageResult {
   id: string;
   label: string;
-  href: string;
+  href: import('next').Route;
   group: 'Pages';
 }
 
@@ -22,7 +22,7 @@ interface UnitResult {
   id: string;
   label: string;
   sublabel: string;
-  href: string;
+  href: import('next').Route;
   group: 'Units';
 }
 
@@ -37,11 +37,11 @@ type SearchResult = PageResult | UnitResult | ActionResult;
 
 const PAGE_RESULTS: PageResult[] = [
   { id: 'p-dashboard', label: 'Dashboard', href: '/dashboard', group: 'Pages' },
-  { id: 'p-map', label: 'Lot Map', href: '/dashboard/map', group: 'Pages' },
-  { id: 'p-inventory', label: 'Inventory', href: '/dashboard/inventory', group: 'Pages' },
-  { id: 'p-trackers', label: 'Trackers', href: '/dashboard/trackers', group: 'Pages' },
-  { id: 'p-alerts', label: 'Alerts', href: '/dashboard/alerts', group: 'Pages' },
-  { id: 'p-settings', label: 'Settings', href: '/dashboard/settings', group: 'Pages' },
+  { id: 'p-map', label: 'Lot Map', href: '/map', group: 'Pages' },
+  { id: 'p-inventory', label: 'Inventory', href: '/inventory', group: 'Pages' },
+  { id: 'p-trackers', label: 'Trackers', href: '/trackers', group: 'Pages' },
+  { id: 'p-alerts', label: 'Alerts', href: '/alerts', group: 'Pages' },
+  { id: 'p-settings', label: 'Settings', href: '/settings', group: 'Pages' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -108,7 +108,7 @@ export function CommandPalette() {
           id: `u-${u.id}`,
           label: `#${u.stock_number}`,
           sublabel: `${u.year} ${u.make} ${u.model}`,
-          href: `/dashboard/inventory/${u.id}`,
+          href: `/inventory/${u.id}` as import('next').Route,
           group: 'Units' as const,
         }));
         setResults((prev) => {

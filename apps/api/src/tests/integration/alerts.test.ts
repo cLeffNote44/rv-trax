@@ -228,8 +228,8 @@ describe('Alert Routes', () => {
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
       expect(data['status']).toBe('acknowledged');
-      expect(data['acknowledgedBy']).toBe(userId);
-      expect(data['acknowledgedAt']).not.toBeNull();
+      expect(data['acknowledged_by']).toBe(userId);
+      expect(data['acknowledged_at']).not.toBeNull();
     });
 
     it('rejects acknowledging an already acknowledged alert with 400', async () => {
@@ -314,7 +314,7 @@ describe('Alert Routes', () => {
       const body = response.json() as Record<string, unknown>;
       const data = body['data'] as Record<string, unknown>;
       expect(data['status']).toBe('snoozed');
-      expect(data['snoozedUntil']).not.toBeNull();
+      expect(data['snoozed_until']).not.toBeNull();
     });
 
     it('snoozes an alert for 24 hours', async () => {

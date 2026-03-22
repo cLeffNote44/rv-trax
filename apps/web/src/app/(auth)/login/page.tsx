@@ -48,7 +48,9 @@ export default function LoginPage() {
     try {
       await login(data);
       const redirect = searchParams.get('redirect') ?? '/dashboard';
-      router.push(redirect);
+      // Prevent open redirect attacks — only allow relative paths
+      const safeRedirect = redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/dashboard';
+      router.push(safeRedirect as import('next').Route);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Login failed. Please try again.'

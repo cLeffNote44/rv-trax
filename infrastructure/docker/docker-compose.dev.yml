@@ -6,7 +6,7 @@ services:
       dockerfile: infrastructure/docker/Dockerfile.dev
     container_name: rvtrax-api-dev
     ports:
-      - "${API_PORT:-3001}:3001"
+      - "${API_PORT:-3000}:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -18,10 +18,10 @@ services:
       JWT_SECRET: dev-jwt-secret-change-in-production-64chars-minimum-padding1234
       COOKIE_SECRET: dev-cookie-secret-change-in-production
       API_HOST: "0.0.0.0"
-      API_PORT: "3001"
+      API_PORT: "3000"
       NODE_ENV: development
       LOG_LEVEL: debug
-      CORS_ORIGIN: "http://localhost:3000"
+      CORS_ORIGIN: "http://localhost:3001"
       ADMIN_TOKEN: dev-admin-token
     volumes:
       - ../../:/app
@@ -29,7 +29,7 @@ services:
     working_dir: /app
     command: pnpm --filter @rv-trax/api dev
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3001/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))\""]
       interval: 15s
       timeout: 5s
       start_period: 15s

@@ -4,16 +4,20 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { eq, and } from 'drizzle-orm';
-import { dealerships, featureFlags } from '@rv-trax/db';
+import bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
+import { dealerships, featureFlags, users } from '@rv-trax/db';
 import {
   updateDealershipSettingsSchema,
   setFeatureFlagSchema,
+  inviteUserSchema,
   AuditAction,
   UserRole,
 } from '@rv-trax/shared';
 import { enforceTenant } from '../middleware/tenant.js';
-import { notFound } from '../utils/errors.js';
+import { notFound, conflict, badRequest } from '../utils/errors.js';
 import { logAction } from '../services/audit.js';
+import { z } from 'zod';
 
 export default async function settingsRoutes(app: FastifyInstance): Promise<void> {
   // All routes require auth + tenant
@@ -130,6 +134,8 @@ export default async function settingsRoutes(app: FastifyInstance): Promise<void
         )
         .limit(1);
 
+      let flagId: string;
+
       if (existing) {
         // Update existing flag
         await app.db
@@ -139,13 +145,15 @@ export default async function settingsRoutes(app: FastifyInstance): Promise<void
             updatedAt: new Date(),
           })
           .where(eq(featureFlags.id, existing.id));
+        flagId = existing.id;
       } else {
         // Insert new flag
-        await app.db.insert(featureFlags).values({
+        const [inserted] = await app.db.insert(featureFlags).values({
           dealershipId: request.dealershipId,
           feature: body.feature,
           enabled: body.enabled,
-        });
+        }).returning();
+        flagId = inserted!.id;
       }
 
       await logAction(app.db, {
@@ -153,7 +161,7 @@ export default async function settingsRoutes(app: FastifyInstance): Promise<void
         userId: request.user.sub,
         action: existing ? AuditAction.UPDATE : AuditAction.CREATE,
         entityType: 'feature_flag',
-        entityId: body.feature,
+        entityId: flagId,
         changes: { feature: body.feature, enabled: body.enabled },
         ipAddress: request.ip,
       });
@@ -164,6 +172,205 @@ export default async function settingsRoutes(app: FastifyInstance): Promise<void
           enabled: body.enabled,
         },
       });
+    },
+  );
+
+  // ── GET /users — list all users for dealership ──────────────────────────
+
+  app.get('/users', async (request: FastifyRequest, reply: FastifyReply) => {
+    const rows = await app.db
+      .select({
+        id: users.id,
+        dealershipId: users.dealershipId,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        avatarUrl: users.avatarUrl,
+        isActive: users.isActive,
+        lastLoginAt: users.lastLoginAt,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      })
+      .from(users)
+      .where(eq(users.dealershipId, request.dealershipId))
+      .orderBy(users.name);
+
+    return reply.status(200).send({ data: rows });
+  });
+
+  // ── POST /users — invite a new user ─────────────────────────────────────
+
+  app.post(
+    '/users',
+    { preHandler: [app.requireRole(UserRole.OWNER, UserRole.MANAGER)] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const body = inviteUserSchema.parse(request.body);
+
+      const normalizedEmail = body.email.toLowerCase().trim();
+
+      const [existing] = await app.db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, normalizedEmail))
+        .limit(1);
+
+      if (existing) {
+        throw conflict('A user with this email already exists');
+      }
+
+      const tempPassword = `Temp${randomBytes(8).toString('hex')}!1A`;
+      const passwordHash = await bcrypt.hash(tempPassword, 12);
+
+      const [user] = await app.db
+        .insert(users)
+        .values({
+          dealershipId: request.dealershipId,
+          email: normalizedEmail,
+          name: body.name,
+          role: body.role,
+          passwordHash,
+          invitedBy: request.user.sub,
+        })
+        .returning({
+          id: users.id,
+          dealershipId: users.dealershipId,
+          email: users.email,
+          name: users.name,
+          role: users.role,
+          isActive: users.isActive,
+          createdAt: users.createdAt,
+        });
+
+      await logAction(app.db, {
+        dealershipId: request.dealershipId,
+        userId: request.user.sub,
+        action: AuditAction.CREATE,
+        entityType: 'user',
+        entityId: user!.id,
+        changes: { email: body.email, role: body.role },
+        ipAddress: request.ip,
+      });
+
+      return reply.status(201).send({ data: user });
+    },
+  );
+
+  // ── PATCH /users/:id — update user ──────────────────────────────────────
+
+  const updateUserSchema = z.object({
+    name: z.string().min(1).optional(),
+    role: z.enum([UserRole.OWNER, UserRole.MANAGER, UserRole.SALES, UserRole.SERVICE, UserRole.PORTER, UserRole.VIEWER]).optional(),
+    is_active: z.boolean().optional(),
+  });
+
+  app.patch(
+    '/users/:id',
+    { preHandler: [app.requireRole(UserRole.OWNER, UserRole.MANAGER)] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+      const body = updateUserSchema.parse(request.body);
+
+      const [existing] = await app.db
+        .select({ id: users.id, role: users.role })
+        .from(users)
+        .where(
+          and(
+            eq(users.id, id),
+            eq(users.dealershipId, request.dealershipId),
+          ),
+        )
+        .limit(1);
+
+      if (!existing) {
+        throw notFound('User not found');
+      }
+
+      // Prevent self-escalation: users cannot change their own role
+      if (body.role !== undefined && id === request.user.sub) {
+        throw badRequest('Cannot change your own role');
+      }
+
+      // Prevent managers from setting role to owner
+      if (body.role === UserRole.OWNER && request.user.role !== UserRole.OWNER) {
+        throw badRequest('Only owners can assign the owner role');
+      }
+
+      const updates: Record<string, unknown> = { updatedAt: new Date() };
+      if (body.name !== undefined) updates['name'] = body.name;
+      if (body.role !== undefined) updates['role'] = body.role;
+      if (body.is_active !== undefined) updates['isActive'] = body.is_active;
+
+      if (Object.keys(updates).length <= 1) {
+        throw badRequest('No updatable fields provided');
+      }
+
+      const [updated] = await app.db
+        .update(users)
+        .set(updates)
+        .where(eq(users.id, id))
+        .returning({
+          id: users.id,
+          dealershipId: users.dealershipId,
+          email: users.email,
+          name: users.name,
+          role: users.role,
+          isActive: users.isActive,
+          updatedAt: users.updatedAt,
+        });
+
+      await logAction(app.db, {
+        dealershipId: request.dealershipId,
+        userId: request.user.sub,
+        action: AuditAction.UPDATE,
+        entityType: 'user',
+        entityId: id,
+        changes: body as Record<string, unknown>,
+        ipAddress: request.ip,
+      });
+
+      return reply.status(200).send({ data: updated });
+    },
+  );
+
+  // ── DELETE /users/:id — remove user ─────────────────────────────────────
+
+  app.delete(
+    '/users/:id',
+    { preHandler: [app.requireRole(UserRole.OWNER)] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { id } = request.params as { id: string };
+
+      if (id === request.user.sub) {
+        throw badRequest('Cannot delete your own account');
+      }
+
+      const [existing] = await app.db
+        .select({ id: users.id })
+        .from(users)
+        .where(
+          and(
+            eq(users.id, id),
+            eq(users.dealershipId, request.dealershipId),
+          ),
+        )
+        .limit(1);
+
+      if (!existing) {
+        throw notFound('User not found');
+      }
+
+      await app.db.delete(users).where(eq(users.id, id));
+
+      await logAction(app.db, {
+        dealershipId: request.dealershipId,
+        userId: request.user.sub,
+        action: AuditAction.DELETE,
+        entityType: 'user',
+        entityId: id,
+        ipAddress: request.ip,
+      });
+
+      return reply.status(200).send({ message: 'User deleted successfully' });
     },
   );
 }

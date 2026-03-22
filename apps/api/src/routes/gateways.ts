@@ -5,36 +5,16 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { eq, and, desc, gte, count } from 'drizzle-orm';
 import { gateways, gatewayTelemetry } from '@rv-trax/db';
-import { AuditAction, GatewayStatus } from '@rv-trax/shared';
+import {
+  AuditAction,
+  GatewayStatus,
+  createGatewaySchema,
+  updateGatewaySchema,
+} from '@rv-trax/shared';
 import { enforceTenant } from '../middleware/tenant.js';
 import { notFound, badRequest, conflict } from '../utils/errors.js';
 import { logAction } from '../services/audit.js';
 import { sql } from 'drizzle-orm';
-
-// ── Interfaces for request bodies ------------------------------------------
-
-interface CreateGatewayBody {
-  gateway_eui: string;
-  name?: string;
-  lot_id?: string;
-  backhaul_type?: string;
-  latitude?: number;
-  longitude?: number;
-}
-
-interface UpdateGatewayBody {
-  name?: string;
-  lot_id?: string;
-  backhaul_type?: string;
-  latitude?: number;
-  longitude?: number;
-}
-
-interface TelemetryQuery {
-  from?: string;
-  to?: string;
-  interval?: string;
-}
 
 // ── Gateway offline threshold (5 minutes) ----------------------------------
 
@@ -96,11 +76,7 @@ export default async function gatewayRoutes(app: FastifyInstance): Promise<void>
   // ── POST / — register gateway ----------------------------------------------
 
   app.post('/', async (request: FastifyRequest, reply: FastifyReply) => {
-    const body = request.body as CreateGatewayBody;
-
-    if (!body.gateway_eui || body.gateway_eui.trim().length === 0) {
-      throw badRequest('gateway_eui is required');
-    }
+    const body = createGatewaySchema.parse(request.body);
 
     // Check for duplicate gateway_eui
     const existing = await app.db
@@ -143,7 +119,7 @@ export default async function gatewayRoutes(app: FastifyInstance): Promise<void>
 
   app.patch('/:id', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
-    const body = request.body as UpdateGatewayBody;
+    const body = updateGatewaySchema.parse(request.body);
 
     const [existing] = await app.db
       .select()
@@ -164,8 +140,8 @@ export default async function gatewayRoutes(app: FastifyInstance): Promise<void>
     if (body.name !== undefined) updates['name'] = body.name;
     if (body.lot_id !== undefined) updates['lotId'] = body.lot_id;
     if (body.backhaul_type !== undefined) updates['backhaulType'] = body.backhaul_type;
-    if (body.latitude !== undefined) updates['latitude'] = body.latitude?.toString();
-    if (body.longitude !== undefined) updates['longitude'] = body.longitude?.toString();
+    if (body.latitude !== undefined) updates['latitude'] = String(body.latitude);
+    if (body.longitude !== undefined) updates['longitude'] = String(body.longitude);
 
     if (Object.keys(updates).length === 0) {
       return reply.status(200).send({ data: existing });
@@ -228,7 +204,7 @@ export default async function gatewayRoutes(app: FastifyInstance): Promise<void>
 
   app.get('/:id/telemetry', async (request: FastifyRequest, reply: FastifyReply) => {
     const { id } = request.params as { id: string };
-    const query = request.query as TelemetryQuery;
+    const query = request.query as { from?: string; to?: string; interval?: string };
 
     // Verify gateway belongs to dealership
     const [gateway] = await app.db
@@ -248,10 +224,15 @@ export default async function gatewayRoutes(app: FastifyInstance): Promise<void>
 
     const from = query.from ? new Date(query.from) : new Date(Date.now() - 24 * 60 * 60 * 1000);
     const to = query.to ? new Date(query.to) : new Date();
+    const VALID_INTERVALS = [1, 5, 10, 15, 30, 60];
     const intervalMinutes = query.interval ? parseInt(query.interval, 10) : 5;
 
     if (isNaN(from.getTime()) || isNaN(to.getTime())) {
       throw badRequest('Invalid date format for "from" or "to" parameter');
+    }
+
+    if (!VALID_INTERVALS.includes(intervalMinutes)) {
+      throw badRequest(`Invalid interval. Must be one of: ${VALID_INTERVALS.join(', ')}`);
     }
 
     // For 5-minute aggregates, use time_bucket if available (TimescaleDB),

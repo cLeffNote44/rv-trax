@@ -1,11 +1,12 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import type { Route } from 'next';
 import { Card } from '@/components/ui/Card';
 import Link from 'next/link';
 
 interface SettingsLink {
-  href: string;
+  href: Route;
   title: string;
   description: string;
   icon: ReactNode;
