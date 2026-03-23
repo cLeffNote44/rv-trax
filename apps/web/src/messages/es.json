@@ -1,0 +1,108 @@
+{
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "loading": "Cargando...",
+    "error": "Algo sali\u00f3 mal",
+    "retry": "Reintentar",
+    "back": "Atr\u00e1s",
+    "next": "Siguiente",
+    "confirm": "Confirmar",
+    "close": "Cerrar",
+    "noResults": "No se encontraron resultados",
+    "viewAll": "Ver Todo"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "lotMap": "Mapa del Lote",
+    "inventory": "Inventario",
+    "trackers": "Rastreadores",
+    "gateways": "Puertas de Enlace",
+    "alerts": "Alertas",
+    "testDrives": "Pruebas de Manejo",
+    "service": "Servicio",
+    "audits": "Auditor\u00edas",
+    "activity": "Actividad",
+    "staging": "Preparaci\u00f3n",
+    "analytics": "An\u00e1lisis",
+    "settings": "Configuraci\u00f3n"
+  },
+  "dashboard": {
+    "title": "Panel",
+    "subtitle": "Resumen de su inventario de lote y estado de rastreadores",
+    "customize": "Personalizar",
+    "saveLayout": "Guardar Dise\u00f1o",
+    "reset": "Restablecer",
+    "totalUnits": "Unidades Totales",
+    "available": "Disponibles",
+    "soldThisMonth": "Vendidas Este Mes",
+    "inService": "En Servicio",
+    "avgDaysOnLot": "D\u00edas Promedio en Lote"
+  },
+  "inventory": {
+    "title": "Inventario",
+    "addUnit": "Agregar Unidad",
+    "stockNumber": "Stock #",
+    "vin": "VIN",
+    "make": "Marca",
+    "model": "Modelo",
+    "year": "A\u00f1o",
+    "status": "Estado",
+    "msrp": "MSRP",
+    "daysOnLot": "D\u00edas en Lote"
+  },
+  "audits": {
+    "title": "Auditor\u00edas de Plan de Piso",
+    "subtitle": "Verificaci\u00f3n mensual de inventario para prestamistas de plan de piso",
+    "startAudit": "Iniciar Nueva Auditor\u00eda",
+    "completeAudit": "Completar Auditor\u00eda",
+    "totalUnits": "Unidades Totales",
+    "verified": "Verificadas",
+    "missing": "Faltantes",
+    "mislocated": "Mal Ubicadas",
+    "pending": "Pendientes"
+  },
+  "activity": {
+    "title": "Actividad del Personal",
+    "subtitle": "Rastree qui\u00e9n hizo qu\u00e9 en su concesionario",
+    "refresh": "Actualizar",
+    "actionsToday": "Acciones Hoy",
+    "activeStaff": "Personal Activo",
+    "actionTypes": "Tipos de Acci\u00f3n",
+    "avgActions": "Acciones Prom. / Personal"
+  },
+  "serviceBays": {
+    "title": "Bah\u00edas de Servicio",
+    "subtitle": "Rastree unidades a trav\u00e9s de las etapas de servicio",
+    "addBay": "Agregar Bah\u00eda",
+    "checkIn": "Registrar Entrada",
+    "checkOut": "Registrar Salida",
+    "advance": "Avanzar",
+    "stages": {
+      "checked_in": "Registrado",
+      "diagnosis": "Diagn\u00f3stico",
+      "in_repair": "En Reparaci\u00f3n",
+      "quality_check": "Control de Calidad",
+      "ready": "Listo"
+    }
+  },
+  "auth": {
+    "signIn": "Iniciar Sesi\u00f3n",
+    "signOut": "Cerrar Sesi\u00f3n",
+    "email": "Correo Electr\u00f3nico",
+    "password": "Contrase\u00f1a",
+    "forgotPassword": "\u00bfOlvidaste tu contrase\u00f1a?",
+    "resetIt": "Restabl\u00e9cela"
+  },
+  "settings": {
+    "title": "Configuraci\u00f3n",
+    "dealership": "Concesionario",
+    "users": "Usuarios",
+    "notifications": "Notificaciones",
+    "billing": "Facturaci\u00f3n"
+  }
+}

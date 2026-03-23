@@ -1,0 +1,108 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "back": "Back",
+    "next": "Next",
+    "confirm": "Confirm",
+    "close": "Close",
+    "noResults": "No results found",
+    "viewAll": "View All"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "lotMap": "Lot Map",
+    "inventory": "Inventory",
+    "trackers": "Trackers",
+    "gateways": "Gateways",
+    "alerts": "Alerts",
+    "testDrives": "Test Drives",
+    "service": "Service",
+    "audits": "Audits",
+    "activity": "Activity",
+    "staging": "Staging",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of your lot inventory and tracker health",
+    "customize": "Customize",
+    "saveLayout": "Save Layout",
+    "reset": "Reset",
+    "totalUnits": "Total Units",
+    "available": "Available",
+    "soldThisMonth": "Sold This Month",
+    "inService": "In Service",
+    "avgDaysOnLot": "Avg Days on Lot"
+  },
+  "inventory": {
+    "title": "Inventory",
+    "addUnit": "Add Unit",
+    "stockNumber": "Stock #",
+    "vin": "VIN",
+    "make": "Make",
+    "model": "Model",
+    "year": "Year",
+    "status": "Status",
+    "msrp": "MSRP",
+    "daysOnLot": "Days on Lot"
+  },
+  "audits": {
+    "title": "Floor Plan Audits",
+    "subtitle": "Monthly inventory verification for floor plan lenders",
+    "startAudit": "Start New Audit",
+    "completeAudit": "Complete Audit",
+    "totalUnits": "Total Units",
+    "verified": "Verified",
+    "missing": "Missing",
+    "mislocated": "Mislocated",
+    "pending": "Pending"
+  },
+  "activity": {
+    "title": "Staff Activity",
+    "subtitle": "Track who did what across your dealership",
+    "refresh": "Refresh",
+    "actionsToday": "Actions Today",
+    "activeStaff": "Active Staff",
+    "actionTypes": "Action Types",
+    "avgActions": "Avg Actions / Staff"
+  },
+  "serviceBays": {
+    "title": "Service Bays",
+    "subtitle": "Track units through service stages",
+    "addBay": "Add Bay",
+    "checkIn": "Check In",
+    "checkOut": "Check Out",
+    "advance": "Advance",
+    "stages": {
+      "checked_in": "Checked In",
+      "diagnosis": "Diagnosis",
+      "in_repair": "In Repair",
+      "quality_check": "Quality Check",
+      "ready": "Ready"
+    }
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot your password?",
+    "resetIt": "Reset it"
+  },
+  "settings": {
+    "title": "Settings",
+    "dealership": "Dealership",
+    "users": "Users",
+    "notifications": "Notifications",
+    "billing": "Billing"
+  }
+}

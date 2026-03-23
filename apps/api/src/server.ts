@@ -48,13 +48,15 @@ import staffActivityRoutes from './routes/staff-activity.js';
 import floorPlanAuditRoutes from './routes/floor-plan-audits.js';
 import serviceBayRoutes from './routes/service-bays.js';
 import dashboardConfigRoutes from './routes/dashboard-config.js';
+import pricingRoutes from './routes/pricing.js';
+import v2Routes from './routes/v2/index.js';
 
 // Validate all environment variables at startup — fail fast on misconfiguration
 const serverEnv = validateServerEnv();
 
 const API_HOST = serverEnv.API_HOST;
 const API_PORT = serverEnv.API_PORT;
-const PKG_VERSION = '0.3.0';
+const PKG_VERSION = '0.4.0';
 
 async function buildApp() {
   const app = Fastify({
@@ -266,6 +268,10 @@ async function buildApp() {
   await app.register(floorPlanAuditRoutes, { prefix: '/api/v1/floor-plan-audits' });
   await app.register(serviceBayRoutes, { prefix: '/api/v1/service-bays' });
   await app.register(dashboardConfigRoutes, { prefix: '/api/v1/dashboard-config' });
+  await app.register(pricingRoutes, { prefix: '/api/v1/pricing' });
+
+  // Phase 13: v0.4.0 — API v2 namespace (offset pagination, expanded responses)
+  await app.register(v2Routes, { prefix: '/api/v2' });
 
   // Phase 11: Multi-location & scale
   await app.register(groupRoutes, { prefix: '/api/v1/groups' });

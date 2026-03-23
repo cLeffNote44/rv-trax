@@ -1,8 +1,7 @@
 'use client';
 
-import { useRef, useEffect, useCallback } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { useRef, useEffect, useCallback, useState } from 'react';
+import { getMapProvider, getMapToken, getDefaultStyle, type MapProvider } from '@/lib/map-provider';
 import type { Unit, GeoFence } from '@rv-trax/shared';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -44,189 +43,222 @@ export default function LotMap({
   zoom = 16,
 }: LotMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapRef = useRef<any>(null);
   const onUnitSelectRef = useRef(onUnitSelect);
   onUnitSelectRef.current = onUnitSelect;
 
-  const getStyleUrl = useCallback((style: string) => {
-    return style === 'satellite'
-      ? 'mapbox://styles/mapbox/satellite-streets-v12'
-      : 'mapbox://styles/mapbox/streets-v12';
-  }, []);
+  const [provider] = useState<MapProvider>(getMapProvider);
+
+  const getStyleUrl = useCallback(
+    (style: string) => {
+      return getDefaultStyle(provider, style === 'satellite' ? 'satellite' : 'streets');
+    },
+    [provider],
+  );
 
   // Initialize map
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
+    let map: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    let cancelled = false;
 
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: getStyleUrl(mapStyle),
-      center: center,
-      zoom: zoom,
-      attributionControl: false,
-    });
+    async function initMap() {
+      if (cancelled || !mapContainerRef.current) return;
 
-    map.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
-    map.addControl(
-      new mapboxgl.AttributionControl({ compact: true }),
-      'bottom-right',
-    );
+      if (provider === 'mapbox') {
+        const mapboxgl = (await import('mapbox-gl')).default;
+        await import('mapbox-gl/dist/mapbox-gl.css');
 
-    map.on('load', () => {
-      // Unit markers source
-      map.addSource('units', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] },
-      });
+        mapboxgl.accessToken = getMapToken() ?? '';
 
-      map.addLayer({
-        id: 'units-circle',
-        type: 'circle',
-        source: 'units',
-        paint: {
-          'circle-radius': [
-            'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            10,
-            7,
-          ],
-          'circle-color': ['get', 'color'],
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
-          'circle-opacity': 0.9,
-        },
-      });
+        map = new mapboxgl.Map({
+          container: mapContainerRef.current!,
+          style: getStyleUrl(mapStyle),
+          center: center,
+          zoom: zoom,
+          attributionControl: false,
+        });
 
-      map.addLayer({
-        id: 'units-label',
-        type: 'symbol',
-        source: 'units',
-        layout: {
-          'text-field': ['get', 'stock_number'],
-          'text-size': 10,
-          'text-offset': [0, 1.5],
-          'text-anchor': 'top',
-          'text-optional': true,
-        },
-        paint: {
-          'text-color': '#ffffff',
-          'text-halo-color': '#000000',
-          'text-halo-width': 1,
-        },
-      });
+        map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+        map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
+      } else {
+        const maplibregl = (await import('maplibre-gl')).default;
+        await import('maplibre-gl/dist/maplibre-gl.css');
 
-      // Lot boundary source
-      map.addSource('lot-boundary', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] },
-      });
+        map = new maplibregl.Map({
+          container: mapContainerRef.current!,
+          style: getStyleUrl(mapStyle),
+          center: center,
+          zoom: zoom,
+          attributionControl: false,
+        });
 
-      map.addLayer(
-        {
-          id: 'lot-boundary-fill',
-          type: 'fill',
-          source: 'lot-boundary',
-          paint: {
-            'fill-color': '#3b82f6',
-            'fill-opacity': 0.08,
-          },
-        },
-        'units-circle',
-      );
-
-      map.addLayer(
-        {
-          id: 'lot-boundary-line',
-          type: 'line',
-          source: 'lot-boundary',
-          paint: {
-            'line-color': '#3b82f6',
-            'line-width': 2,
-            'line-dasharray': [2, 2],
-          },
-        },
-        'units-circle',
-      );
-
-      // Zones source
-      map.addSource('zones', {
-        type: 'geojson',
-        data: { type: 'FeatureCollection', features: [] },
-      });
-
-      map.addLayer(
-        {
-          id: 'zones-fill',
-          type: 'fill',
-          source: 'zones',
-          paint: {
-            'fill-color': ['get', 'color'],
-            'fill-opacity': 0.15,
-          },
-        },
-        'units-circle',
-      );
-
-      map.addLayer(
-        {
-          id: 'zones-line',
-          type: 'line',
-          source: 'zones',
-          paint: {
-            'line-color': ['get', 'color'],
-            'line-width': 1.5,
-          },
-        },
-        'units-circle',
-      );
-
-      map.addLayer({
-        id: 'zones-label',
-        type: 'symbol',
-        source: 'zones',
-        layout: {
-          'text-field': ['get', 'name'],
-          'text-size': 12,
-          'text-font': ['Open Sans Bold'],
-        },
-        paint: {
-          'text-color': ['get', 'color'],
-          'text-halo-color': '#ffffff',
-          'text-halo-width': 1.5,
-        },
-      });
-    });
-
-    // Click handler for unit markers
-    map.on('click', 'units-circle', (e) => {
-      if (e.features && e.features.length > 0) {
-        const feature = e.features[0];
-        const unitId = feature?.properties?.id;
-        if (unitId && onUnitSelectRef.current) {
-          onUnitSelectRef.current(unitId);
-        }
+        map.addControl(new maplibregl.NavigationControl(), 'top-right');
+        map.addControl(new maplibregl.FullscreenControl(), 'top-right');
+        map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
       }
-    });
 
-    map.on('mouseenter', 'units-circle', () => {
-      map.getCanvas().style.cursor = 'pointer';
-    });
+      if (cancelled) {
+        map.remove();
+        return;
+      }
 
-    map.on('mouseleave', 'units-circle', () => {
-      map.getCanvas().style.cursor = '';
-    });
+      map.on('load', () => {
+        // Unit markers source
+        map.addSource('units', {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] },
+        });
 
-    mapRef.current = map;
+        map.addLayer({
+          id: 'units-circle',
+          type: 'circle',
+          source: 'units',
+          paint: {
+            'circle-radius': ['case', ['boolean', ['feature-state', 'selected'], false], 10, 7],
+            'circle-color': ['get', 'color'],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#ffffff',
+            'circle-opacity': 0.9,
+          },
+        });
+
+        map.addLayer({
+          id: 'units-label',
+          type: 'symbol',
+          source: 'units',
+          layout: {
+            'text-field': ['get', 'stock_number'],
+            'text-size': 10,
+            'text-offset': [0, 1.5],
+            'text-anchor': 'top',
+            'text-optional': true,
+          },
+          paint: {
+            'text-color': '#ffffff',
+            'text-halo-color': '#000000',
+            'text-halo-width': 1,
+          },
+        });
+
+        // Lot boundary source
+        map.addSource('lot-boundary', {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] },
+        });
+
+        map.addLayer(
+          {
+            id: 'lot-boundary-fill',
+            type: 'fill',
+            source: 'lot-boundary',
+            paint: {
+              'fill-color': '#3b82f6',
+              'fill-opacity': 0.08,
+            },
+          },
+          'units-circle',
+        );
+
+        map.addLayer(
+          {
+            id: 'lot-boundary-line',
+            type: 'line',
+            source: 'lot-boundary',
+            paint: {
+              'line-color': '#3b82f6',
+              'line-width': 2,
+              'line-dasharray': [2, 2],
+            },
+          },
+          'units-circle',
+        );
+
+        // Zones source
+        map.addSource('zones', {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] },
+        });
+
+        map.addLayer(
+          {
+            id: 'zones-fill',
+            type: 'fill',
+            source: 'zones',
+            paint: {
+              'fill-color': ['get', 'color'],
+              'fill-opacity': 0.15,
+            },
+          },
+          'units-circle',
+        );
+
+        map.addLayer(
+          {
+            id: 'zones-line',
+            type: 'line',
+            source: 'zones',
+            paint: {
+              'line-color': ['get', 'color'],
+              'line-width': 1.5,
+            },
+          },
+          'units-circle',
+        );
+
+        map.addLayer({
+          id: 'zones-label',
+          type: 'symbol',
+          source: 'zones',
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-size': 12,
+            ...(provider === 'mapbox' ? { 'text-font': ['Open Sans Bold'] } : {}),
+          },
+          paint: {
+            'text-color': ['get', 'color'],
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 1.5,
+          },
+        });
+      });
+
+      // Click handler for unit markers
+      map.on('click', 'units-circle', (e: any) => {
+        // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (e.features && e.features.length > 0) {
+          const feature = e.features[0];
+          const unitId = feature?.properties?.id;
+          if (unitId && onUnitSelectRef.current) {
+            onUnitSelectRef.current(unitId);
+          }
+        }
+      });
+
+      map.on('mouseenter', 'units-circle', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'units-circle', () => {
+        map.getCanvas().style.cursor = '';
+      });
+
+      mapRef.current = map;
+    }
+
+    initMap();
 
     return () => {
-      map.remove();
-      mapRef.current = null;
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
     // Only initialize once
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update map style
@@ -242,7 +274,7 @@ export default function LotMap({
     if (!map) return;
 
     function updateUnits() {
-      const source = map!.getSource('units') as mapboxgl.GeoJSONSource | undefined;
+      const source = map!.getSource('units');
       if (!source) return;
 
       const features = units
@@ -281,7 +313,7 @@ export default function LotMap({
     if (!map || !lotBoundary || lotBoundary.length < 3) return;
 
     function updateBoundary() {
-      const source = map!.getSource('lot-boundary') as mapboxgl.GeoJSONSource | undefined;
+      const source = map!.getSource('lot-boundary');
       if (!source) return;
 
       source.setData({
@@ -313,7 +345,7 @@ export default function LotMap({
     if (!map || !zones || zones.length === 0) return;
 
     function updateZones() {
-      const source = map!.getSource('zones') as mapboxgl.GeoJSONSource | undefined;
+      const source = map!.getSource('zones');
       if (!source) return;
 
       const features = zones!
@@ -326,9 +358,7 @@ export default function LotMap({
           },
           geometry: {
             type: 'Polygon' as const,
-            coordinates: [
-              [...z.boundary, z.boundary[0]!].map(([lat, lng]) => [lng, lat]),
-            ],
+            coordinates: [[...z.boundary, z.boundary[0]!].map(([lat, lng]) => [lng, lat])],
           },
         }));
 
@@ -351,10 +381,7 @@ export default function LotMap({
     function updateSelection() {
       map!.removeFeatureState({ source: 'units' });
       if (selectedUnitId) {
-        map!.setFeatureState(
-          { source: 'units', id: selectedUnitId },
-          { selected: true },
-        );
+        map!.setFeatureState({ source: 'units', id: selectedUnitId }, { selected: true });
       }
     }
 
@@ -363,7 +390,5 @@ export default function LotMap({
     }
   }, [selectedUnitId]);
 
-  return (
-    <div ref={mapContainerRef} className="h-full w-full" />
-  );
+  return <div ref={mapContainerRef} className="h-full w-full" />;
 }

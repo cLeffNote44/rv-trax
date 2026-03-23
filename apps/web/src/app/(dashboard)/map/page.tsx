@@ -6,8 +6,9 @@ import { Download } from 'lucide-react';
 import type { Unit, Lot, GeoFence } from '@rv-trax/shared';
 import MapControls from './components/MapControls';
 import UnitSidePanel from './components/UnitSidePanel';
+import MapProviderBadge from './components/MapProviderBadge';
 
-// Dynamically import LotMap to avoid SSR issues with Mapbox GL
+// Dynamically import LotMap to avoid SSR issues with Mapbox/MapLibre GL
 const LotMap = dynamic(() => import('./components/LotMap'), {
   ssr: false,
   loading: () => (
@@ -73,12 +74,9 @@ export default function MapPage() {
 
   const filteredUnits = useMemo(() => {
     return units.filter((u) => {
-      if (filters.status.length > 0 && !filters.status.includes(u.status))
-        return false;
-      if (filters.type.length > 0 && !filters.type.includes(u.unit_type))
-        return false;
-      if (filters.make.length > 0 && !filters.make.includes(u.make))
-        return false;
+      if (filters.status.length > 0 && !filters.status.includes(u.status)) return false;
+      if (filters.type.length > 0 && !filters.type.includes(u.unit_type)) return false;
+      if (filters.make.length > 0 && !filters.make.includes(u.make)) return false;
       return true;
     });
   }, [units, filters]);
@@ -93,9 +91,7 @@ export default function MapPage() {
     setSelectedUnitId(unitId);
   }, []);
 
-  const mapCenter: [number, number] = lot
-    ? [lot.center_lng, lot.center_lat]
-    : [-98.5795, 39.8283];
+  const mapCenter: [number, number] = lot ? [lot.center_lng, lot.center_lat] : [-98.5795, 39.8283];
 
   return (
     <div className="relative flex h-[calc(100vh-64px)] flex-col">
@@ -103,9 +99,7 @@ export default function MapPage() {
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-2">
         <div>
           <h1 className="text-lg font-bold text-slate-900">Lot Map</h1>
-          {lot && (
-            <p className="text-xs text-slate-500">{lot.name}</p>
-          )}
+          {lot && <p className="text-xs text-slate-500">{lot.name}</p>}
         </div>
         <button
           type="button"
@@ -122,9 +116,7 @@ export default function MapPage() {
           <div className="flex h-full items-center justify-center bg-slate-100">
             <div className="text-center">
               <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-blue-600" />
-              <p className="mt-3 text-sm text-slate-500">
-                Loading lot data...
-              </p>
+              <p className="mt-3 text-sm text-slate-500">Loading lot data...</p>
             </div>
           </div>
         ) : (
@@ -140,6 +132,8 @@ export default function MapPage() {
               zoom={17}
             />
 
+            <MapProviderBadge />
+
             <MapControls
               unitCount={filteredUnits.length}
               mapStyle={mapStyle}
@@ -151,10 +145,7 @@ export default function MapPage() {
             />
 
             {selectedUnitId && (
-              <UnitSidePanel
-                unitId={selectedUnitId}
-                onClose={() => setSelectedUnitId(null)}
-              />
+              <UnitSidePanel unitId={selectedUnitId} onClose={() => setSelectedUnitId(null)} />
             )}
           </>
         )}

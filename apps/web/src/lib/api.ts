@@ -1151,4 +1151,32 @@ export function resetDashboardConfig(): Promise<{ data: DashboardConfig }> {
 // Export the raw fetch for custom endpoints
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Pricing Suggestions
+// ---------------------------------------------------------------------------
+
+export interface PricingSuggestion {
+  unit_id: string;
+  stock_number: string;
+  current_msrp: number | null;
+  suggested_price: number;
+  discount_pct: number;
+  reasoning: string[];
+  confidence: 'high' | 'medium' | 'low';
+  market_avg: number | null;
+  days_on_lot: number;
+}
+
+export function getPricingSuggestions(): Promise<{ data: PricingSuggestion[] }> {
+  return apiFetch<{ data: PricingSuggestion[] }>('/pricing');
+}
+
+export function getUnitPricingSuggestion(unitId: string): Promise<{ data: PricingSuggestion }> {
+  return apiFetch<{ data: PricingSuggestion }>(`/pricing/${unitId}`);
+}
+
+// ---------------------------------------------------------------------------
+// Export the raw fetch for custom endpoints
+// ---------------------------------------------------------------------------
+
 export { apiFetch };
