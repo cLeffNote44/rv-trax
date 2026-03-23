@@ -1,369 +1,234 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import {
-  Package,
-  CheckCircle2,
-  DollarSign,
-  Wrench,
-  Clock,
-  Search,
-  AlertTriangle,
-  MapPin,
-} from 'lucide-react';
-import type { Unit, Alert } from '@rv-trax/shared';
-import { UnitStatus, AlertStatus, AlertSeverity } from '@rv-trax/shared';
-import MetricCard from './components/MetricCard';
-import ActivityFeed from './components/ActivityFeed';
-import TrackerHealth from './components/TrackerHealth';
+import { useEffect, useState, useCallback } from 'react';
+import { LayoutDashboard, Settings2, Plus, X, RotateCcw, Check } from 'lucide-react';
+import { getDashboardConfig, saveDashboardConfig, resetDashboardConfig } from '@/lib/api';
+import type { DashboardWidget } from '@/lib/api';
+import WidgetRenderer from './components/widgets/WidgetRenderer';
+import { WIDGET_REGISTRY, getWidgetDef } from './components/widgets/WidgetRegistry';
 
-interface DashboardMetrics {
-  totalUnits: number;
-  available: number;
-  soldThisMonth: number;
-  inService: number;
-  avgDaysOnLot: number;
-}
+// ---------------------------------------------------------------------------
+// Default layout (same as API default)
+// ---------------------------------------------------------------------------
 
-interface AlertSummary {
-  total: number;
-  critical: number;
-  warning: number;
-  info: number;
-}
+const DEFAULT_LAYOUT: DashboardWidget[] = [
+  { widget_id: 'inventory_summary', x: 0, y: 0, w: 2, h: 1 },
+  { widget_id: 'tracker_health', x: 2, y: 0, w: 1, h: 1 },
+  { widget_id: 'alert_feed', x: 0, y: 1, w: 1, h: 1 },
+  { widget_id: 'aging_chart', x: 1, y: 1, w: 2, h: 1 },
+  { widget_id: 'recent_activity', x: 0, y: 2, w: 1, h: 1 },
+  { widget_id: 'unit_status_breakdown', x: 1, y: 2, w: 1, h: 1 },
+  { widget_id: 'quick_actions', x: 2, y: 2, w: 1, h: 1 },
+];
 
-function computeMetrics(units: Unit[]): DashboardMetrics {
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  let totalDays = 0;
-  let countForAvg = 0;
-
-  const metrics: DashboardMetrics = {
-    totalUnits: units.length,
-    available: 0,
-    soldThisMonth: 0,
-    inService: 0,
-    avgDaysOnLot: 0,
-  };
-
-  for (const unit of units) {
-    if (unit.status === UnitStatus.AVAILABLE || unit.status === UnitStatus.LOT_READY) {
-      metrics.available++;
-    }
-    if (
-      (unit.status === UnitStatus.SOLD ||
-        unit.status === UnitStatus.PENDING_DELIVERY ||
-        unit.status === UnitStatus.DELIVERED) &&
-      new Date(unit.updated_at) >= monthStart
-    ) {
-      metrics.soldThisMonth++;
-    }
-    if (unit.status === UnitStatus.IN_SERVICE) {
-      metrics.inService++;
-    }
-
-    const arrivedDate = new Date(unit.created_at);
-    const daysOnLot = Math.floor(
-      (now.getTime() - arrivedDate.getTime()) / (1000 * 60 * 60 * 24),
-    );
-    if (
-      unit.status !== UnitStatus.SOLD &&
-      unit.status !== UnitStatus.DELIVERED &&
-      unit.status !== UnitStatus.ARCHIVED
-    ) {
-      totalDays += daysOnLot;
-      countForAvg++;
-    }
-  }
-
-  metrics.avgDaysOnLot = countForAvg > 0 ? Math.round(totalDays / countForAvg) : 0;
-  return metrics;
-}
-
-function computeAlertSummary(alerts: Alert[]): AlertSummary {
-  const summary: AlertSummary = { total: 0, critical: 0, warning: 0, info: 0 };
-  for (const alert of alerts) {
-    if (alert.status === AlertStatus.NEW_ALERT) {
-      summary.total++;
-      if (alert.severity === AlertSeverity.CRITICAL) summary.critical++;
-      else if (alert.severity === AlertSeverity.WARNING) summary.warning++;
-      else summary.info++;
-    }
-  }
-  return summary;
-}
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
 
 export default function DashboardPage() {
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [alertSummary, setAlertSummary] = useState<AlertSummary | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [layout, setLayout] = useState<DashboardWidget[]>(DEFAULT_LAYOUT);
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
+  // Load saved layout
   useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      try {
-        const api = await import('@/lib/api');
-        const [unitsRes, alertsRes] = await Promise.all([
-          api.getUnits({}),
-          api.getAlerts({}),
-        ]);
-
-        if (!cancelled) {
-          setMetrics(computeMetrics(unitsRes.data));
-          setAlertSummary(computeAlertSummary(alertsRes.data));
+    getDashboardConfig()
+      .then((res) => {
+        if (res.data.layout && res.data.layout.length > 0) {
+          setLayout(res.data.layout);
         }
-      } catch {
-        // Keep loading state so skeletons remain
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      cancelled = true;
-    };
+      })
+      .catch(() => {
+        // Use default
+      })
+      .finally(() => setLoaded(true));
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      window.location.href = `/inventory?search=${encodeURIComponent(searchQuery.trim())}`;
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      await saveDashboardConfig(layout);
+      setEditMode(false);
+    } catch {
+      // Silently fail — layout is still local
+    } finally {
+      setSaving(false);
     }
+  }, [layout]);
+
+  const handleReset = useCallback(async () => {
+    setSaving(true);
+    try {
+      const res = await resetDashboardConfig();
+      setLayout(res.data.layout);
+      setEditMode(false);
+    } catch {
+      setLayout(DEFAULT_LAYOUT);
+      setEditMode(false);
+    } finally {
+      setSaving(false);
+    }
+  }, []);
+
+  const removeWidget = (widgetId: string) => {
+    setLayout((prev) => prev.filter((w) => w.widget_id !== widgetId));
   };
+
+  const addWidget = (widgetId: string) => {
+    const def = getWidgetDef(widgetId);
+    if (!def) return;
+    // Find next available y position
+    const maxY = layout.length > 0 ? Math.max(...layout.map((w) => w.y)) + 1 : 0;
+    setLayout((prev) => [
+      ...prev,
+      {
+        widget_id: widgetId,
+        x: 0,
+        y: maxY,
+        w: def.defaultW,
+        h: def.defaultH,
+      },
+    ]);
+  };
+
+  const activeWidgetIds = new Set(layout.map((w) => w.widget_id));
+  const availableWidgets = WIDGET_REGISTRY.filter((w) => !activeWidgetIds.has(w.id));
+
+  // Sort widgets by y then x for display
+  const sortedLayout = [...layout].sort((a, b) => a.y - b.y || a.x - b.x);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Dashboard</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          Overview of your lot inventory and tracker health
-        </p>
-      </div>
-
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {loading ? (
-          Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-[120px] animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
-            />
-          ))
-        ) : metrics ? (
-          <>
-            <MetricCard
-              title="Total Units"
-              value={metrics.totalUnits}
-              icon={Package}
-            />
-            <MetricCard
-              title="Available"
-              value={metrics.available}
-              icon={CheckCircle2}
-              color="green"
-            />
-            <MetricCard
-              title="Sold This Month"
-              value={metrics.soldThisMonth}
-              icon={DollarSign}
-              color="red"
-            />
-            <MetricCard
-              title="In Service"
-              value={metrics.inService}
-              icon={Wrench}
-              color="yellow"
-            />
-            <MetricCard
-              title="Avg Days on Lot"
-              value={metrics.avgDaysOnLot}
-              icon={Clock}
-              color="blue"
-            />
-          </>
-        ) : null}
-      </div>
-
-      {/* Second Row: Tracker Health + Quick Search + Alerts */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Tracker Health */}
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-[var(--color-text-primary)]">
-            Tracker Health
-          </h2>
-          <TrackerHealth />
-        </div>
-
-        {/* Quick Search */}
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-[var(--color-text-primary)]">
-            Quick Search
-          </h2>
-          <form onSubmit={handleSearch}>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Stock #, VIN, make, model..."
-                className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] py-2.5 pl-10 pr-4 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-brand-500)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand-500)]/20"
-              />
-            </div>
-            <button
-              type="submit"
-              className="mt-3 w-full rounded-lg bg-[var(--color-brand-600)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-brand-700)]"
-            >
-              Search Inventory
-            </button>
-          </form>
-          <div className="mt-4 space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
-              Quick links
-            </p>
-            <Link
-              href="/inventory?status=new_arrival"
-              className="block text-sm text-[var(--color-brand-500)] hover:text-[var(--color-brand-400)]"
-            >
-              New Arrivals
-            </Link>
-            <Link
-              href="/inventory?status=pdi_pending"
-              className="block text-sm text-[var(--color-brand-500)] hover:text-[var(--color-brand-400)]"
-            >
-              PDI Pending
-            </Link>
-            <Link
-              href="/inventory?status=hold"
-              className="block text-sm text-[var(--color-brand-500)] hover:text-[var(--color-brand-400)]"
-            >
-              Units on Hold
-            </Link>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-3">
+            <LayoutDashboard className="h-7 w-7 text-[var(--color-brand-500)]" />
+            <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Dashboard</h1>
           </div>
+          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
+            Overview of your lot inventory and tracker health
+          </p>
         </div>
-
-        {/* Alerts Card */}
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Alerts</h2>
-            <Link
-              href="/alerts"
-              className="text-sm font-medium text-[var(--color-brand-500)] hover:text-[var(--color-brand-400)]"
-            >
-              View All
-            </Link>
-          </div>
-          {loading ? (
-            <div className="space-y-3 animate-pulse">
-              <div className="h-10 rounded bg-[var(--color-bg-tertiary)]" />
-              <div className="h-10 rounded bg-[var(--color-bg-tertiary)]" />
-              <div className="h-10 rounded bg-[var(--color-bg-tertiary)]" />
-            </div>
-          ) : alertSummary ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 rounded-lg bg-[var(--color-bg-secondary)] p-3">
-                <AlertTriangle className="h-5 w-5 text-[var(--color-text-secondary)]" />
-                <div>
-                  <p className="text-2xl font-bold text-[var(--color-text-primary)]">
-                    {alertSummary.total}
-                  </p>
-                  <p className="text-xs text-[var(--color-text-secondary)]">
-                    Unacknowledged alerts
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between rounded-lg px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                    <span className="text-sm text-[var(--color-text-secondary)]">Critical</span>
-                  </div>
-                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">
-                    {alertSummary.critical}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                    <span className="text-sm text-[var(--color-text-secondary)]">Warning</span>
-                  </div>
-                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">
-                    {alertSummary.warning}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg px-3 py-2">
-                  <div className="flex items-center gap-2">
-                    <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                    <span className="text-sm text-[var(--color-text-secondary)]">Info</span>
-                  </div>
-                  <span className="text-sm font-semibold text-[var(--color-text-primary)]">
-                    {alertSummary.info}
-                  </span>
-                </div>
-              </div>
-            </div>
+        <div className="flex items-center gap-2">
+          {editMode ? (
+            <>
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Reset
+              </button>
+              <button
+                onClick={() => setEditMode(false)}
+                className="flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-1.5 rounded-lg bg-[var(--color-brand-600)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-brand-700)] disabled:opacity-50"
+              >
+                <Check className="h-4 w-4" />
+                {saving ? 'Saving...' : 'Save Layout'}
+              </button>
+            </>
           ) : (
-            <p className="text-sm text-[var(--color-text-secondary)]">Unable to load alerts</p>
+            <button
+              onClick={() => setEditMode(true)}
+              className="flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+            >
+              <Settings2 className="h-4 w-4" />
+              Customize
+            </button>
           )}
         </div>
       </div>
 
-      {/* Third Row: Activity Feed + Lot Map Thumbnail */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Activity */}
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-[var(--color-text-primary)]">
-            Recent Activity
-          </h2>
-          <ActivityFeed />
-        </div>
-
-        {/* Mini Lot Map */}
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] shadow-sm">
-          <div className="p-5">
-            <h2 className="mb-2 text-lg font-semibold text-[var(--color-text-primary)]">
-              Lot Map
-            </h2>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              See your units on the interactive lot map
-            </p>
-          </div>
-          <div className="relative flex h-[260px] items-center justify-center bg-[var(--color-bg-tertiary)]">
-            <div className="text-center">
-              <MapPin className="mx-auto h-12 w-12 text-[var(--color-text-tertiary)]" />
-              <p className="mt-2 text-sm text-[var(--color-text-tertiary)]">
-                Interactive lot map preview
-              </p>
-            </div>
-          </div>
-          <div className="p-4">
-            <Link
-              href="/map"
-              className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--color-brand-500)] hover:text-[var(--color-brand-400)]"
-            >
-              View Lot Map
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+      {/* Add Widget Bar (edit mode) */}
+      {editMode && availableWidgets.length > 0 && (
+        <div className="rounded-xl border border-dashed border-[var(--color-brand-500)]/40 bg-[var(--color-brand-500)]/5 p-4">
+          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            Add Widgets
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {availableWidgets.map((w) => (
+              <button
+                key={w.id}
+                onClick={() => addWidget(w.id)}
+                className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] px-3 py-2 text-sm transition-colors hover:border-[var(--color-brand-500)] hover:bg-[var(--color-bg-secondary)]"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </Link>
+                <Plus className="h-3.5 w-3.5 text-[var(--color-brand-500)]" />
+                <w.icon className="h-4 w-4 text-[var(--color-text-secondary)]" />
+                <span className="text-[var(--color-text-primary)]">{w.name}</span>
+              </button>
+            ))}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Widget Grid */}
+      {!loaded ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[200px] animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)]"
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sortedLayout.map((widget) => {
+            const def = getWidgetDef(widget.widget_id);
+            const colSpan = widget.w >= 2 ? 'sm:col-span-2' : '';
+
+            return (
+              <div
+                key={widget.widget_id}
+                className={`relative rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5 shadow-sm transition-shadow hover:shadow-md ${colSpan} ${
+                  editMode ? 'ring-2 ring-[var(--color-brand-500)]/20' : ''
+                }`}
+              >
+                {/* Widget header */}
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+                    {def?.name ?? widget.widget_id}
+                  </h3>
+                  {editMode && (
+                    <button
+                      onClick={() => removeWidget(widget.widget_id)}
+                      className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500/10 text-red-500 transition-colors hover:bg-red-500/20"
+                      title="Remove widget"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Widget content */}
+                <WidgetRenderer widgetId={widget.widget_id} />
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {loaded && layout.length === 0 && (
+        <div className="rounded-xl border border-dashed border-[var(--color-border)] py-16 text-center">
+          <LayoutDashboard className="mx-auto h-12 w-12 text-[var(--color-text-tertiary)]" />
+          <p className="mt-3 text-sm font-medium text-[var(--color-text-secondary)]">
+            No widgets configured
+          </p>
+          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+            Click &ldquo;Customize&rdquo; to add widgets to your dashboard
+          </p>
+        </div>
+      )}
     </div>
   );
 }

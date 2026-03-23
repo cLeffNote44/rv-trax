@@ -19,6 +19,8 @@ import {
   Wifi,
   LayoutList,
   Car,
+  Activity,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { cn } from '@/lib/utils';
@@ -45,6 +47,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Alerts', href: '/alerts', icon: Bell },
   { label: 'Test Drives', href: '/test-drives', icon: Car },
   { label: 'Service', href: '/service', icon: Wrench },
+  { label: 'Audits', href: '/audits', icon: ClipboardCheck },
+  { label: 'Activity', href: '/activity', icon: Activity },
   { label: 'Staging', href: '/staging', icon: LayoutList },
   { label: 'Analytics', href: '/analytics', icon: BarChart3 },
   { label: 'Settings', href: '/settings', icon: Settings },

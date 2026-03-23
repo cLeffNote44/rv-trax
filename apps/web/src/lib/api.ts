@@ -868,6 +868,286 @@ export function updateWidgetConfig(data: Partial<WidgetConfig>): Promise<WidgetC
 }
 
 // ---------------------------------------------------------------------------
+// Staff Activity
+// ---------------------------------------------------------------------------
+
+export interface StaffActivityEntry {
+  id: string;
+  dealership_id: string;
+  user_id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  entity_label: string | null;
+  metadata: Record<string, unknown> | null;
+  ip_address: string | null;
+  created_at: string;
+}
+
+export function getStaffActivity(query?: {
+  cursor?: string;
+  limit?: number;
+  user_id?: string;
+  action?: string;
+  entity_type?: string;
+}): Promise<PaginatedResponse<StaffActivityEntry>> {
+  const params = new URLSearchParams();
+  if (query) {
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined) params.set(key, String(value));
+    });
+  }
+  const qs = params.toString();
+  return apiFetch<PaginatedResponse<StaffActivityEntry>>(`/activity${qs ? `?${qs}` : ''}`);
+}
+
+export function getStaffActivityStats(days?: number): Promise<{
+  data: {
+    per_user: { user_id: string; action_count: number }[];
+    by_action: { action: string; action_count: number }[];
+    actions_today: number;
+    days: number;
+  };
+}> {
+  const qs = days ? `?days=${days}` : '';
+  return apiFetch(`/activity/stats${qs}`);
+}
+
+// ---------------------------------------------------------------------------
+// Floor Plan Audits
+// ---------------------------------------------------------------------------
+
+export interface FloorPlanAudit {
+  id: string;
+  dealership_id: string;
+  lot_id: string | null;
+  started_by: string;
+  status: string;
+  total_units: number;
+  verified_units: number;
+  missing_units: number;
+  notes: string | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface FloorPlanAuditItem {
+  id: string;
+  audit_id: string;
+  unit_id: string;
+  status: string;
+  expected_zone: string | null;
+  found_zone: string | null;
+  verified_at: string | null;
+  verified_by: string | null;
+  notes: string | null;
+  photo_url: string | null;
+  unit?: {
+    stock_number: string;
+    year: number | null;
+    make: string | null;
+    model: string | null;
+    unit_type: string | null;
+    vin: string | null;
+  };
+}
+
+export interface FloorPlanAuditDetail extends FloorPlanAudit {
+  items: FloorPlanAuditItem[];
+}
+
+export function getFloorPlanAudits(query?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+}): Promise<PaginatedResponse<FloorPlanAudit>> {
+  const params = new URLSearchParams();
+  if (query) {
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined) params.set(key, String(value));
+    });
+  }
+  const qs = params.toString();
+  return apiFetch<PaginatedResponse<FloorPlanAudit>>(`/floor-plan-audits${qs ? `?${qs}` : ''}`);
+}
+
+export function getFloorPlanAudit(id: string): Promise<{ data: FloorPlanAuditDetail }> {
+  return apiFetch<{ data: FloorPlanAuditDetail }>(`/floor-plan-audits/${id}`);
+}
+
+export function startFloorPlanAudit(data: {
+  lot_id?: string;
+  notes?: string;
+}): Promise<{ data: FloorPlanAudit }> {
+  return apiFetch<{ data: FloorPlanAudit }>('/floor-plan-audits', {
+    method: 'POST',
+    body: data,
+  });
+}
+
+export function verifyAuditItem(
+  auditId: string,
+  itemId: string,
+  data: { status: string; found_zone?: string; notes?: string },
+): Promise<{ data: FloorPlanAuditItem }> {
+  return apiFetch<{ data: FloorPlanAuditItem }>(`/floor-plan-audits/${auditId}/items/${itemId}`, {
+    method: 'PATCH',
+    body: data,
+  });
+}
+
+export function completeFloorPlanAudit(id: string): Promise<{ data: FloorPlanAudit }> {
+  return apiFetch<{ data: FloorPlanAudit }>(`/floor-plan-audits/${id}/complete`, {
+    method: 'POST',
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Service Bays
+// ---------------------------------------------------------------------------
+
+export interface ServiceBay {
+  id: string;
+  dealership_id: string;
+  lot_id: string | null;
+  name: string;
+  bay_type: string;
+  status: string;
+  current_assignment: ServiceBayAssignment | null;
+  created_at: string;
+}
+
+export interface ServiceBayAssignment {
+  assignment: {
+    id: string;
+    bay_id: string;
+    work_order_id: string | null;
+    unit_id: string;
+    stage: string;
+    assigned_by: string;
+    technician_id: string | null;
+    checked_in_at: string;
+    stage_changed_at: string;
+    checked_out_at: string | null;
+    total_minutes: number | null;
+    notes: string | null;
+  };
+  stock_number: string;
+  year: number | null;
+  make: string | null;
+  model: string | null;
+}
+
+export interface ServiceBayMetrics {
+  total_bays: number;
+  occupied: number;
+  available: number;
+  utilization_pct: number;
+  avg_time_minutes: number;
+  completed_this_week: number;
+}
+
+export function getServiceBays(): Promise<{ data: ServiceBay[] }> {
+  return apiFetch<{ data: ServiceBay[] }>('/service-bays');
+}
+
+export function createServiceBay(data: {
+  name: string;
+  bay_type?: string;
+  lot_id?: string;
+}): Promise<{ data: ServiceBay }> {
+  return apiFetch<{ data: ServiceBay }>('/service-bays', {
+    method: 'POST',
+    body: data,
+  });
+}
+
+export function updateServiceBay(
+  id: string,
+  data: Partial<ServiceBay>,
+): Promise<{ data: ServiceBay }> {
+  return apiFetch<{ data: ServiceBay }>(`/service-bays/${id}`, {
+    method: 'PATCH',
+    body: data,
+  });
+}
+
+export function deleteServiceBay(id: string): Promise<void> {
+  return apiFetch<void>(`/service-bays/${id}`, { method: 'DELETE' });
+}
+
+export function checkInToBay(
+  bayId: string,
+  data: {
+    unit_id: string;
+    work_order_id?: string;
+    technician_id?: string;
+    notes?: string;
+  },
+): Promise<{ data: ServiceBayAssignment }> {
+  return apiFetch<{ data: ServiceBayAssignment }>(`/service-bays/${bayId}/check-in`, {
+    method: 'POST',
+    body: data,
+  });
+}
+
+export function advanceBayStage(
+  bayId: string,
+  stage: string,
+): Promise<{ data: ServiceBayAssignment }> {
+  return apiFetch<{ data: ServiceBayAssignment }>(`/service-bays/${bayId}/stage`, {
+    method: 'PATCH',
+    body: { stage },
+  });
+}
+
+export function checkOutFromBay(bayId: string): Promise<{ data: ServiceBayAssignment }> {
+  return apiFetch<{ data: ServiceBayAssignment }>(`/service-bays/${bayId}/check-out`, {
+    method: 'POST',
+  });
+}
+
+export function getServiceBayMetrics(): Promise<{ data: ServiceBayMetrics }> {
+  return apiFetch<{ data: ServiceBayMetrics }>('/service-bays/metrics');
+}
+
+// ---------------------------------------------------------------------------
+// Dashboard Config
+// ---------------------------------------------------------------------------
+
+export interface DashboardWidget {
+  widget_id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  config?: Record<string, unknown>;
+}
+
+export interface DashboardConfig {
+  id?: string;
+  layout: DashboardWidget[];
+}
+
+export function getDashboardConfig(): Promise<{ data: DashboardConfig }> {
+  return apiFetch<{ data: DashboardConfig }>('/dashboard-config');
+}
+
+export function saveDashboardConfig(layout: DashboardWidget[]): Promise<{ data: DashboardConfig }> {
+  return apiFetch<{ data: DashboardConfig }>('/dashboard-config', {
+    method: 'PUT',
+    body: { layout },
+  });
+}
+
+export function resetDashboardConfig(): Promise<{ data: DashboardConfig }> {
+  return apiFetch<{ data: DashboardConfig }>('/dashboard-config/reset', {
+    method: 'POST',
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Export the raw fetch for custom endpoints
 // ---------------------------------------------------------------------------
 

@@ -44,6 +44,10 @@ import webhookRoutes from './routes/webhooks.js';
 import dmsRoutes from './routes/dms.js';
 import widgetRoutes from './routes/widget.js';
 import deviceRoutes from './routes/devices.js';
+import staffActivityRoutes from './routes/staff-activity.js';
+import floorPlanAuditRoutes from './routes/floor-plan-audits.js';
+import serviceBayRoutes from './routes/service-bays.js';
+import dashboardConfigRoutes from './routes/dashboard-config.js';
 
 // Validate all environment variables at startup — fail fast on misconfiguration
 const serverEnv = validateServerEnv();
@@ -256,6 +260,12 @@ async function buildApp() {
   await app.register(dmsRoutes, { prefix: '/api/v1/dms' });
   await app.register(widgetRoutes, { prefix: '/api/v1/widget' });
   await app.register(deviceRoutes, { prefix: '/api/v1/devices' });
+
+  // Phase 12: v0.3.0 — Dealer-ready features
+  await app.register(staffActivityRoutes, { prefix: '/api/v1/activity' });
+  await app.register(floorPlanAuditRoutes, { prefix: '/api/v1/floor-plan-audits' });
+  await app.register(serviceBayRoutes, { prefix: '/api/v1/service-bays' });
+  await app.register(dashboardConfigRoutes, { prefix: '/api/v1/dashboard-config' });
 
   // Phase 11: Multi-location & scale
   await app.register(groupRoutes, { prefix: '/api/v1/groups' });

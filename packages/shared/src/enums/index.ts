@@ -310,6 +310,86 @@ export const DmsSyncStatus = {
 } as const;
 export type DmsSyncStatus = (typeof DmsSyncStatus)[keyof typeof DmsSyncStatus];
 
+// ── Staff Activity ────────────────────────────────────────────────────
+
+export const StaffAction = {
+  MOVED_UNIT: 'moved_unit',
+  CHANGED_STATUS: 'changed_status',
+  STARTED_SERVICE: 'started_service',
+  COMPLETED_SERVICE: 'completed_service',
+  ASSIGNED_TRACKER: 'assigned_tracker',
+  UNASSIGNED_TRACKER: 'unassigned_tracker',
+  STARTED_TEST_DRIVE: 'started_test_drive',
+  COMPLETED_TEST_DRIVE: 'completed_test_drive',
+  STARTED_AUDIT: 'started_audit',
+  COMPLETED_AUDIT: 'completed_audit',
+  VERIFIED_UNIT: 'verified_unit',
+  CHECKED_IN_BAY: 'checked_in_bay',
+  CHECKED_OUT_BAY: 'checked_out_bay',
+  ADVANCED_STAGE: 'advanced_stage',
+  CREATED_WORK_ORDER: 'created_work_order',
+  UPLOADED_PHOTO: 'uploaded_photo',
+} as const;
+export type StaffAction = (typeof StaffAction)[keyof typeof StaffAction];
+
+// ── Floor Plan Audits ─────────────────────────────────────────────────
+
+export const FloorPlanAuditStatus = {
+  PENDING: 'pending',
+  IN_PROGRESS: 'in_progress',
+  COMPLETED: 'completed',
+} as const;
+export type FloorPlanAuditStatus = (typeof FloorPlanAuditStatus)[keyof typeof FloorPlanAuditStatus];
+
+export const AuditItemStatus = {
+  PENDING: 'pending',
+  VERIFIED: 'verified',
+  MISSING: 'missing',
+  MISLOCATED: 'mislocated',
+} as const;
+export type AuditItemStatus = (typeof AuditItemStatus)[keyof typeof AuditItemStatus];
+
+// ── Service Bays ──────────────────────────────────────────────────────
+
+export const ServiceBayType = {
+  GENERAL: 'general',
+  DETAIL: 'detail',
+  BODY: 'body',
+  ELECTRICAL: 'electrical',
+  PDI: 'pdi',
+} as const;
+export type ServiceBayType = (typeof ServiceBayType)[keyof typeof ServiceBayType];
+
+export const ServiceBayStatus = {
+  AVAILABLE: 'available',
+  OCCUPIED: 'occupied',
+  MAINTENANCE: 'maintenance',
+} as const;
+export type ServiceBayStatus = (typeof ServiceBayStatus)[keyof typeof ServiceBayStatus];
+
+export const ServiceStage = {
+  CHECKED_IN: 'checked_in',
+  DIAGNOSIS: 'diagnosis',
+  IN_REPAIR: 'in_repair',
+  QUALITY_CHECK: 'quality_check',
+  READY: 'ready',
+} as const;
+export type ServiceStage = (typeof ServiceStage)[keyof typeof ServiceStage];
+
+// ── Dashboard Widgets ─────────────────────────────────────────────────
+
+export const DashboardWidgetType = {
+  INVENTORY_SUMMARY: 'inventory_summary',
+  TRACKER_HEALTH: 'tracker_health',
+  ALERT_FEED: 'alert_feed',
+  AGING_CHART: 'aging_chart',
+  LOT_UTILIZATION: 'lot_utilization',
+  RECENT_ACTIVITY: 'recent_activity',
+  UNIT_STATUS_BREAKDOWN: 'unit_status_breakdown',
+  QUICK_ACTIONS: 'quick_actions',
+} as const;
+export type DashboardWidgetType = (typeof DashboardWidgetType)[keyof typeof DashboardWidgetType];
+
 // ── Unit Transfers ─────────────────────────────────────────────────────────
 
 export const TransferStatus = {

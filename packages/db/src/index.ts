@@ -31,3 +31,7 @@ export * from './schema/dms-integrations.js';
 export * from './schema/transfers.js';
 export * from './schema/widget-configs.js';
 export * from './schema/device-tokens.js';
+export * from './schema/staff-activity.js';
+export * from './schema/floor-plan-audits.js';
+export * from './schema/service-bays.js';
+export * from './schema/dashboard-configs.js';
