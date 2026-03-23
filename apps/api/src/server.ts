@@ -56,7 +56,7 @@ const serverEnv = validateServerEnv();
 
 const API_HOST = serverEnv.API_HOST;
 const API_PORT = serverEnv.API_PORT;
-const PKG_VERSION = '0.4.0';
+const PKG_VERSION = '1.0.0';
 
 async function buildApp() {
   const app = Fastify({

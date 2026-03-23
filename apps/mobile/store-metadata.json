@@ -1,0 +1,37 @@
+{
+  "app_name": "RV Trax",
+  "bundle_id": {
+    "ios": "com.rvtrax.mobile",
+    "android": "com.rvtrax.mobile"
+  },
+  "version": "1.0.0",
+  "build_number": 1,
+  "short_description": "Real-time GPS lot management for RV dealerships",
+  "full_description": "RV Trax helps RV dealerships track every unit on their lot in real-time using LoRaWAN GPS technology. Find any unit instantly, manage inventory status, handle work orders, and optimize your lot layout — all from your phone.\n\nFeatures:\n• Real-time GPS map with unit positions\n• Barcode/QR scanning for quick unit lookup\n• Work order management for porters and service staff\n• Offline support — works even without internet\n• Push notifications for alerts and assignments\n• BLE/NFC tracker pairing\n\nRV Trax is designed for lot porters, sales staff, service technicians, and managers who need to find and manage RV inventory quickly.",
+  "keywords": [
+    "RV dealer",
+    "lot management",
+    "GPS tracking",
+    "inventory",
+    "dealership",
+    "fleet tracking",
+    "LoRaWAN",
+    "asset tracking"
+  ],
+  "categories": {
+    "ios": "Business",
+    "android": "Business"
+  },
+  "privacy_policy_url": "https://rvtrax.com/privacy",
+  "support_url": "https://rvtrax.com/support",
+  "marketing_url": "https://rvtrax.com",
+  "content_rating": "4+",
+  "requires_subscription": true,
+  "permissions": {
+    "camera": "Scan barcodes and QR codes on RV units",
+    "location": "Show your position on the lot map",
+    "bluetooth": "Pair with LoRaWAN GPS trackers via BLE",
+    "push_notifications": "Receive alerts for unit movements and assignments",
+    "nfc": "Tap to pair NFC-enabled trackers"
+  }
+}

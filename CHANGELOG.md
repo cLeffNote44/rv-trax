@@ -5,6 +5,48 @@ All notable changes to RV Trax will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-03-23
+
+### Added
+
+- **v0.3.1 — Quality & Notifications**
+  - Customer status change notifications (email + in-app on unit transitions)
+  - Status notification settings UI in dealership preferences
+  - 4 new Playwright E2E test files (36 tests total: landing page, error pages,
+    auth guards, SEO/meta tags)
+
+- **v0.4.0 — Competitive Features**
+  - Automated pricing suggestions engine (aging, market comps, seasonality)
+  - Pricing analytics dashboard with discount recommendations
+  - Multi-language support framework (EN + ES translations, useTranslation hook,
+    LanguageSwitcher component)
+  - MapLibre GL fallback for self-hosters (auto-detect Mapbox token, free CARTO
+    tiles, MapView abstraction, provider badge)
+  - API v2 namespace with standardized envelope, offset pagination, expanded
+    responses with embedded relations
+
+- **v1.0.0 — Production Launch**
+  - Mobile app crash reporting (Sentry integration)
+  - Deep linking configuration (rvtrax:// scheme + universal links)
+  - App store metadata and production build config
+  - k6 load testing suite (smoke, load, stress, spike, WebSocket tests)
+  - SOC 2 compliance documentation (security controls, compliance checklist,
+    data handling policies)
+  - API versioning strategy documentation
+
+### Changed
+
+- All package versions bumped to 1.0.0
+- API PKG_VERSION updated to 1.0.0
+- README version badge updated to 1.0.0
+- SECURITY.md updated with 1.0.x support
+
+### Improved
+
+- Staging route file split: 691 → 414 lines (moves + compliance extracted)
+- Status change notifications hook into existing notification infrastructure
+- IDS-Astra DMS connector verified complete (testConnection, pullUnits, pushStatusChange)
+
 ## [0.3.0] - 2026-03-23
 
 ### Added

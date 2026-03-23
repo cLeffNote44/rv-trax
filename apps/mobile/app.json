@@ -1,4 +1,26 @@
 {
   "name": "RVTrax",
-  "displayName": "RV Trax"
+  "displayName": "RV Trax",
+  "deepLinking": {
+    "prefixes": ["rvtrax://", "https://app.rvtrax.com/"],
+    "scheme": "rvtrax",
+    "universalLinks": {
+      "domain": "app.rvtrax.com"
+    }
+  },
+  "android": {
+    "package": "com.rvtrax.mobile",
+    "intentFilters": [
+      {
+        "action": "VIEW",
+        "autoVerify": true,
+        "data": [{ "scheme": "rvtrax" }, { "scheme": "https", "host": "app.rvtrax.com" }],
+        "category": ["BROWSABLE", "DEFAULT"]
+      }
+    ]
+  },
+  "ios": {
+    "bundleIdentifier": "com.rvtrax.mobile",
+    "associatedDomains": ["applinks:app.rvtrax.com"]
+  }
 }

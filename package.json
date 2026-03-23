@@ -1,6 +1,6 @@
 {
   "name": "rv-trax",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Real-time asset tracking system for RV dealerships",
   "scripts": {

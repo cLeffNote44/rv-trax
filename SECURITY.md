@@ -31,10 +31,19 @@ RV Trax implements the following security measures:
 - **Webhook signatures**: HMAC-SHA256 signed payloads
 - **Timing-safe comparisons**: For token and secret verification
 
+## Detailed Documentation
+
+For comprehensive security information, see:
+
+- [Security Controls](docs/SECURITY_CONTROLS.md) — Full security architecture
+- [Compliance Checklist](docs/COMPLIANCE_CHECKLIST.md) — SOC 2 readiness status
+- [Data Handling](docs/DATA_HANDLING.md) — Data collection, retention, and privacy
+
 ## Supported Versions
 
 | Version | Supported           |
 | ------- | ------------------- |
-| 0.3.x   | Yes                 |
-| 0.2.x   | Security fixes only |
-| 0.1.x   | End of life         |
+| 1.0.x   | Yes                 |
+| 0.4.x   | Security fixes only |
+| 0.3.x   | End of life         |
+| < 0.3   | End of life         |
