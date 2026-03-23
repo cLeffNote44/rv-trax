@@ -18,6 +18,7 @@ import {
   X,
   Wifi,
   LayoutList,
+  Car,
 } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { cn } from '@/lib/utils';
@@ -42,6 +43,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Trackers', href: '/trackers', icon: Radio },
   { label: 'Gateways', href: '/gateways', icon: Wifi },
   { label: 'Alerts', href: '/alerts', icon: Bell },
+  { label: 'Test Drives', href: '/test-drives', icon: Car },
   { label: 'Service', href: '/service', icon: Wrench },
   { label: 'Staging', href: '/staging', icon: LayoutList },
   { label: 'Analytics', href: '/analytics', icon: BarChart3 },
@@ -63,12 +65,7 @@ interface SidebarProps {
 // Component
 // ---------------------------------------------------------------------------
 
-export function Sidebar({
-  collapsed,
-  onToggleCollapse,
-  mobileOpen,
-  onCloseMobile,
-}: SidebarProps) {
+export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [alertCount, setAlertCount] = useState(0);
@@ -83,7 +80,7 @@ export function Sidebar({
 
   // Merge alert badge into nav items
   const navItems = NAV_ITEMS.map((item) =>
-    item.label === 'Alerts' ? { ...item, badge: alertCount } : item
+    item.label === 'Alerts' ? { ...item, badge: alertCount } : item,
   );
 
   const sidebarContent = (
@@ -93,9 +90,7 @@ export function Sidebar({
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600">
           <MapPin className="h-5 w-5 text-white" />
         </div>
-        {!collapsed && (
-          <span className="text-lg font-bold text-white">RV Trax</span>
-        )}
+        {!collapsed && <span className="text-lg font-bold text-white">RV Trax</span>}
 
         {/* Mobile close button */}
         <button
@@ -125,7 +120,7 @@ export function Sidebar({
                 isActive
                   ? 'bg-blue-600/20 text-blue-400'
                   : 'text-slate-400 hover:bg-white/5 hover:text-white',
-                collapsed && 'justify-center px-2'
+                collapsed && 'justify-center px-2',
               )}
               title={collapsed ? item.label : undefined}
             >
@@ -155,11 +150,7 @@ export function Sidebar({
           className="flex w-full items-center justify-center rounded-lg py-2 text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
+          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
       </div>
 
@@ -169,7 +160,7 @@ export function Sidebar({
           onClick={() => setShowUserMenu((prev) => !prev)}
           className={cn(
             'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/5',
-            collapsed && 'justify-center px-2'
+            collapsed && 'justify-center px-2',
           )}
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
@@ -213,7 +204,7 @@ export function Sidebar({
       <aside
         className={cn(
           'hidden flex-col border-r border-white/5 transition-all duration-300 lg:flex',
-          collapsed ? 'w-[72px]' : 'w-64'
+          collapsed ? 'w-[72px]' : 'w-64',
         )}
       >
         {sidebarContent}
@@ -221,17 +212,14 @@ export function Sidebar({
 
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
-          onClick={onCloseMobile}
-        />
+        <div className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={onCloseMobile} />
       )}
 
       {/* Mobile sidebar */}
       <aside
         className={cn(
           'fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 lg:hidden',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          mobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
         {sidebarContent}

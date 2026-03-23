@@ -14,7 +14,9 @@ import multipart from '@fastify/multipart';
 
 import dbPlugin from './plugins/db.js';
 import authPlugin from './plugins/auth.js';
+import sentryPlugin, { flushSentry } from './plugins/sentry.js';
 import { registerErrorHandler } from './utils/errors.js';
+import { validateServerEnv } from './lib/env.js';
 
 import authRoutes from './routes/auth.js';
 import unitRoutes from './routes/units.js';
@@ -43,8 +45,11 @@ import dmsRoutes from './routes/dms.js';
 import widgetRoutes from './routes/widget.js';
 import deviceRoutes from './routes/devices.js';
 
-const API_HOST = process.env['API_HOST'] ?? '0.0.0.0';
-const API_PORT = parseInt(process.env['API_PORT'] ?? '3000', 10);
+// Validate all environment variables at startup — fail fast on misconfiguration
+const serverEnv = validateServerEnv();
+
+const API_HOST = serverEnv.API_HOST;
+const API_PORT = serverEnv.API_PORT;
 const PKG_VERSION = '0.1.0';
 
 async function buildApp() {
@@ -64,7 +69,9 @@ async function buildApp() {
 
   // ── Third-party plugins ---------------------------------------------------
   await app.register(cors, {
-    origin: (process.env['CORS_ORIGINS'] ?? process.env['CORS_ORIGIN'] ?? 'http://localhost:3001').split(',').map(s => s.trim()),
+    origin: (process.env['CORS_ORIGINS'] ?? process.env['CORS_ORIGIN'] ?? 'http://localhost:3001')
+      .split(',')
+      .map((s) => s.trim()),
     credentials: true,
   });
 
@@ -169,6 +176,7 @@ async function buildApp() {
   });
 
   // ── Custom plugins --------------------------------------------------------
+  await app.register(sentryPlugin);
   await app.register(dbPlugin);
   await app.register(authPlugin);
 
@@ -187,14 +195,18 @@ async function buildApp() {
 
     try {
       const { sql: rawSql } = await import('drizzle-orm');
-      await app.db.execute(rawSql`SELECT 1` as any);
+      await app.db.execute(rawSql`SELECT 1` as unknown as Parameters<typeof app.db.execute>[0]);
       checks['db'] = 'ok';
-    } catch { /* db unreachable */ }
+    } catch {
+      /* db unreachable */
+    }
 
     try {
       const pong = await app.redis.ping();
       if (pong === 'PONG') checks['redis'] = 'ok';
-    } catch { /* redis unreachable */ }
+    } catch {
+      /* redis unreachable */
+    }
 
     const allOk = Object.values(checks).every((v) => v === 'ok');
 
@@ -271,6 +283,7 @@ async function start() {
   const shutdown = async (signal: string) => {
     app.log.info(`Received ${signal}, shutting down gracefully...`);
     try {
+      await flushSentry();
       await app.close();
       app.log.info('Server closed');
       process.exit(0);

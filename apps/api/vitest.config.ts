@@ -13,6 +13,19 @@ export default defineConfig({
         singleFork: true,
       },
     },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'json-summary'],
+      reportsDirectory: '../coverage',
+      include: ['**/*.ts'],
+      exclude: ['tests/**', '**/*.test.ts', '**/*.d.ts'],
+      thresholds: {
+        lines: 50,
+        functions: 50,
+        branches: 40,
+        statements: 50,
+      },
+    },
     env: {
       DATABASE_URL: 'postgresql://rvtrax:rvtrax_dev@localhost:5432/rvtrax_test',
       REDIS_URL: 'redis://localhost:6379/1',

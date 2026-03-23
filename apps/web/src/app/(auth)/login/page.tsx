@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +26,20 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 // ---------------------------------------------------------------------------
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useAuth();
@@ -49,12 +63,11 @@ export default function LoginPage() {
       await login(data);
       const redirect = searchParams.get('redirect') ?? '/dashboard';
       // Prevent open redirect attacks — only allow relative paths
-      const safeRedirect = redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/dashboard';
+      const safeRedirect =
+        redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/dashboard';
       router.push(safeRedirect as import('next').Route);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Login failed. Please try again.'
-      );
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
     }
   };
 
@@ -67,9 +80,7 @@ export default function LoginPage() {
             <MapPin className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">RV Trax</h1>
-          <p className="mt-1 text-sm text-slate-400">
-            Sign in to your dealership dashboard
-          </p>
+          <p className="mt-1 text-sm text-slate-400">Sign in to your dealership dashboard</p>
         </div>
 
         {/* Error message */}
@@ -117,10 +128,7 @@ export default function LoginPage() {
         {/* Footer link */}
         <p className="mt-6 text-center text-sm text-slate-500">
           Forgot your password?{' '}
-          <a
-            href="/forgot-password"
-            className="text-blue-400 hover:text-blue-300"
-          >
+          <a href="/forgot-password" className="text-blue-400 hover:text-blue-300">
             Reset it
           </a>
         </p>

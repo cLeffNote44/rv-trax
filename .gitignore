@@ -45,3 +45,4 @@ apps/mobile/ios/build/
 .env.production
 .env.staging
 .claude/
+.vercel

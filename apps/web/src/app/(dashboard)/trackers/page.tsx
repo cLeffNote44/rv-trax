@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Dialog } from '@/components/ui/Dialog';
 import { TrackerTable } from './components/TrackerTable';
 import { BatteryDashboard } from './components/BatteryDashboard';
+import { BatteryHealthPanel } from './components/BatteryHealthPanel';
 import { PaginationControls } from '@/components/shared/PaginationControls';
 
 type FilterTab = 'all' | 'assigned' | 'unassigned' | 'low_battery' | 'offline' | 'retired';
@@ -83,9 +84,7 @@ export default function TrackersPage() {
     total: totalCount,
     assigned: trackers.filter((t) => t.status === TrackerStatus.ASSIGNED).length,
     unassigned: trackers.filter((t) => t.status === TrackerStatus.UNASSIGNED).length,
-    lowBattery: trackers.filter(
-      (t) => t.battery_pct !== null && t.battery_pct < 20
-    ).length,
+    lowBattery: trackers.filter((t) => t.battery_pct !== null && t.battery_pct < 20).length,
     offline: trackers.filter((t) => t.status === TrackerStatus.OFFLINE).length,
   };
 
@@ -141,9 +140,7 @@ export default function TrackersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-            Trackers
-          </h1>
+          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Trackers</h1>
           <Badge>{totalCount}</Badge>
         </div>
         <div className="flex items-center gap-2">
@@ -204,10 +201,7 @@ export default function TrackersPage() {
               <Button variant="outline" onClick={() => setRegisterOpen(false)}>
                 Cancel
               </Button>
-              <Button
-                onClick={handleRegister}
-                disabled={!newDeviceEui.trim() || registering}
-              >
+              <Button onClick={handleRegister} disabled={!newDeviceEui.trim() || registering}>
                 {registering ? 'Registering...' : 'Register'}
               </Button>
             </div>
@@ -258,6 +252,9 @@ export default function TrackersPage() {
 
       {/* Battery Dashboard */}
       <BatteryDashboard trackers={trackers} />
+
+      {/* Battery Health Predictions */}
+      <BatteryHealthPanel />
 
       {/* Tracker Table */}
       <TrackerTable trackers={trackers} loading={loading} onRefresh={fetchTrackers} />

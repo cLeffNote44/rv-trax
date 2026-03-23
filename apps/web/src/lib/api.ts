@@ -26,16 +26,18 @@ import type {
   User,
   WebhookDelivery,
   WebhookEndpoint,
+  WidgetConfig,
   WorkOrder,
 } from '@rv-trax/shared';
+
+export type { DmsSyncLog, WidgetConfig, InventoryAnalytics };
 import { removeToken } from './auth';
 
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
 
 // ---------------------------------------------------------------------------
 // Fetch wrapper
@@ -115,7 +117,7 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
       (errorBody as { message?: string })?.message ?? res.statusText,
       (errorBody as { code?: string })?.code ?? 'UNKNOWN',
       res.status,
-      errorBody as Record<string, unknown> | undefined
+      errorBody as Record<string, unknown> | undefined,
     );
   }
 
@@ -134,7 +136,7 @@ export class ApiError extends Error {
     message: string,
     public readonly code: string,
     public readonly status: number,
-    public readonly details?: Record<string, unknown>
+    public readonly details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = 'ApiError';
@@ -259,7 +261,10 @@ export function updateTracker(id: string, data: Partial<Tracker>): Promise<Track
 }
 
 export function assignTracker(trackerId: string, unitId: string): Promise<void> {
-  return apiFetch<void>(`/trackers/${trackerId}/assign`, { method: 'POST', body: { unit_id: unitId } });
+  return apiFetch<void>(`/trackers/${trackerId}/assign`, {
+    method: 'POST',
+    body: { unit_id: unitId },
+  });
 }
 
 export function unassignTracker(trackerId: string): Promise<void> {
@@ -380,7 +385,12 @@ export function deleteGeofence(id: string): Promise<void> {
 // Work Orders
 // ---------------------------------------------------------------------------
 
-export function getWorkOrders(query?: { cursor?: string; limit?: number; status?: string; unit_id?: string }): Promise<PaginatedResponse<WorkOrder>> {
+export function getWorkOrders(query?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+  unit_id?: string;
+}): Promise<PaginatedResponse<WorkOrder>> {
   const params = new URLSearchParams();
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
@@ -407,7 +417,11 @@ export function updateWorkOrder(id: string, data: Partial<WorkOrder>): Promise<W
 // Recalls
 // ---------------------------------------------------------------------------
 
-export function getRecalls(query?: { cursor?: string; limit?: number; status?: string }): Promise<PaginatedResponse<Recall>> {
+export function getRecalls(query?: {
+  cursor?: string;
+  limit?: number;
+  status?: string;
+}): Promise<PaginatedResponse<Recall>> {
   const params = new URLSearchParams();
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
@@ -430,7 +444,9 @@ export function updateRecall(id: string, data: Partial<Recall>): Promise<Recall>
 // Staging
 // ---------------------------------------------------------------------------
 
-export function getStagingPlans(query?: { lot_id?: string }): Promise<PaginatedResponse<StagingPlan>> {
+export function getStagingPlans(query?: {
+  lot_id?: string;
+}): Promise<PaginatedResponse<StagingPlan>> {
   const qs = query?.lot_id ? `?lot_id=${query.lot_id}` : '';
   return apiFetch<PaginatedResponse<StagingPlan>>(`/staging${qs}`);
 }
@@ -468,11 +484,21 @@ export function getMovementAnalytics(query?: { days?: number }): Promise<Movemen
   return apiFetch<MovementAnalytics>(`/analytics/movement${qs}`);
 }
 
-export function getTrackerAnalytics(): Promise<{ total: number; assigned: number; low_battery: number; offline: number; avg_battery: number }> {
+export function getTrackerAnalytics(): Promise<{
+  total: number;
+  assigned: number;
+  low_battery: number;
+  offline: number;
+  avg_battery: number;
+}> {
   return apiFetch('/analytics/trackers');
 }
 
-export function getDwellTimeAnalytics(): Promise<{ avg_dwell_days: number; by_type: Record<string, number>; by_make: Record<string, number> }> {
+export function getDwellTimeAnalytics(): Promise<{
+  avg_dwell_days: number;
+  by_type: Record<string, number>;
+  by_make: Record<string, number>;
+}> {
   return apiFetch('/analytics/dwell-time');
 }
 
@@ -488,7 +514,10 @@ export function createScheduledReport(data: Partial<ScheduledReport>): Promise<S
   return apiFetch<ScheduledReport>('/reports', { method: 'POST', body: data });
 }
 
-export function updateScheduledReport(id: string, data: Partial<ScheduledReport>): Promise<ScheduledReport> {
+export function updateScheduledReport(
+  id: string,
+  data: Partial<ScheduledReport>,
+): Promise<ScheduledReport> {
   return apiFetch<ScheduledReport>(`/reports/${id}`, { method: 'PATCH', body: data });
 }
 
@@ -548,7 +577,10 @@ export function getApiKeys(): Promise<ApiKey[]> {
   return apiFetch<ApiKey[]>('/api-keys');
 }
 
-export function createApiKey(data: { name: string; scopes: string[] }): Promise<ApiKey & { key: string }> {
+export function createApiKey(data: {
+  name: string;
+  scopes: string[];
+}): Promise<ApiKey & { key: string }> {
   return apiFetch<ApiKey & { key: string }>('/api-keys', { method: 'POST', body: data });
 }
 
@@ -568,7 +600,10 @@ export function createWebhook(data: { url: string; events: string[] }): Promise<
   return apiFetch<WebhookEndpoint>('/webhooks', { method: 'POST', body: data });
 }
 
-export function updateWebhook(id: string, data: Partial<WebhookEndpoint>): Promise<WebhookEndpoint> {
+export function updateWebhook(
+  id: string,
+  data: Partial<WebhookEndpoint>,
+): Promise<WebhookEndpoint> {
   return apiFetch<WebhookEndpoint>(`/webhooks/${id}`, { method: 'PATCH', body: data });
 }
 
@@ -592,7 +627,10 @@ export function getDmsIntegration(): Promise<DmsIntegration | null> {
   return apiFetch<DmsIntegration | null>('/dms');
 }
 
-export function configureDms(data: { provider: string; config: Record<string, unknown> }): Promise<DmsIntegration> {
+export function configureDms(data: {
+  provider: string;
+  config: Record<string, unknown>;
+}): Promise<DmsIntegration> {
   return apiFetch<DmsIntegration>('/dms', { method: 'POST', body: data });
 }
 
@@ -612,11 +650,21 @@ export function disconnectDms(): Promise<void> {
 // Notification Preferences
 // ---------------------------------------------------------------------------
 
-export function getNotificationPreferences(): Promise<{ alert_type: string; in_app: boolean; push: boolean; email: boolean; sms: boolean }[]> {
+export function getNotificationPreferences(): Promise<
+  { alert_type: string; in_app: boolean; push: boolean; email: boolean; sms: boolean }[]
+> {
   return apiFetch('/settings/notification-preferences');
 }
 
-export function updateNotificationPreferences(preferences: { alert_type: string; in_app: boolean; push: boolean; email: boolean; sms: boolean }[]): Promise<void> {
+export function updateNotificationPreferences(
+  preferences: {
+    alert_type: string;
+    in_app: boolean;
+    push: boolean;
+    email: boolean;
+    sms: boolean;
+  }[],
+): Promise<void> {
   return apiFetch('/settings/notification-preferences', { method: 'PUT', body: preferences });
 }
 
@@ -659,9 +707,164 @@ export function getAuditLog(query?: {
     });
   }
   const qs = params.toString();
-  return apiFetch<PaginatedResponse<AuditLogEntry>>(
-    `/audit-log${qs ? `?${qs}` : ''}`
-  );
+  return apiFetch<PaginatedResponse<AuditLogEntry>>(`/audit-log${qs ? `?${qs}` : ''}`);
+}
+
+// ---------------------------------------------------------------------------
+// Unit Photos
+// ---------------------------------------------------------------------------
+
+export interface UnitPhoto {
+  id: string;
+  unit_id: string;
+  url: string;
+  thumbnail_url: string | null;
+  caption: string | null;
+  sort_order: number;
+  uploaded_by: string;
+  created_at: string;
+}
+
+export function getUnitPhotos(unitId: string): Promise<UnitPhoto[]> {
+  return apiFetch<UnitPhoto[]>(`/units/${unitId}/photos`);
+}
+
+export function uploadUnitPhoto(unitId: string, file: File, caption?: string): Promise<UnitPhoto> {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (caption) formData.append('caption', caption);
+  return apiFetch<UnitPhoto>(`/units/${unitId}/photos`, {
+    method: 'POST',
+    body: formData,
+    raw: true,
+  });
+}
+
+export function deleteUnitPhoto(unitId: string, photoId: string): Promise<void> {
+  return apiFetch<void>(`/units/${unitId}/photos/${photoId}`, { method: 'DELETE' });
+}
+
+export function reorderUnitPhotos(unitId: string, photoIds: string[]): Promise<void> {
+  return apiFetch<void>(`/units/${unitId}/photos/reorder`, {
+    method: 'POST',
+    body: { photo_ids: photoIds },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Test Drives
+// ---------------------------------------------------------------------------
+
+export interface TestDrive {
+  id: string;
+  unit_id: string;
+  customer_name: string;
+  customer_phone: string | null;
+  customer_email: string | null;
+  sales_rep_id: string;
+  sales_rep_name?: string;
+  started_at: string;
+  ended_at: string | null;
+  notes: string | null;
+  distance_miles: number | null;
+  created_at: string;
+}
+
+export function getTestDrives(query?: {
+  unit_id?: string;
+  cursor?: string;
+  limit?: number;
+}): Promise<PaginatedResponse<TestDrive>> {
+  const params = new URLSearchParams();
+  if (query) {
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined) params.set(key, String(value));
+    });
+  }
+  const qs = params.toString();
+  return apiFetch<PaginatedResponse<TestDrive>>(`/test-drives${qs ? `?${qs}` : ''}`);
+}
+
+export function startTestDrive(data: {
+  unit_id: string;
+  customer_name: string;
+  customer_phone?: string;
+  customer_email?: string;
+}): Promise<TestDrive> {
+  return apiFetch<TestDrive>('/test-drives', { method: 'POST', body: data });
+}
+
+export function endTestDrive(
+  id: string,
+  data?: {
+    notes?: string;
+    distance_miles?: number;
+  },
+): Promise<TestDrive> {
+  return apiFetch<TestDrive>(`/test-drives/${id}/end`, { method: 'POST', body: data });
+}
+
+// ---------------------------------------------------------------------------
+// Inventory Aging (extended analytics)
+// ---------------------------------------------------------------------------
+
+export interface AgingDetail {
+  unit_id: string;
+  stock_number: string;
+  year: number;
+  make: string;
+  model: string;
+  unit_type: string;
+  msrp: number | null;
+  days_on_lot: number;
+  status: string;
+  lot_name: string | null;
+}
+
+export function getAgingReport(query?: {
+  bucket?: string;
+  sort?: string;
+  order?: 'asc' | 'desc';
+}): Promise<{ summary: InventoryAnalytics; details: AgingDetail[] }> {
+  const params = new URLSearchParams();
+  if (query) {
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined) params.set(key, String(value));
+    });
+  }
+  const qs = params.toString();
+  return apiFetch(`/analytics/aging${qs ? `?${qs}` : ''}`);
+}
+
+// ---------------------------------------------------------------------------
+// Battery Health
+// ---------------------------------------------------------------------------
+
+export interface BatteryPrediction {
+  tracker_id: string;
+  device_eui: string;
+  label: string | null;
+  current_pct: number;
+  trend: 'stable' | 'declining' | 'critical';
+  estimated_days_remaining: number | null;
+  last_reading_at: string;
+  readings_30d: Array<{ date: string; pct: number }>;
+}
+
+export function getBatteryHealth(): Promise<BatteryPrediction[]> {
+  return apiFetch<BatteryPrediction[]>('/analytics/battery-health');
+}
+
+// ---------------------------------------------------------------------------
+// Public Widget
+// ---------------------------------------------------------------------------
+
+export function getWidgetConfig(): Promise<WidgetConfig> {
+  return apiFetch<WidgetConfig>('/widget/config');
+}
+
+export function updateWidgetConfig(data: Partial<WidgetConfig>): Promise<WidgetConfig> {
+  return apiFetch<WidgetConfig>('/widget/config', { method: 'PATCH', body: data });
 }
 
 // ---------------------------------------------------------------------------

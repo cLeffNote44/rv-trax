@@ -13,6 +13,8 @@ import {
 import type { User } from '@rv-trax/shared';
 import { removeToken } from '@/lib/auth';
 import { login as apiLogin, logout as apiLogout, getMe, type LoginRequest } from '@/lib/api';
+import { initAnalytics, identifyUser, resetAnalytics, trackEvent } from '@/lib/analytics';
+import { initSentry } from '@/lib/sentry';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -65,6 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Best-effort API call to revoke server-side tokens
     apiLogout().catch(() => {});
     removeToken();
+    resetAnalytics();
+    trackEvent('user_logged_out');
     setState({
       user: null,
       token: null,
@@ -98,6 +102,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [state.isAuthenticated, logout]);
 
+  // ── Initialise analytics & error tracking on mount ────────────────────────
+
+  useEffect(() => {
+    initAnalytics();
+    initSentry();
+  }, []);
+
   // ── Hydrate on mount (cookie sent automatically) ──────────────────────────
 
   useEffect(() => {
@@ -109,6 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           isAuthenticated: true,
           isLoading: false,
         }));
+        // Identify user in analytics
+        identifyUser(user.id, { role: user.role, dealership_id: user.dealership_id });
       })
       .catch(() => {
         setState({
@@ -131,6 +144,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: true,
       isLoading: false,
     });
+    identifyUser(response.user.id, {
+      role: response.user.role,
+      dealership_id: response.user.dealership_id,
+    });
+    trackEvent('user_logged_in');
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -139,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       logout,
     }),
-    [state, login, logout]
+    [state, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

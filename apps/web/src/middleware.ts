@@ -1,17 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password'];
+const STATIC_EXTENSIONS = /\.(ico|png|jpg|jpeg|svg|gif|webp|css|js|woff2?|ttf|eot|map)$/;
 const TOKEN_COOKIE_NAME = 'rv-trax-token';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public routes and static assets
+  // Allow public routes, static assets, and API routes
   if (
+    pathname === '/' ||
     PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
-    pathname.includes('.')
+    STATIC_EXTENSIONS.test(pathname)
   ) {
     return NextResponse.next();
   }

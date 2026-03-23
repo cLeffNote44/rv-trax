@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,6 +31,20 @@ type ResetFormValues = z.infer<typeof resetSchema>;
 // ---------------------------------------------------------------------------
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+        </div>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -65,7 +79,7 @@ export default function ResetPasswordPage() {
       setTimeout(() => router.push('/login'), 3000);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to reset password. The link may have expired.'
+        err instanceof Error ? err.message : 'Failed to reset password. The link may have expired.',
       );
     }
   };
@@ -98,9 +112,7 @@ export default function ResetPasswordPage() {
             <MapPin className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">New Password</h1>
-          <p className="mt-1 text-sm text-slate-400">
-            Choose a new password for your account
-          </p>
+          <p className="mt-1 text-sm text-slate-400">Choose a new password for your account</p>
         </div>
 
         {success ? (

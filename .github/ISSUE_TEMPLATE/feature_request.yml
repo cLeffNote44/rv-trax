@@ -1,0 +1,65 @@
+name: Feature Request
+description: Suggest a feature for RV Trax
+title: '[Feature]: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to improve RV Trax? We'd love to hear it.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this solve? What's frustrating today?
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this to work?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Any other solutions or workarounds you've considered?
+
+  - type: dropdown
+    id: app
+    attributes:
+      label: Affected App
+      options:
+        - Web Dashboard
+        - API
+        - Mobile App
+        - IoT Ingest
+        - Platform-wide
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this to your workflow?
+      options:
+        - Nice to have
+        - Important
+        - Critical — blocking my workflow
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues and feature requests
+          required: true

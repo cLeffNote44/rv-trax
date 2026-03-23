@@ -22,28 +22,11 @@ import {
 } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 
-import {
-  getUnit,
-  updateUnit,
-  deleteUnit,
-  getAuditLog,
-  getWorkOrders,
-} from '@/lib/api';
+import { getUnit, updateUnit, deleteUnit, getAuditLog, getWorkOrders } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
-import {
-  cn,
-  formatCurrency,
-  formatDate,
-  formatRelativeTime,
-  formatStatus,
-} from '@/lib/utils';
+import { cn, formatCurrency, formatDate, formatRelativeTime, formatStatus } from '@/lib/utils';
 import { UnitStatus } from '@rv-trax/shared';
-import type {
-  Unit,
-  AuditLogEntry,
-  WorkOrder,
-  PaginatedResponse,
-} from '@rv-trax/shared';
+import type { Unit, AuditLogEntry, WorkOrder, PaginatedResponse } from '@rv-trax/shared';
 
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -52,6 +35,8 @@ import { Select } from '@/components/ui/Select';
 import { Dialog } from '@/components/ui/Dialog';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import PhotoGallery from './components/PhotoGallery';
+import { UnitQRCode } from './components/UnitQRCode';
 
 // ---------------------------------------------------------------------------
 // Edit form schema
@@ -115,9 +100,7 @@ function DetailRow({
         {icon}
         {label}
       </span>
-      <span className="text-sm font-medium text-[var(--color-text-primary)]">
-        {value ?? '--'}
-      </span>
+      <span className="text-sm font-medium text-[var(--color-text-primary)]">{value ?? '--'}</span>
     </div>
   );
 }
@@ -247,12 +230,8 @@ export default function UnitDetailPage() {
         </Link>
         <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-900/20">
           <AlertTriangle className="mx-auto h-8 w-8 text-red-500" />
-          <p className="mt-2 font-medium text-red-700 dark:text-red-300">
-            Failed to load unit
-          </p>
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-            {unitError}
-          </p>
+          <p className="mt-2 font-medium text-red-700 dark:text-red-300">Failed to load unit</p>
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{unitError}</p>
           <Button variant="outline" size="sm" className="mt-4" onClick={refetchUnit}>
             Retry
           </Button>
@@ -273,9 +252,7 @@ export default function UnitDetailPage() {
           Back to Inventory
         </Link>
         <div className="rounded-lg border-2 border-dashed border-[var(--color-border)] p-12 text-center">
-          <p className="text-sm text-[var(--color-text-tertiary)]">
-            Unit not found.
-          </p>
+          <p className="text-sm text-[var(--color-text-tertiary)]">Unit not found.</p>
         </div>
       </div>
     );
@@ -302,9 +279,7 @@ export default function UnitDetailPage() {
             <StatusBadge status={unit.status} />
           </div>
           {unit.vin && (
-            <p className="font-mono text-sm text-[var(--color-text-secondary)]">
-              VIN: {unit.vin}
-            </p>
+            <p className="font-mono text-sm text-[var(--color-text-secondary)]">VIN: {unit.vin}</p>
           )}
         </div>
 
@@ -313,11 +288,7 @@ export default function UnitDetailPage() {
             <Edit2 className="h-4 w-4" />
             Edit
           </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
+          <Button variant="destructive" size="sm" onClick={() => setDeleteDialogOpen(true)}>
             <Trash2 className="h-4 w-4" />
             Delete
           </Button>
@@ -332,11 +303,7 @@ export default function UnitDetailPage() {
             <CardTitle>Unit Information</CardTitle>
           </CardHeader>
           <CardContent className="divide-y divide-[var(--color-border)]">
-            <DetailRow
-              label="Year"
-              value={unit.year}
-              icon={<Tag className="h-3.5 w-3.5" />}
-            />
+            <DetailRow label="Year" value={unit.year} icon={<Tag className="h-3.5 w-3.5" />} />
             <DetailRow label="Make" value={unit.make} />
             <DetailRow label="Model" value={unit.model} />
             <DetailRow label="Floorplan" value={unit.floorplan} />
@@ -355,10 +322,7 @@ export default function UnitDetailPage() {
               value={unit.msrp != null ? formatCurrency(unit.msrp) : null}
               icon={<DollarSign className="h-3.5 w-3.5" />}
             />
-            <DetailRow
-              label="Status"
-              value={<StatusBadge status={unit.status} />}
-            />
+            <DetailRow label="Status" value={<StatusBadge status={unit.status} />} />
             <DetailRow
               label="Days on Lot"
               value={
@@ -382,18 +346,9 @@ export default function UnitDetailPage() {
               value={locationString}
               icon={<MapPin className="h-3.5 w-3.5" />}
             />
-            <DetailRow
-              label="Lot"
-              value={unit.lot_id ? unit.lot_id : null}
-            />
-            <DetailRow
-              label="Added"
-              value={formatDate(unit.created_at)}
-            />
-            <DetailRow
-              label="Last Updated"
-              value={formatRelativeTime(unit.updated_at)}
-            />
+            <DetailRow label="Lot" value={unit.lot_id ? unit.lot_id : null} />
+            <DetailRow label="Added" value={formatDate(unit.created_at)} />
+            <DetailRow label="Last Updated" value={formatRelativeTime(unit.updated_at)} />
           </CardContent>
         </Card>
 
@@ -457,14 +412,24 @@ export default function UnitDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-center py-6">
-                <p className="text-sm text-[var(--color-text-tertiary)]">
-                  No notes yet
-                </p>
+                <p className="text-sm text-[var(--color-text-tertiary)]">No notes yet</p>
               </div>
             </CardContent>
           </Card>
+
+          {/* QR Code */}
+          <UnitQRCode
+            unitId={unit.id}
+            stockNumber={unit.stock_number}
+            year={unit.year}
+            make={unit.make}
+            model={unit.model}
+          />
         </div>
       </div>
+
+      {/* ---- Photo Gallery ---- */}
+      <PhotoGallery unitId={unit.id} />
 
       {/* ---- Activity Log ---- */}
       <Card>
@@ -628,11 +593,7 @@ export default function UnitDetailPage() {
           </div>
 
           <div className="flex justify-end gap-3 border-t border-[var(--color-border)] pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setEditDialogOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" isLoading={isSubmitting}>
@@ -658,17 +619,10 @@ export default function UnitDetailPage() {
             ? This will permanently remove the unit and all associated data.
           </p>
           <div className="flex justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              isLoading={isDeleting}
-            >
+            <Button variant="destructive" onClick={handleDelete} isLoading={isDeleting}>
               Delete Unit
             </Button>
           </div>

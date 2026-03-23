@@ -18,12 +18,12 @@ import {
   getSeverityEmoji,
   getUnsubscribeUrl,
 } from './templates.js';
+import { isResendConfigured, sendEmailViaResend } from './email-resend.js';
 
 // ── Configuration ────────────────────────────────────────────────────────────
 
 const SES_REGION = process.env['AWS_SES_REGION'] ?? 'us-east-1';
-const SES_FROM =
-  process.env['SES_FROM_ADDRESS'] ?? 'alerts@notifications.rvtrax.com';
+const SES_FROM = process.env['SES_FROM_ADDRESS'] ?? 'alerts@notifications.rvtrax.com';
 
 // ── Lazy SES client singleton ────────────────────────────────────────────────
 
@@ -226,19 +226,23 @@ export async function sendAlertEmail(params: EmailParams): Promise<boolean> {
 /**
  * Generic email sender — used by alert emails and password reset.
  */
-export async function sendEmail(
-  to: string,
-  subject: string,
-  htmlBody: string,
-): Promise<boolean> {
+export async function sendEmail(to: string, subject: string, htmlBody: string): Promise<boolean> {
+  // Use Resend if configured as the email provider
+  if (isResendConfigured()) {
+    return sendEmailViaResend(to, subject, htmlBody);
+  }
+
+  // Otherwise fall back to AWS SES
   const client = getSesClient();
 
   if (!client) {
     if (process.env['NODE_ENV'] !== 'production') {
-      console.info(`[email] DEV SKIP — would send to=${to}: "${subject}"`);
+      console.warn(`[email] DEV SKIP — would send to=${to}: "${subject}"`);
       return true;
     }
-    console.error('[email] AWS SES credentials not configured');
+    console.error(
+      '[email] No email provider configured (set EMAIL_PROVIDER=resend or add AWS SES credentials)',
+    );
     return false;
   }
 

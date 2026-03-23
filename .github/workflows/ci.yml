@@ -66,8 +66,15 @@ jobs:
       - name: Build shared packages
         run: pnpm --filter @rv-trax/shared build
 
-      - name: Run web tests
-        run: pnpm --filter @rv-trax/web test
+      - name: Run web tests with coverage
+        run: pnpm --filter @rv-trax/web test:coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-coverage
+          path: apps/web/coverage/
 
   test-mobile:
     name: Test (Mobile)
@@ -152,8 +159,15 @@ jobs:
       - name: Build shared packages
         run: pnpm --filter @rv-trax/shared --filter @rv-trax/db build
 
-      - name: Run API tests
-        run: pnpm --filter @rv-trax/api test
+      - name: Run API tests with coverage
+        run: pnpm --filter @rv-trax/api test:coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-coverage
+          path: apps/api/coverage/
 
   test-iot:
     name: Test (IoT Ingest)
