@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { Suspense } from 'react';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
+import { ServiceWorkerProvider } from '@/components/providers/ServiceWorkerProvider';
 import './globals.css';
 
 const inter = Inter({
@@ -28,8 +29,19 @@ export const metadata: Metadata = {
     'dealership software',
   ],
   authors: [{ name: 'RV Trax' }],
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+    other: [
+      { rel: 'icon', type: 'image/png', sizes: '192x192', url: '/icons/icon-192.png' },
+      { rel: 'icon', type: 'image/png', sizes: '512x512', url: '/icons/icon-512.png' },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'RV Trax',
   },
   openGraph: {
     type: 'website',
@@ -49,6 +61,10 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'theme-color': '#2563eb',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -57,7 +73,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-[var(--color-bg-primary)] font-sans antialiased">
         <AuthProvider>
           <Suspense fallback={null}>
-            <PostHogProvider>{children}</PostHogProvider>
+            <PostHogProvider>
+              <ServiceWorkerProvider />
+              {children}
+            </PostHogProvider>
           </Suspense>
         </AuthProvider>
       </body>
