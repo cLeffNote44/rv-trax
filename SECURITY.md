@@ -33,6 +33,7 @@ RV Trax implements the following security measures:
 
 ## Supported Versions
 
-| Version | Supported |
-|---------|-----------|
-| 0.1.x   | Yes       |
+| Version | Supported           |
+| ------- | ------------------- |
+| 0.2.x   | Yes                 |
+| 0.1.x   | Security fixes only |

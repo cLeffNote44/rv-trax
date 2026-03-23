@@ -1,0 +1,23 @@
+# Default owner for everything
+* @cLeffNote44
+
+# App-specific ownership
+apps/api/ @cLeffNote44
+apps/web/ @cLeffNote44
+apps/mobile/ @cLeffNote44
+apps/iot-ingest/ @cLeffNote44
+
+# Shared packages
+packages/shared/ @cLeffNote44
+packages/db/ @cLeffNote44
+
+# Infrastructure & DevOps
+infrastructure/ @cLeffNote44
+.github/ @cLeffNote44
+Dockerfile* @cLeffNote44
+docker-compose* @cLeffNote44
+
+# Security-sensitive files require owner review
+SECURITY.md @cLeffNote44
+PRIVACY.md @cLeffNote44
+TERMS.md @cLeffNote44

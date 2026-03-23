@@ -5,6 +5,63 @@ All notable changes to RV Trax will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-03-23
+
+### Added
+
+- **Competitive Features**
+  - Inventory aging dashboard with Recharts visualization and color-coded aging buckets
+  - Photo gallery component per unit (upload, lightbox, reorder, delete)
+  - Test drive tracking page with live timers, forms, and history
+  - QR code generation per unit with print and copy-to-clipboard
+  - Battery health prediction panel with voltage trends and alerts
+  - Public inventory widget configurator with embed code generation
+  - DMS sync status monitor with history and manual trigger
+
+- **Service Integrations**
+  - Sentry error tracking (API plugin + web client, optional via SENTRY_DSN)
+  - Resend as alternative email provider (toggle via EMAIL_PROVIDER env)
+  - PostHog analytics provider with pageview tracking
+  - Vercel deployment configuration
+
+- **DevOps & Quality**
+  - Dependabot for automated weekly dependency updates
+  - CodeQL security scanning workflow + dependency audit
+  - Husky + lint-staged pre-commit hooks
+  - Commitlint with Conventional Commits enforcement
+  - Code coverage config (v8 provider with thresholds)
+  - GitHub issue templates (bug report, feature request)
+  - Pull request template with checklist
+  - Code of Conduct (Contributor Covenant v2.1)
+  - CODEOWNERS file for PR review assignment
+  - Production multi-stage Dockerfile
+  - Privacy Policy and Terms of Service
+
+- **Code Quality**
+  - Error pages (404, 500, global-error) with branded UI
+  - Environment variable validation (Zod schemas, fail-fast on build)
+  - SEO metadata, Open Graph tags, robots.txt, sitemap.xml
+  - Marketing landing page with feature showcase and screenshots
+  - Playwright E2E test scaffolding (auth + navigation specs)
+  - Dashboard loading skeletons and Suspense boundaries
+  - Health check endpoint (/api/health)
+  - README badges (CI, CodeQL, license, version)
+  - Architecture documentation (ARCHITECTURE.md)
+  - Database guide (DATABASE.md)
+  - .nvmrc, .npmrc, .editorconfig, .gitattributes for environment consistency
+
+### Fixed
+
+- Auth middleware redirect loop on protected routes
+- Unused variable lint errors across 5 files
+- ESLint disable comments for non-existent rules
+
+### Changed
+
+- Updated CONTRIBUTING.md with Conventional Commits, pre-commit hooks, and branch protection docs
+- Updated README with badges, documentation table, and accurate page counts
+- Updated SECURITY.md with v0.2.0 support status
+
 ## [0.1.0] - 2026-03-22
 
 ### Added

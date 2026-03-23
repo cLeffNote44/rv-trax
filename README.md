@@ -1,5 +1,12 @@
 # RV Trax
 
+[![CI](https://github.com/cLeffNote44/rv-trax/actions/workflows/ci.yml/badge.svg)](https://github.com/cLeffNote44/rv-trax/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/cLeffNote44/rv-trax/actions/workflows/codeql.yml/badge.svg)](https://github.com/cLeffNote44/rv-trax/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](CHANGELOG.md)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](.nvmrc)
+[![pnpm](https://img.shields.io/badge/pnpm-%3E%3D9-orange.svg)](https://pnpm.io/)
+
 Real-time asset tracking system for RV dealerships. Track every unit on your lot with LoRaWAN GPS trackers, manage inventory, automate staging, and monitor your fleet from a web dashboard or mobile app.
 
 ## What It Does
@@ -7,6 +14,7 @@ Real-time asset tracking system for RV dealerships. Track every unit on your lot
 RV Trax solves a common problem for RV dealerships: knowing exactly where every unit is, at all times. Large lots with hundreds of RVs spread across multiple zones make it easy to lose track of inventory. Sales staff waste time searching for units, porters move vehicles without logging it, and managers have no visibility into lot utilization.
 
 **Core capabilities:**
+
 - **Real-time GPS tracking** via LoRaWAN trackers attached to each unit
 - **Automated lot mapping** with zone/row/spot snapping and geo-fencing
 - **Movement detection** with audit trails and alerts
@@ -39,14 +47,14 @@ RV Trax solves a common problem for RV dealerships: knowing exactly where every 
 
 **Monorepo structure** (pnpm workspaces + Turborepo):
 
-| Package | Description | Tech |
-|---------|-------------|------|
-| `apps/api` | REST API + WebSocket server | Fastify 5, Drizzle ORM, JWT, Pino |
-| `apps/web` | Management dashboard | Next.js 15, React 19, Tailwind, Mapbox |
-| `apps/mobile` | Field operations app | React Native 0.76, React Navigation 7 |
-| `apps/iot-ingest` | Tracker telemetry pipeline | MQTT, Redis Streams, Kalman filter |
-| `packages/shared` | Types, enums, validators, constants | TypeScript, Zod |
-| `packages/db` | Database schema and migrations | Drizzle ORM, PostgreSQL |
+| Package           | Description                         | Tech                                   |
+| ----------------- | ----------------------------------- | -------------------------------------- |
+| `apps/api`        | REST API + WebSocket server         | Fastify 5, Drizzle ORM, JWT, Pino      |
+| `apps/web`        | Management dashboard                | Next.js 15, React 19, Tailwind, Mapbox |
+| `apps/mobile`     | Field operations app                | React Native 0.76, React Navigation 7  |
+| `apps/iot-ingest` | Tracker telemetry pipeline          | MQTT, Redis Streams, Kalman filter     |
+| `packages/shared` | Types, enums, validators, constants | TypeScript, Zod                        |
+| `packages/db`     | Database schema and migrations      | Drizzle ORM, PostgreSQL                |
 
 ## Quick Start
 
@@ -88,12 +96,12 @@ pnpm run dev           # Starts all apps concurrently
 
 Or run services individually:
 
-| Service | Command | Port |
-|---------|---------|------|
-| API Server | `cd apps/api && pnpm dev` | 3000 |
-| Web Dashboard | `cd apps/web && pnpm dev` | 3001 |
-| IoT Ingest | `cd apps/iot-ingest && pnpm dev` | 3002 |
-| Mobile (Metro) | `cd apps/mobile && pnpm start` | 8081 |
+| Service        | Command                          | Port |
+| -------------- | -------------------------------- | ---- |
+| API Server     | `cd apps/api && pnpm dev`        | 3000 |
+| Web Dashboard  | `cd apps/web && pnpm dev`        | 3001 |
+| IoT Ingest     | `cd apps/iot-ingest && pnpm dev` | 3002 |
+| Mobile (Metro) | `cd apps/mobile && pnpm start`   | 8081 |
 
 ### 5. Verify
 
@@ -117,7 +125,7 @@ rv-trax/
 │   │       └── server.ts       # Entry point
 │   ├── web/                    # Next.js dashboard
 │   │   └── src/
-│   │       ├── app/            # 15+ pages (dashboard, map, inventory, etc.)
+│   │       ├── app/            # 33 pages (dashboard, map, inventory, etc.)
 │   │       ├── components/     # UI library (Button, Input, Dialog, etc.)
 │   │       └── providers/      # Auth & WebSocket context providers
 │   ├── mobile/                 # React Native app
@@ -160,30 +168,30 @@ rv-trax/
 
 **80+ REST endpoints** organized in 11 phases:
 
-| Category | Endpoints | Description |
-|----------|-----------|-------------|
-| **Auth** | `POST /auth/login`, `/register`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password` | JWT auth with 15min access + 7d refresh tokens |
-| **Units** | `POST/GET/PATCH/DELETE /units` | RV inventory CRUD with filtering and search |
-| **Trackers** | `POST/GET/PATCH /trackers`, `/assign`, `/unassign` | GPS tracker management and assignment |
-| **Lots** | `POST/GET/PATCH /lots`, `/grid`, `/spots` | Lot setup with spot grids |
-| **Locations** | `GET /units/:id/location-history`, `/lots/:id/live-positions` | Location history and live tracking |
-| **Geo-fencing** | `POST/GET/PATCH/DELETE /geofences`, `/events` | Zone boundaries with enter/exit detection |
-| **Alerts** | `POST/GET /alert-rules`, `GET /alerts`, `/acknowledge`, `/dismiss`, `/snooze` | Configurable alert rules and management |
-| **Staging** | `POST/GET/PATCH /staging-plans`, `/activate`, `/move-list` | Lot organization optimization |
-| **Work Orders** | `POST/GET/PATCH /work-orders`, `/complete` | Service tracking with PDI workflows |
-| **Recalls** | `POST/GET/PATCH /recalls`, `/match`, `/assign-work-orders` | Recall management with unit matching |
-| **Analytics** | `GET /analytics/inventory`, `/lot-utilization`, `/movement`, `/compliance` | Real-time business intelligence |
-| **Reports** | `POST/GET /reports`, `/generate`, `/download` | Scheduled report generation (CSV, PDF, JSON) |
-| **Billing** | `GET /billing`, `/invoices`, `POST /billing/webhook` | Stripe-integrated subscription billing |
-| **Settings** | `PATCH /settings/dealership`, `POST/GET/PATCH/DELETE /settings/users` | Dealership config and user management |
-| **API Keys** | `POST/GET/PATCH/DELETE /api-keys` | Third-party API access |
-| **Webhooks** | `POST/GET/PATCH/DELETE /webhooks`, `/deliveries` | Event-driven webhook delivery |
-| **DMS** | `POST/GET/PATCH /dms`, `/test`, `/sync`, `/logs` | Dealership management system integration |
-| **Widget** | `GET/PATCH /widget` | Embeddable inventory widget config |
-| **Public API** | `GET /public/v1/inventory`, `/units/:id` | Public inventory endpoints |
-| **Groups** | `POST/GET /groups`, `/add-dealership`, `/remove-dealership` | Multi-dealership organization |
-| **Transfers** | `POST/GET/PATCH /transfers`, `/depart`, `/arrive` | Inter-lot unit transfers |
-| **WebSocket** | `ws://host/ws` | Real-time location updates, alerts, status changes |
+| Category        | Endpoints                                                                                     | Description                                        |
+| --------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **Auth**        | `POST /auth/login`, `/register`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password` | JWT auth with 15min access + 7d refresh tokens     |
+| **Units**       | `POST/GET/PATCH/DELETE /units`                                                                | RV inventory CRUD with filtering and search        |
+| **Trackers**    | `POST/GET/PATCH /trackers`, `/assign`, `/unassign`                                            | GPS tracker management and assignment              |
+| **Lots**        | `POST/GET/PATCH /lots`, `/grid`, `/spots`                                                     | Lot setup with spot grids                          |
+| **Locations**   | `GET /units/:id/location-history`, `/lots/:id/live-positions`                                 | Location history and live tracking                 |
+| **Geo-fencing** | `POST/GET/PATCH/DELETE /geofences`, `/events`                                                 | Zone boundaries with enter/exit detection          |
+| **Alerts**      | `POST/GET /alert-rules`, `GET /alerts`, `/acknowledge`, `/dismiss`, `/snooze`                 | Configurable alert rules and management            |
+| **Staging**     | `POST/GET/PATCH /staging-plans`, `/activate`, `/move-list`                                    | Lot organization optimization                      |
+| **Work Orders** | `POST/GET/PATCH /work-orders`, `/complete`                                                    | Service tracking with PDI workflows                |
+| **Recalls**     | `POST/GET/PATCH /recalls`, `/match`, `/assign-work-orders`                                    | Recall management with unit matching               |
+| **Analytics**   | `GET /analytics/inventory`, `/lot-utilization`, `/movement`, `/compliance`                    | Real-time business intelligence                    |
+| **Reports**     | `POST/GET /reports`, `/generate`, `/download`                                                 | Scheduled report generation (CSV, PDF, JSON)       |
+| **Billing**     | `GET /billing`, `/invoices`, `POST /billing/webhook`                                          | Stripe-integrated subscription billing             |
+| **Settings**    | `PATCH /settings/dealership`, `POST/GET/PATCH/DELETE /settings/users`                         | Dealership config and user management              |
+| **API Keys**    | `POST/GET/PATCH/DELETE /api-keys`                                                             | Third-party API access                             |
+| **Webhooks**    | `POST/GET/PATCH/DELETE /webhooks`, `/deliveries`                                              | Event-driven webhook delivery                      |
+| **DMS**         | `POST/GET/PATCH /dms`, `/test`, `/sync`, `/logs`                                              | Dealership management system integration           |
+| **Widget**      | `GET/PATCH /widget`                                                                           | Embeddable inventory widget config                 |
+| **Public API**  | `GET /public/v1/inventory`, `/units/:id`                                                      | Public inventory endpoints                         |
+| **Groups**      | `POST/GET /groups`, `/add-dealership`, `/remove-dealership`                                   | Multi-dealership organization                      |
+| **Transfers**   | `POST/GET/PATCH /transfers`, `/depart`, `/arrive`                                             | Inter-lot unit transfers                           |
+| **WebSocket**   | `ws://host/ws`                                                                                | Real-time location updates, alerts, status changes |
 
 All endpoints prefixed with `/api/v1/` unless noted. Full OpenAPI docs at `/api/docs`.
 
@@ -227,6 +235,7 @@ MQTT/Webhook → Validate → Deduplicate → Redis Stream → Worker
 ```
 
 **Key design choices:**
+
 - Kalman filter uses equirectangular projection (RVs are mostly stationary — low process noise)
 - Zone snapping within 15m radius prevents GPS jitter from causing false movements
 - History writes throttled to 5-minute intervals for stationary units
@@ -252,6 +261,7 @@ Built with **Next.js 15 + React 19 + Tailwind CSS 4**:
 Built with **React Native 0.76** for iOS and Android:
 
 **5-tab navigation:**
+
 1. **Map** — Native maps with unit markers, zone overlays, bottom sheet details
 2. **Search** — Full-text unit search with offline cached results
 3. **Scan** — Camera barcode scanner + BLE/NFC tracker pairing
@@ -259,6 +269,7 @@ Built with **React Native 0.76** for iOS and Android:
 5. **Account** — Profile, notification preferences, sign out
 
 **Offline-first architecture:**
+
 - SQLite (op-sqlite) for units cache and pending action queue
 - MMKV for auth token persistence
 - Automatic sync when connectivity restored
@@ -268,34 +279,34 @@ Built with **React Native 0.76** for iOS and Android:
 
 See [`.env.example`](.env.example) for the full list. Key variables:
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | — | PostgreSQL connection string |
-| `REDIS_URL` | Yes | `redis://localhost:6379` | Redis connection |
-| `JWT_SECRET` | Yes | — | Secret for JWT signing |
-| `API_PORT` | No | `3000` | API server port |
-| `MQTT_BROKER_URL` | No | `mqtt://localhost:1883` | ChirpStack MQTT |
-| `CORS_ORIGINS` | No | `localhost:3001,8081` | Allowed origins |
-| `NEXT_PUBLIC_API_URL` | No | `http://localhost:3000/api/v1` | Web dashboard API URL |
-| `NEXT_PUBLIC_WS_URL` | No | `ws://localhost:3000/ws` | Web dashboard WebSocket URL |
-| `COOKIE_SECRET` | Yes | — | Cookie signing secret |
-| `STRIPE_SECRET_KEY` | No | — | Billing integration |
-| `R2_ACCOUNT_ID` | No | — | Cloudflare R2 file storage |
-| `SES_REGION` | No | — | AWS SES email |
-| `TWILIO_ACCOUNT_SID` | No | — | SMS notifications |
-| `FCM_PROJECT_ID` | No | — | Push notifications |
-| `SENTRY_DSN` | No | — | Error tracking |
+| Variable              | Required | Default                        | Description                  |
+| --------------------- | -------- | ------------------------------ | ---------------------------- |
+| `DATABASE_URL`        | Yes      | —                              | PostgreSQL connection string |
+| `REDIS_URL`           | Yes      | `redis://localhost:6379`       | Redis connection             |
+| `JWT_SECRET`          | Yes      | —                              | Secret for JWT signing       |
+| `API_PORT`            | No       | `3000`                         | API server port              |
+| `MQTT_BROKER_URL`     | No       | `mqtt://localhost:1883`        | ChirpStack MQTT              |
+| `CORS_ORIGINS`        | No       | `localhost:3001,8081`          | Allowed origins              |
+| `NEXT_PUBLIC_API_URL` | No       | `http://localhost:3000/api/v1` | Web dashboard API URL        |
+| `NEXT_PUBLIC_WS_URL`  | No       | `ws://localhost:3000/ws`       | Web dashboard WebSocket URL  |
+| `COOKIE_SECRET`       | Yes      | —                              | Cookie signing secret        |
+| `STRIPE_SECRET_KEY`   | No       | —                              | Billing integration          |
+| `R2_ACCOUNT_ID`       | No       | —                              | Cloudflare R2 file storage   |
+| `SES_REGION`          | No       | —                              | AWS SES email                |
+| `TWILIO_ACCOUNT_SID`  | No       | —                              | SMS notifications            |
+| `FCM_PROJECT_ID`      | No       | —                              | Push notifications           |
+| `SENTRY_DSN`          | No       | —                              | Error tracking               |
 
 ## Infrastructure
 
 Docker Compose provides all backing services for local development:
 
-| Service | Image | Port | Purpose |
-|---------|-------|------|---------|
-| PostgreSQL | `timescale/timescaledb-ha:pg16` | 5432 | Primary database with TimescaleDB extension |
-| Redis | `redis:7-alpine` | 6379 | Cache, pub/sub, streaming |
-| Mosquitto | `eclipse-mosquitto:2` | 1883, 9001 | MQTT broker |
-| ChirpStack | `chirpstack/chirpstack:4` | 8080 | LoRaWAN network server |
+| Service    | Image                           | Port       | Purpose                                     |
+| ---------- | ------------------------------- | ---------- | ------------------------------------------- |
+| PostgreSQL | `timescale/timescaledb-ha:pg16` | 5432       | Primary database with TimescaleDB extension |
+| Redis      | `redis:7-alpine`                | 6379       | Cache, pub/sub, streaming                   |
+| Mosquitto  | `eclipse-mosquitto:2`           | 1883, 9001 | MQTT broker                                 |
+| ChirpStack | `chirpstack/chirpstack:4`       | 8080       | LoRaWAN network server                      |
 
 ```bash
 # Start all infrastructure
@@ -307,9 +318,13 @@ docker compose up -d postgres redis mosquitto
 
 ## CI/CD
 
-GitHub Actions pipeline (`.github/workflows/ci.yml`):
-- **Lint & Typecheck** — ESLint + `tsc --noEmit` across all packages
-- **Test** — Vitest with PostgreSQL + Redis service containers
+GitHub Actions pipelines:
+
+- **CI** (`.github/workflows/ci.yml`) — Lint, typecheck, test with coverage across all apps
+- **CodeQL** (`.github/workflows/codeql.yml`) — Weekly SAST security scanning + dependency audit
+- **Dependabot** — Weekly automated dependency update PRs
+- **Pre-commit** — husky + lint-staged runs ESLint/Prettier on staged files
+- **Commit linting** — commitlint enforces [Conventional Commits](https://www.conventionalcommits.org/)
 
 ## Development Commands
 
@@ -327,21 +342,35 @@ pnpm run db:studio    # Open Drizzle Studio (DB browser)
 
 ## Tech Stack Summary
 
-| Layer | Technology |
-|-------|-----------|
-| Language | TypeScript 5.7 (strict mode) |
-| Monorepo | pnpm workspaces + Turborepo |
-| API | Fastify 5 + Drizzle ORM |
-| Database | PostgreSQL 16 + TimescaleDB |
-| Cache | Redis 7 |
-| Auth | JWT (access + refresh tokens) + bcrypt |
-| Web | Next.js 15, React 19, Tailwind CSS 4, Mapbox GL, React Context |
-| Mobile | React Native 0.76, React Navigation 7, Zustand |
-| IoT | MQTT (ChirpStack), Redis Streams, Kalman filter |
-| Validation | Zod |
-| Testing | Vitest, Jest, React Testing Library |
-| CI/CD | GitHub Actions |
-| Infra | Docker Compose (Postgres, Redis, Mosquitto, ChirpStack) |
+| Layer      | Technology                                                     |
+| ---------- | -------------------------------------------------------------- |
+| Language   | TypeScript 5.7 (strict mode)                                   |
+| Monorepo   | pnpm workspaces + Turborepo                                    |
+| API        | Fastify 5 + Drizzle ORM                                        |
+| Database   | PostgreSQL 16 + TimescaleDB                                    |
+| Cache      | Redis 7                                                        |
+| Auth       | JWT (access + refresh tokens) + bcrypt                         |
+| Web        | Next.js 15, React 19, Tailwind CSS 4, Mapbox GL, React Context |
+| Mobile     | React Native 0.76, React Navigation 7, Zustand                 |
+| IoT        | MQTT (ChirpStack), Redis Streams, Kalman filter                |
+| Validation | Zod                                                            |
+| Testing    | Vitest, Jest, React Testing Library                            |
+| CI/CD      | GitHub Actions                                                 |
+| Infra      | Docker Compose (Postgres, Redis, Mosquitto, ChirpStack)        |
+
+## Documentation
+
+| Document                                    | Description                                   |
+| ------------------------------------------- | --------------------------------------------- |
+| [Architecture](docs/ARCHITECTURE.md)        | System design, data flow, extension points    |
+| [Database Guide](docs/DATABASE.md)          | Schema overview, migrations, multi-tenancy    |
+| [API Catalog](docs/api-endpoint-catalog.md) | Full REST API reference (80+ endpoints)       |
+| [Contributing](CONTRIBUTING.md)             | Development workflow and code standards       |
+| [Changelog](CHANGELOG.md)                   | Release history (Keep a Changelog format)     |
+| [Security](SECURITY.md)                     | Security measures and vulnerability reporting |
+| [Privacy Policy](PRIVACY.md)                | Data collection and handling practices        |
+| [Terms of Service](TERMS.md)                | Platform usage terms                          |
+| [Code of Conduct](CODE_OF_CONDUCT.md)       | Community standards (Contributor Covenant)    |
 
 ## Codebase Stats
 
@@ -349,6 +378,6 @@ pnpm run db:studio    # Open Drizzle Studio (DB browser)
 - **~50,700 lines** of TypeScript
 - **80+ API endpoints** with OpenAPI documentation (Swagger UI at `/api/docs`)
 - **36 database tables** across 26 schema files with full referential integrity
-- **28 route modules** organized across 11 development phases
+- **33 dashboard pages** with error boundaries, loading states, and SEO
 - **11-stage IoT pipeline** with Kalman filtering
 - **0 TypeScript errors** across all packages
