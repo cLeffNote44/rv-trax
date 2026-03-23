@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Menu, Search, Bell, ChevronDown, User, Settings, LogOut } from 'lucide-react';
+import { Menu, Search, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
-import { getUnreadAlertCount } from '@/lib/api';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { NotificationCenter } from '@/components/layout/NotificationCenter';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -22,16 +22,8 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const [alertCount, setAlertCount] = useState(0);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
-
-  // Fetch unread count
-  useEffect(() => {
-    getUnreadAlertCount()
-      .then((res) => setAlertCount(res.count))
-      .catch(() => {});
-  }, []);
 
   // Close user menu on outside click
   useEffect(() => {
@@ -97,19 +89,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         {/* Theme toggle */}
         <ThemeToggle />
 
-        {/* Notification bell */}
-        <button
-          onClick={() => router.push('/alerts')}
-          className="relative rounded-lg p-2 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-tertiary)]"
-          aria-label={`${alertCount} unread alerts`}
-        >
-          <Bell className="h-5 w-5" />
-          {alertCount > 0 && (
-            <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-              {alertCount > 99 ? '99+' : alertCount}
-            </span>
-          )}
-        </button>
+        {/* Notification center */}
+        <NotificationCenter />
 
         {/* User menu */}
         <div ref={userMenuRef} className="relative">

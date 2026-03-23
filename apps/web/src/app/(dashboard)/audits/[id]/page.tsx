@@ -18,6 +18,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Dialog } from '@/components/ui/Dialog';
+import { ExportMenu } from '@/components/ui/ExportMenu';
 import { useApi } from '@/hooks/useApi';
 import {
   getFloorPlanAudit,
@@ -25,6 +26,7 @@ import {
   completeFloorPlanAudit,
   type FloorPlanAuditItem,
 } from '@/lib/api';
+import { exportToCsv, exportToJson, printElement } from '@/lib/export';
 import { formatDate, cn } from '@/lib/utils';
 import { FloorPlanAuditStatus, AuditItemStatus } from '@rv-trax/shared';
 
@@ -161,6 +163,27 @@ export default function AuditDetailPage() {
     }
   }, [auditId, refetch]);
 
+  // ---- Export handlers ----
+  const handleExportCsv = useCallback(() => {
+    const headers = ['Stock #', 'Status', 'Expected Zone', 'Found Zone', 'Verified At'];
+    const rows = items.map((item) => [
+      item.unit?.stock_number ?? '',
+      item.status ?? '',
+      item.expected_zone ?? '',
+      item.found_zone ?? '',
+      item.verified_at ?? '',
+    ]);
+    exportToCsv(`audit-${auditId}`, headers, rows);
+  }, [items, auditId]);
+
+  const handleExportJson = useCallback(() => {
+    exportToJson(`audit-${auditId}`, { audit, items });
+  }, [audit, items, auditId]);
+
+  const handlePrint = useCallback(() => {
+    printElement();
+  }, []);
+
   // ---- Filter tabs config ----
   const tabs: { key: FilterTab; label: string; count: number }[] = [
     { key: 'all', label: 'All', count: counts.total },
@@ -294,12 +317,20 @@ export default function AuditDetailPage() {
           </div>
         </div>
 
-        {audit.status === FloorPlanAuditStatus.IN_PROGRESS && (
-          <Button onClick={() => setCompleteDialogOpen(true)}>
-            <CheckCircle2 className="h-4 w-4" />
-            Complete Audit
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <ExportMenu
+            onExportCsv={handleExportCsv}
+            onExportJson={handleExportJson}
+            onPrint={handlePrint}
+            label="Export"
+          />
+          {audit.status === FloorPlanAuditStatus.IN_PROGRESS && (
+            <Button onClick={() => setCompleteDialogOpen(true)}>
+              <CheckCircle2 className="h-4 w-4" />
+              Complete Audit
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Summary Cards */}

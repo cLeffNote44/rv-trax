@@ -7,11 +7,15 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { SkipNav } from '@/components/ui/SkipNav';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
+import { KeyboardShortcutsDialog } from '@/components/ui/KeyboardShortcutsDialog';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
+  const { helpOpen, setHelpOpen } = useKeyboardShortcuts();
 
   // Loading state
   if (isLoading) {
@@ -55,6 +59,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Command palette (Cmd+K) */}
       <CommandPalette />
+
+      {/* Onboarding wizard for first-time dealers */}
+      <OnboardingWizard />
+
+      {/* Keyboard shortcuts help dialog */}
+      <KeyboardShortcutsDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
     </WebSocketProvider>
   );
 }
