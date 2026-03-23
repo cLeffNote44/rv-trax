@@ -68,11 +68,17 @@ export interface DbOptions {
 }
 
 export function createDb(url: string, options?: DbOptions) {
+  // Auto-detect SSL from URL (Neon, Supabase, etc. require it)
+  const needsSsl =
+    options?.ssl ||
+    url.includes('sslmode=require') ||
+    url.includes('.neon.tech') ||
+    url.includes('.supabase.');
   const client = postgres(url, {
     max: options?.max ?? 10,
     idle_timeout: options?.idleTimeout ?? 30,
     connect_timeout: options?.connectTimeout ?? 10,
-    ssl: options?.ssl ? 'require' : undefined,
+    ssl: needsSsl ? 'require' : undefined,
   });
   const db = drizzle(client, { schema });
   return { db, client };
