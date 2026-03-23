@@ -3,7 +3,7 @@
 [![CI](https://github.com/cLeffNote44/rv-trax/actions/workflows/ci.yml/badge.svg)](https://github.com/cLeffNote44/rv-trax/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/cLeffNote44/rv-trax/actions/workflows/codeql.yml/badge.svg)](https://github.com/cLeffNote44/rv-trax/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.3.0-green.svg)](CHANGELOG.md)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](.nvmrc)
 [![pnpm](https://img.shields.io/badge/pnpm-%3E%3D9-orange.svg)](https://pnpm.io/)
 
@@ -115,9 +115,9 @@ Or run services individually:
 ```
 rv-trax/
 ├── apps/
-│   ├── api/                    # Fastify REST API (80+ endpoints)
+│   ├── api/                    # Fastify REST API (90+ endpoints)
 │   │   └── src/
-│   │       ├── routes/         # 28 route modules (auth, units, trackers, etc.)
+│   │       ├── routes/         # 32 route modules (auth, units, trackers, etc.)
 │   │       ├── middleware/     # Auth, tenant isolation, rate limiting
 │   │       ├── services/       # Business logic (WebSocket, alerts, notifications)
 │   │       ├── plugins/        # Fastify plugins (db, auth)
@@ -125,7 +125,7 @@ rv-trax/
 │   │       └── server.ts       # Entry point
 │   ├── web/                    # Next.js dashboard
 │   │   └── src/
-│   │       ├── app/            # 33 pages (dashboard, map, inventory, etc.)
+│   │       ├── app/            # 37+ pages (dashboard, map, inventory, etc.)
 │   │       ├── components/     # UI library (Button, Input, Dialog, etc.)
 │   │       └── providers/      # Auth & WebSocket context providers
 │   ├── mobile/                 # React Native app
@@ -142,7 +142,7 @@ rv-trax/
 │           ├── routes/         # Webhook endpoints
 │           └── worker.ts       # Redis Stream consumer
 ├── packages/
-│   ├── shared/                 # 40+ types, 25+ enums, Zod validators
+│   ├── shared/                 # 40+ types, 32+ enums, Zod validators
 │   │   └── src/
 │   │       ├── types/          # All TypeScript interfaces
 │   │       ├── enums/          # Domain enums (UnitStatus, TrackerStatus, etc.)
@@ -150,7 +150,7 @@ rv-trax/
 │   │       └── constants/      # App-wide constants
 │   └── db/                     # Database layer
 │       └── src/
-│           ├── schema/         # 26 Drizzle ORM table definitions
+│           ├── schema/         # 30 Drizzle ORM table definitions
 │           ├── seed/           # Demo data seeder
 │           └── migrations/     # SQL migrations
 ├── infrastructure/
@@ -166,38 +166,42 @@ rv-trax/
 
 ## API Overview
 
-**80+ REST endpoints** organized in 11 phases:
+**90+ REST endpoints** organized in 12 phases:
 
-| Category        | Endpoints                                                                                     | Description                                        |
-| --------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **Auth**        | `POST /auth/login`, `/register`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password` | JWT auth with 15min access + 7d refresh tokens     |
-| **Units**       | `POST/GET/PATCH/DELETE /units`                                                                | RV inventory CRUD with filtering and search        |
-| **Trackers**    | `POST/GET/PATCH /trackers`, `/assign`, `/unassign`                                            | GPS tracker management and assignment              |
-| **Lots**        | `POST/GET/PATCH /lots`, `/grid`, `/spots`                                                     | Lot setup with spot grids                          |
-| **Locations**   | `GET /units/:id/location-history`, `/lots/:id/live-positions`                                 | Location history and live tracking                 |
-| **Geo-fencing** | `POST/GET/PATCH/DELETE /geofences`, `/events`                                                 | Zone boundaries with enter/exit detection          |
-| **Alerts**      | `POST/GET /alert-rules`, `GET /alerts`, `/acknowledge`, `/dismiss`, `/snooze`                 | Configurable alert rules and management            |
-| **Staging**     | `POST/GET/PATCH /staging-plans`, `/activate`, `/move-list`                                    | Lot organization optimization                      |
-| **Work Orders** | `POST/GET/PATCH /work-orders`, `/complete`                                                    | Service tracking with PDI workflows                |
-| **Recalls**     | `POST/GET/PATCH /recalls`, `/match`, `/assign-work-orders`                                    | Recall management with unit matching               |
-| **Analytics**   | `GET /analytics/inventory`, `/lot-utilization`, `/movement`, `/compliance`                    | Real-time business intelligence                    |
-| **Reports**     | `POST/GET /reports`, `/generate`, `/download`                                                 | Scheduled report generation (CSV, PDF, JSON)       |
-| **Billing**     | `GET /billing`, `/invoices`, `POST /billing/webhook`                                          | Stripe-integrated subscription billing             |
-| **Settings**    | `PATCH /settings/dealership`, `POST/GET/PATCH/DELETE /settings/users`                         | Dealership config and user management              |
-| **API Keys**    | `POST/GET/PATCH/DELETE /api-keys`                                                             | Third-party API access                             |
-| **Webhooks**    | `POST/GET/PATCH/DELETE /webhooks`, `/deliveries`                                              | Event-driven webhook delivery                      |
-| **DMS**         | `POST/GET/PATCH /dms`, `/test`, `/sync`, `/logs`                                              | Dealership management system integration           |
-| **Widget**      | `GET/PATCH /widget`                                                                           | Embeddable inventory widget config                 |
-| **Public API**  | `GET /public/v1/inventory`, `/units/:id`                                                      | Public inventory endpoints                         |
-| **Groups**      | `POST/GET /groups`, `/add-dealership`, `/remove-dealership`                                   | Multi-dealership organization                      |
-| **Transfers**   | `POST/GET/PATCH /transfers`, `/depart`, `/arrive`                                             | Inter-lot unit transfers                           |
-| **WebSocket**   | `ws://host/ws`                                                                                | Real-time location updates, alerts, status changes |
+| Category         | Endpoints                                                                                     | Description                                        |
+| ---------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **Auth**         | `POST /auth/login`, `/register`, `/refresh`, `/logout`, `/forgot-password`, `/reset-password` | JWT auth with 15min access + 7d refresh tokens     |
+| **Units**        | `POST/GET/PATCH/DELETE /units`                                                                | RV inventory CRUD with filtering and search        |
+| **Trackers**     | `POST/GET/PATCH /trackers`, `/assign`, `/unassign`                                            | GPS tracker management and assignment              |
+| **Lots**         | `POST/GET/PATCH /lots`, `/grid`, `/spots`                                                     | Lot setup with spot grids                          |
+| **Locations**    | `GET /units/:id/location-history`, `/lots/:id/live-positions`                                 | Location history and live tracking                 |
+| **Geo-fencing**  | `POST/GET/PATCH/DELETE /geofences`, `/events`                                                 | Zone boundaries with enter/exit detection          |
+| **Alerts**       | `POST/GET /alert-rules`, `GET /alerts`, `/acknowledge`, `/dismiss`, `/snooze`                 | Configurable alert rules and management            |
+| **Staging**      | `POST/GET/PATCH /staging-plans`, `/activate`, `/move-list`                                    | Lot organization optimization                      |
+| **Work Orders**  | `POST/GET/PATCH /work-orders`, `/complete`                                                    | Service tracking with PDI workflows                |
+| **Recalls**      | `POST/GET/PATCH /recalls`, `/match`, `/assign-work-orders`                                    | Recall management with unit matching               |
+| **Analytics**    | `GET /analytics/inventory`, `/lot-utilization`, `/movement`, `/compliance`                    | Real-time business intelligence                    |
+| **Reports**      | `POST/GET /reports`, `/generate`, `/download`                                                 | Scheduled report generation (CSV, PDF, JSON)       |
+| **Billing**      | `GET /billing`, `/invoices`, `POST /billing/webhook`                                          | Stripe-integrated subscription billing             |
+| **Settings**     | `PATCH /settings/dealership`, `POST/GET/PATCH/DELETE /settings/users`                         | Dealership config and user management              |
+| **API Keys**     | `POST/GET/PATCH/DELETE /api-keys`                                                             | Third-party API access                             |
+| **Webhooks**     | `POST/GET/PATCH/DELETE /webhooks`, `/deliveries`                                              | Event-driven webhook delivery                      |
+| **DMS**          | `POST/GET/PATCH /dms`, `/test`, `/sync`, `/logs`                                              | Dealership management system integration           |
+| **Widget**       | `GET/PATCH /widget`                                                                           | Embeddable inventory widget config                 |
+| **Public API**   | `GET /public/v1/inventory`, `/units/:id`                                                      | Public inventory endpoints                         |
+| **Groups**       | `POST/GET /groups`, `/add-dealership`, `/remove-dealership`                                   | Multi-dealership organization                      |
+| **Transfers**    | `POST/GET/PATCH /transfers`, `/depart`, `/arrive`                                             | Inter-lot unit transfers                           |
+| **Activity**     | `GET /activity`, `/stats`                                                                     | Staff activity feed and efficiency metrics         |
+| **Audits**       | `POST/GET /floor-plan-audits`, `/:id`, `/items/:id`, `/complete`                              | Floor plan audit workflow                          |
+| **Service Bays** | `POST/GET/PATCH/DELETE /service-bays`, `/check-in`, `/stage`, `/check-out`, `/metrics`        | Service bay management and tracking                |
+| **Dashboard**    | `GET/PUT /dashboard-config`, `/reset`                                                         | Per-user customizable dashboard layouts            |
+| **WebSocket**    | `ws://host/ws`                                                                                | Real-time location updates, alerts, status changes |
 
 All endpoints prefixed with `/api/v1/` unless noted. Full OpenAPI docs at `/api/docs`.
 
 ## Database
 
-**36 tables** across 26 schema files, powered by PostgreSQL + TimescaleDB (via Drizzle ORM):
+**42 tables** across 30 schema files, powered by PostgreSQL + TimescaleDB (via Drizzle ORM):
 
 - **Business**: `dealership_groups`, `dealerships`, `users`, `refresh_tokens`
 - **Inventory**: `units`, `lots`, `lot_spots`, `unit_photos`, `unit_notes`
@@ -211,6 +215,7 @@ All endpoints prefixed with `/api/v1/` unless noted. Full OpenAPI docs at `/api/
 - **Billing**: `billing_events`, `scheduled_reports`, `feature_flags`, `widget_configs`
 - **Multi-location**: `unit_transfers`
 - **Notifications**: `device_tokens`
+- **v0.3.0**: `staff_activity_log`, `floor_plan_audits`, `floor_plan_audit_items`, `service_bays`, `service_bay_assignments`, `dashboard_configs`
 
 ## IoT Pipeline
 
@@ -246,15 +251,18 @@ MQTT/Webhook → Validate → Deduplicate → Redis Stream → Worker
 
 Built with **Next.js 15 + React 19 + Tailwind CSS 4**:
 
-- **Dashboard** — KPI cards, tracker health, alert summary, activity feed
+- **Dashboard** — Customizable widget grid (inventory, trackers, alerts, aging, activity, status, quick actions)
 - **Map** — Mapbox GL interactive lot visualization with unit markers and zones
-- **Inventory** — Filterable data tables with CSV import/export
-- **Trackers** — Battery monitoring dashboard
+- **Inventory** — Filterable data tables with photo gallery, QR codes, and CSV import/export
+- **Trackers** — Battery monitoring with health predictions and voltage trends
 - **Alerts** — Severity-based alert management with bulk actions
-- **Service** — Work orders and recall tracking
+- **Test Drives** — Live test drive tracking with timers, customer info, and history
+- **Service** — Work orders, recall tracking, and service bay kanban board
+- **Audits** — Floor plan audit workflow for inventory verification
+- **Activity** — Staff activity timeline with efficiency stats and top performers
 - **Staging** — Drag-and-drop lot organization planner
-- **Analytics** — Recharts-powered inventory, utilization, and movement reports
-- **Settings** — Dealership config, user management, lots, notifications, billing, API keys, webhooks, DMS
+- **Analytics** — Recharts-powered inventory aging, utilization, and movement reports
+- **Settings** — Dealership config, user management, lots, notifications, billing, API keys, webhooks, DMS, public widget
 
 ## Mobile App
 
@@ -376,8 +384,8 @@ pnpm run db:studio    # Open Drizzle Studio (DB browser)
 
 - **265+ source files** across 6 packages
 - **~50,700 lines** of TypeScript
-- **80+ API endpoints** with OpenAPI documentation (Swagger UI at `/api/docs`)
-- **36 database tables** across 26 schema files with full referential integrity
-- **33 dashboard pages** with error boundaries, loading states, and SEO
+- **90+ API endpoints** with OpenAPI documentation (Swagger UI at `/api/docs`)
+- **42 database tables** across 30 schema files with full referential integrity
+- **37+ dashboard pages** with error boundaries, loading states, and SEO
 - **11-stage IoT pipeline** with Kalman filtering
 - **0 TypeScript errors** across all packages

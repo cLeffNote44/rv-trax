@@ -12,6 +12,9 @@ import {
   Layers,
   Wrench,
   Globe,
+  Activity,
+  ClipboardCheck,
+  Car,
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -190,6 +193,24 @@ export default function LandingPage() {
                 title: 'Open API & Integrations',
                 description:
                   'Connect to your DMS, build custom integrations, and automate workflows. Webhooks, API keys, and full developer documentation.',
+              },
+              {
+                icon: ClipboardCheck,
+                title: 'Floor Plan Audits',
+                description:
+                  'Monthly inventory verification for floor plan lenders. Verify, mark missing, or flag mislocated units with a guided walkthrough.',
+              },
+              {
+                icon: Activity,
+                title: 'Staff Activity Tracking',
+                description:
+                  'See who did what and when. Timeline feed with efficiency stats, action breakdowns, and top performer leaderboards.',
+              },
+              {
+                icon: Car,
+                title: 'Test Drive Management',
+                description:
+                  'Track test drives with live timers, customer details, and distance logging. Full history for every unit.',
               },
             ].map((feature) => (
               <div

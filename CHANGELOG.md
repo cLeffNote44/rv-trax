@@ -5,6 +5,45 @@ All notable changes to RV Trax will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-03-23
+
+### Added
+
+- **Staff Activity Log**
+  - Timeline feed tracking all staff actions across the dealership
+  - Per-user efficiency stats and action breakdown charts
+  - Filter by staff member, action type, entity type
+  - Top performers leaderboard (7-day rolling window)
+
+- **Floor Plan Audits**
+  - Monthly inventory verification workflow for floor plan lenders
+  - Start audit to snapshot all active units into a checklist
+  - Per-unit verify / missing / mislocated actions with zone tracking
+  - Progress bar, completion percentage, and audit history table
+  - Detail page with filter tabs (All, Pending, Verified, Missing)
+
+- **Service Bay Workflow**
+  - Kanban-style board tracking units through service stages
+  - 5-stage pipeline: Checked In → Diagnosis → In Repair → QC → Ready
+  - Bay management with check-in/check-out and stage advancement
+  - Auto-updating time-elapsed timers per assignment
+  - Utilization metrics: avg time-in-bay, throughput, occupancy %
+
+- **Customizable Dashboard**
+  - Widget registry with 7 widget types
+  - Add/remove widgets with Customize mode toggle
+  - Per-user layout persistence via dashboard_configs table
+  - Reset to default layout functionality
+  - Widgets: inventory summary, tracker health, alerts, aging chart,
+    lot map, recent activity, status breakdown, quick actions
+
+- **Infrastructure**
+  - 4 new DB schemas (6 tables) with proper indexes
+  - 4 new API route files with auth + tenant middleware
+  - 7 new shared enums (StaffAction, FloorPlanAuditStatus, etc.)
+  - ~200 lines of new API client functions in web app
+  - 2 new sidebar navigation items (Audits, Activity)
+
 ## [0.2.0] - 2026-03-23
 
 ### Added
