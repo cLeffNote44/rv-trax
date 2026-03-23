@@ -40,8 +40,29 @@ const PAGE_RESULTS: PageResult[] = [
   { id: 'p-map', label: 'Lot Map', href: '/map', group: 'Pages' },
   { id: 'p-inventory', label: 'Inventory', href: '/inventory', group: 'Pages' },
   { id: 'p-trackers', label: 'Trackers', href: '/trackers', group: 'Pages' },
+  { id: 'p-gateways', label: 'Gateways', href: '/gateways', group: 'Pages' },
   { id: 'p-alerts', label: 'Alerts', href: '/alerts', group: 'Pages' },
+  { id: 'p-test-drives', label: 'Test Drives', href: '/test-drives', group: 'Pages' },
+  { id: 'p-service', label: 'Service', href: '/service', group: 'Pages' },
+  { id: 'p-service-bays', label: 'Service Bays', href: '/service/bays', group: 'Pages' },
+  { id: 'p-audits', label: 'Floor Plan Audits', href: '/audits', group: 'Pages' },
+  { id: 'p-activity', label: 'Staff Activity', href: '/activity', group: 'Pages' },
+  { id: 'p-staging', label: 'Staging', href: '/staging', group: 'Pages' },
+  { id: 'p-analytics', label: 'Analytics', href: '/analytics', group: 'Pages' },
+  { id: 'p-aging', label: 'Inventory Aging', href: '/analytics/aging', group: 'Pages' },
+  { id: 'p-pricing', label: 'Pricing Suggestions', href: '/analytics/pricing', group: 'Pages' },
   { id: 'p-settings', label: 'Settings', href: '/settings', group: 'Pages' },
+  { id: 'p-users', label: 'User Management', href: '/settings/users', group: 'Pages' },
+  { id: 'p-billing', label: 'Billing', href: '/settings/billing', group: 'Pages' },
+  {
+    id: 'p-notifications',
+    label: 'Notification Settings',
+    href: '/settings/notifications',
+    group: 'Pages',
+  },
+  { id: 'p-api-keys', label: 'API Keys', href: '/settings/api-keys', group: 'Pages' },
+  { id: 'p-webhooks', label: 'Webhooks', href: '/settings/webhooks', group: 'Pages' },
+  { id: 'p-dms', label: 'DMS Integration', href: '/settings/dms', group: 'Pages' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -93,9 +114,7 @@ export function CommandPalette() {
     const lower = query.toLowerCase();
 
     // Filter pages
-    const pageMatches = PAGE_RESULTS.filter((p) =>
-      p.label.toLowerCase().includes(lower)
-    );
+    const pageMatches = PAGE_RESULTS.filter((p) => p.label.toLowerCase().includes(lower));
 
     setResults(pageMatches);
 
@@ -112,9 +131,7 @@ export function CommandPalette() {
           group: 'Units' as const,
         }));
         setResults((prev) => {
-          const nonUnits = prev.filter(
-            (r) => !('group' in r && r.group === 'Units')
-          );
+          const nonUnits = prev.filter((r) => !('group' in r && r.group === 'Units'));
           return [...unitResults, ...nonUnits];
         });
       } catch {
@@ -143,7 +160,7 @@ export function CommandPalette() {
         router.push(result.href);
       }
     },
-    [query, router]
+    [query, router],
   );
 
   // Keyboard navigation
@@ -161,7 +178,7 @@ export function CommandPalette() {
         if (result) selectResult(result);
       }
     },
-    [results, activeIndex, selectResult]
+    [results, activeIndex, selectResult],
   );
 
   // Group results
@@ -244,7 +261,7 @@ export function CommandPalette() {
                         'flex w-full items-center gap-3 px-4 py-2 text-sm transition-colors',
                         globalIndex === activeIndex
                           ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400'
-                          : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]'
+                          : 'text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]',
                       )}
                     >
                       {result.group === 'Units' ? (
@@ -271,16 +288,24 @@ export function CommandPalette() {
           {/* Footer hint */}
           <div className="flex items-center gap-4 border-t border-[var(--color-border)] px-4 py-2 text-[10px] text-[var(--color-text-tertiary)]">
             <span>
-              <kbd className="rounded border border-[var(--color-border)] px-1 py-0.5 font-mono">&uarr;</kbd>{' '}
-              <kbd className="rounded border border-[var(--color-border)] px-1 py-0.5 font-mono">&darr;</kbd>{' '}
+              <kbd className="rounded border border-[var(--color-border)] px-1 py-0.5 font-mono">
+                &uarr;
+              </kbd>{' '}
+              <kbd className="rounded border border-[var(--color-border)] px-1 py-0.5 font-mono">
+                &darr;
+              </kbd>{' '}
               navigate
             </span>
             <span>
-              <kbd className="rounded border border-[var(--color-border)] px-1 py-0.5 font-mono">&crarr;</kbd>{' '}
+              <kbd className="rounded border border-[var(--color-border)] px-1 py-0.5 font-mono">
+                &crarr;
+              </kbd>{' '}
               select
             </span>
             <span>
-              <kbd className="rounded border border-[var(--color-border)] px-1 py-0.5 font-mono">esc</kbd>{' '}
+              <kbd className="rounded border border-[var(--color-border)] px-1 py-0.5 font-mono">
+                esc
+              </kbd>{' '}
               close
             </span>
           </div>

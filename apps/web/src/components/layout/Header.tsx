@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Menu, Search, Bell, ChevronDown, User, Settings, LogOut } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
-import { cn } from '@/lib/utils';
 import { getUnreadAlertCount } from '@/lib/api';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -81,6 +81,9 @@ export function Header({ onMenuClick }: HeaderProps) {
       </button>
 
       <div className="flex items-center gap-2">
+        {/* Theme toggle */}
+        <ThemeToggle />
+
         {/* Notification bell */}
         <button
           onClick={() => router.push('/alerts')}
@@ -115,12 +118,8 @@ export function Header({ onMenuClick }: HeaderProps) {
           {showUserMenu && (
             <div className="absolute right-0 top-full z-50 mt-1 w-56 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] py-1 shadow-lg">
               <div className="border-b border-[var(--color-border)] px-4 py-3">
-                <p className="text-sm font-medium text-[var(--color-text-primary)]">
-                  {user?.name}
-                </p>
-                <p className="text-xs text-[var(--color-text-tertiary)]">
-                  {user?.email}
-                </p>
+                <p className="text-sm font-medium text-[var(--color-text-primary)]">{user?.name}</p>
+                <p className="text-xs text-[var(--color-text-tertiary)]">{user?.email}</p>
               </div>
               <button
                 onClick={() => {

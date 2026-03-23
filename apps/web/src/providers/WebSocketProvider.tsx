@@ -18,7 +18,10 @@ import { useAuth } from './AuthProvider';
 export type WebSocketEvent =
   | { type: 'unit:moved'; payload: { unitId: string; lat: number; lng: number; zone?: string } }
   | { type: 'unit:status_changed'; payload: { unitId: string; status: string } }
-  | { type: 'tracker:update'; payload: { trackerId: string; battery_pct: number; last_seen_at: string } }
+  | {
+      type: 'tracker:update';
+      payload: { trackerId: string; battery_pct: number; last_seen_at: string };
+    }
   | { type: 'alert:new'; payload: { id: string; title: string; severity: string } }
   | { type: 'alert:count'; payload: { count: number } }
   | { type: 'gateway:status'; payload: { gatewayId: string; status: string } };
@@ -93,6 +96,11 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
         }
 
         handlersRef.current.forEach((handler) => handler(parsed as unknown as WebSocketEvent));
+
+        // Broadcast as custom event for hooks outside the React tree
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('rv-trax:ws-event', { detail: parsed }));
+        }
       } catch {
         // Ignore malformed messages
       }
@@ -102,10 +110,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       setIsConnected(false);
       // Auto-reconnect with exponential backoff
       retryTimerRef.current = setTimeout(() => {
-        retryDelayRef.current = Math.min(
-          retryDelayRef.current * 2,
-          MAX_RETRY_DELAY_MS
-        );
+        retryDelayRef.current = Math.min(retryDelayRef.current * 2, MAX_RETRY_DELAY_MS);
         connect();
       }, retryDelayRef.current);
     };

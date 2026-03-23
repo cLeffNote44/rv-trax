@@ -70,6 +70,21 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+          (function() {
+            var t = localStorage.getItem('rv-trax-theme');
+            var d = document.documentElement;
+            if (t === 'dark' || (t !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+              d.classList.add('dark');
+            }
+          })();
+        `,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-[var(--color-bg-primary)] font-sans antialiased">
         <AuthProvider>
           <Suspense fallback={null}>
