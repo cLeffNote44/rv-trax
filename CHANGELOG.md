@@ -5,6 +5,78 @@ All notable changes to RV Trax will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-03-23
+
+### Added
+
+- **Component Library Expansion**
+  - 8 new UI primitives: Skeleton, Tabs, AlertBanner, EmptyState,
+    Textarea, Avatar, Tooltip, PageHeader
+  - SortableTable with click-to-sort headers and search filtering
+
+- **PWA Support**
+  - Web app manifest with installable app support
+  - Service worker with network-first caching and offline fallback
+  - PWA icons (192, 512, maskable, apple-touch, favicon)
+  - Offline page with branded UI
+
+- **Dark/Light Mode**
+  - Manual theme toggle (light/dark/system) in header
+  - useTheme hook with localStorage persistence
+  - FOUC prevention script
+
+- **Command Palette**
+  - Expanded from 6 to 22 searchable pages
+  - All v0.3.0+ features included
+
+- **Live Dashboard**
+  - useLiveDashboard hook for WebSocket event-driven refresh
+  - 5s debounced revalidation on unit/tracker/alert events
+  - 60s periodic fallback
+
+- **API Response Caching**
+  - SWR-style useApiCache hook with stale-while-revalidate
+  - Request deduplication, focus revalidation, optimistic mutation
+  - Shared in-memory cache store
+
+- **Onboarding Wizard**
+  - 5-step first-run guide for new dealers
+  - localStorage-based completion tracking
+
+- **Keyboard Shortcuts**
+  - Global shortcuts: n=inventory, s=search, ?=help
+  - g-chord navigation: g+m=map, g+i=inventory, g+a=alerts
+  - Shortcuts help dialog
+
+- **Export/Print**
+  - CSV, JSON, and print export utilities
+  - ExportMenu dropdown component
+  - Audit detail page export integration
+
+- **Notification Center**
+  - Bell dropdown with recent alerts and severity icons
+  - Mark-all-read, time-ago formatting
+  - Replaces simple bell icon in header
+
+### Improved
+
+- **Accessibility (WAI-ARIA 1.2)**
+  - Sidebar: navigation landmarks, aria-current
+  - Header: dynamic aria-labels, aria-expanded
+  - CommandPalette: combobox, listbox, aria-activedescendant
+  - Dialog: focus trap, auto-focus first element
+  - Button: aria-disabled, aria-busy
+  - SkipNav: keyboard skip-to-content link
+
+- **Page Migration**
+  - 8 pages refactored to use shared UI components
+  - Consistent Skeleton, AlertBanner, PageHeader, EmptyState usage
+
+- **Unit Tests**
+  - 66 new tests across 7 files
+  - Coverage: useTheme, useTranslation, map-provider, cache,
+    Badge, AlertBanner, EmptyState
+
 ## [1.0.0] - 2026-03-23
 
 ### Added

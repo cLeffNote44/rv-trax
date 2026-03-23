@@ -3,7 +3,7 @@
 [![CI](https://github.com/cLeffNote44/rv-trax/actions/workflows/ci.yml/badge.svg)](https://github.com/cLeffNote44/rv-trax/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/cLeffNote44/rv-trax/actions/workflows/codeql.yml/badge.svg)](https://github.com/cLeffNote44/rv-trax/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-green.svg)](CHANGELOG.md)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](.nvmrc)
 [![pnpm](https://img.shields.io/badge/pnpm-%3E%3D9-orange.svg)](https://pnpm.io/)
 

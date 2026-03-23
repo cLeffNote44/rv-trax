@@ -43,7 +43,6 @@ For comprehensive security information, see:
 
 | Version | Supported           |
 | ------- | ------------------- |
-| 1.0.x   | Yes                 |
-| 0.4.x   | Security fixes only |
-| 0.3.x   | End of life         |
-| < 0.3   | End of life         |
+| 1.1.x   | Yes                 |
+| 1.0.x   | Security fixes only |
+| < 1.0   | End of life         |
