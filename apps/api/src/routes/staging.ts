@@ -4,18 +4,13 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { eq, and } from 'drizzle-orm';
-import { stagingPlans, lots, stagingAssignments } from '@rv-trax/db';
-import {
-  createStagingPlanSchema,
-  updateStagingPlanSchema,
-  AuditAction,
-} from '@rv-trax/shared';
+import { stagingPlans, lots } from '@rv-trax/db';
+import { createStagingPlanSchema, updateStagingPlanSchema, AuditAction } from '@rv-trax/shared';
 import { enforceTenant } from '../middleware/tenant.js';
 import { notFound, badRequest } from '../utils/errors.js';
 import { logAction } from '../services/audit.js';
-import { computeMoveList } from '../services/staging.js';
-import type { StagingRule } from '../services/staging.js';
-import { computeComplianceScore, snapshotCompliance } from '../services/compliance.js';
+import { registerMoveRoutes } from './staging/moves.js';
+import { registerComplianceRoutes } from './staging/compliance.js';
 import { z } from 'zod';
 
 // ── Local query schemas ----------------------------------------------------
@@ -51,12 +46,7 @@ export default async function stagingRoutes(app: FastifyInstance): Promise<void>
     const [lot] = await app.db
       .select({ id: lots.id })
       .from(lots)
-      .where(
-        and(
-          eq(lots.id, body.lot_id),
-          eq(lots.dealershipId, request.dealershipId),
-        ),
-      )
+      .where(and(eq(lots.id, body.lot_id), eq(lots.dealershipId, request.dealershipId)))
       .limit(1);
 
     if (!lot) {
@@ -118,12 +108,7 @@ export default async function stagingRoutes(app: FastifyInstance): Promise<void>
     const [plan] = await app.db
       .select()
       .from(stagingPlans)
-      .where(
-        and(
-          eq(stagingPlans.id, id),
-          eq(stagingPlans.dealershipId, request.dealershipId),
-        ),
-      )
+      .where(and(eq(stagingPlans.id, id), eq(stagingPlans.dealershipId, request.dealershipId)))
       .limit(1);
 
     if (!plan) {
@@ -149,11 +134,7 @@ export default async function stagingRoutes(app: FastifyInstance): Promise<void>
     // Compute compliance if plan is active and has a lot
     let compliance = null;
     if (plan.isActive && plan.lotId) {
-      compliance = await computeComplianceScore(
-        app.db,
-        plan.lotId,
-        request.dealershipId,
-      );
+      compliance = await computeComplianceScore(app.db, plan.lotId, request.dealershipId);
     }
 
     return reply.status(200).send({
@@ -174,12 +155,7 @@ export default async function stagingRoutes(app: FastifyInstance): Promise<void>
     const [existing] = await app.db
       .select()
       .from(stagingPlans)
-      .where(
-        and(
-          eq(stagingPlans.id, id),
-          eq(stagingPlans.dealershipId, request.dealershipId),
-        ),
-      )
+      .where(and(eq(stagingPlans.id, id), eq(stagingPlans.dealershipId, request.dealershipId)))
       .limit(1);
 
     if (!existing) {
@@ -219,12 +195,7 @@ export default async function stagingRoutes(app: FastifyInstance): Promise<void>
     const [existing] = await app.db
       .select({ id: stagingPlans.id })
       .from(stagingPlans)
-      .where(
-        and(
-          eq(stagingPlans.id, id),
-          eq(stagingPlans.dealershipId, request.dealershipId),
-        ),
-      )
+      .where(and(eq(stagingPlans.id, id), eq(stagingPlans.dealershipId, request.dealershipId)))
       .limit(1);
 
     if (!existing) {
@@ -232,9 +203,7 @@ export default async function stagingRoutes(app: FastifyInstance): Promise<void>
     }
 
     // Cascade will remove staging_assignments via FK
-    await app.db
-      .delete(stagingPlans)
-      .where(eq(stagingPlans.id, id));
+    await app.db.delete(stagingPlans).where(eq(stagingPlans.id, id));
 
     await logAction(app.db, {
       dealershipId: request.dealershipId,
@@ -256,12 +225,7 @@ export default async function stagingRoutes(app: FastifyInstance): Promise<void>
     const [plan] = await app.db
       .select()
       .from(stagingPlans)
-      .where(
-        and(
-          eq(stagingPlans.id, id),
-          eq(stagingPlans.dealershipId, request.dealershipId),
-        ),
-      )
+      .where(and(eq(stagingPlans.id, id), eq(stagingPlans.dealershipId, request.dealershipId)))
       .limit(1);
 
     if (!plan) {
@@ -323,12 +287,7 @@ export default async function stagingRoutes(app: FastifyInstance): Promise<void>
     const [plan] = await app.db
       .select()
       .from(stagingPlans)
-      .where(
-        and(
-          eq(stagingPlans.id, id),
-          eq(stagingPlans.dealershipId, request.dealershipId),
-        ),
-      )
+      .where(and(eq(stagingPlans.id, id), eq(stagingPlans.dealershipId, request.dealershipId)))
       .limit(1);
 
     if (!plan) {
@@ -370,12 +329,7 @@ export default async function stagingRoutes(app: FastifyInstance): Promise<void>
     const [source] = await app.db
       .select()
       .from(stagingPlans)
-      .where(
-        and(
-          eq(stagingPlans.id, id),
-          eq(stagingPlans.dealershipId, request.dealershipId),
-        ),
-      )
+      .where(and(eq(stagingPlans.id, id), eq(stagingPlans.dealershipId, request.dealershipId)))
       .limit(1);
 
     if (!source) {
@@ -409,283 +363,7 @@ export default async function stagingRoutes(app: FastifyInstance): Promise<void>
     return reply.status(201).send({ data: cloned });
   });
 
-  // ── GET /:id/move-list — compute move list ---------------------------------
-
-  app.get('/:id/move-list', async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
-
-    const [plan] = await app.db
-      .select()
-      .from(stagingPlans)
-      .where(
-        and(
-          eq(stagingPlans.id, id),
-          eq(stagingPlans.dealershipId, request.dealershipId),
-        ),
-      )
-      .limit(1);
-
-    if (!plan) {
-      throw notFound('Staging plan not found');
-    }
-
-    if (!plan.lotId) {
-      throw badRequest('Staging plan has no associated lot');
-    }
-
-    const rules = (plan.rules ?? []) as StagingRule[];
-
-    const moves = await computeMoveList(
-      app.db,
-      plan.id,
-      plan.lotId,
-      request.dealershipId,
-      rules,
-    );
-
-    // Upsert staging assignments for each move
-    for (const move of moves) {
-      // Check if an assignment already exists for this plan+unit
-      const [existingAssignment] = await app.db
-        .select({ id: stagingAssignments.id, status: stagingAssignments.status })
-        .from(stagingAssignments)
-        .where(
-          and(
-            eq(stagingAssignments.planId, id),
-            eq(stagingAssignments.unitId, move.unitId),
-          ),
-        )
-        .limit(1);
-
-      if (!existingAssignment) {
-        await app.db.insert(stagingAssignments).values({
-          planId: id,
-          unitId: move.unitId,
-          targetRow: move.targetRow,
-          targetSpot: move.targetSpot,
-          priority: move.priority,
-          status: 'pending',
-        });
-      } else if (existingAssignment.status === 'pending') {
-        // Update target if it changed and assignment is still pending
-        await app.db
-          .update(stagingAssignments)
-          .set({
-            targetRow: move.targetRow,
-            targetSpot: move.targetSpot,
-            priority: move.priority,
-          })
-          .where(eq(stagingAssignments.id, existingAssignment.id));
-      }
-    }
-
-    // Fetch the full assignment records to return with IDs
-    const assignmentRecords = await app.db
-      .select()
-      .from(stagingAssignments)
-      .where(eq(stagingAssignments.planId, id));
-
-    // Build response with assignment IDs attached to moves
-    const assignmentMap = new Map(
-      assignmentRecords.map((a) => [a.unitId, a]),
-    );
-
-    const movesWithIds = moves.map((move) => {
-      const assignment = assignmentMap.get(move.unitId);
-      return {
-        assignment_id: assignment?.id ?? null,
-        status: assignment?.status ?? 'pending',
-        ...move,
-      };
-    });
-
-    return reply.status(200).send({
-      data: movesWithIds,
-      summary: {
-        total_moves: moves.length,
-        total_distance_m: Math.round(
-          moves.reduce((sum, m) => sum + m.distanceM, 0) * 100,
-        ) / 100,
-      },
-    });
-  });
-
-  // ── POST /:id/moves/:assignmentId/complete — mark move completed ----------
-
-  app.post(
-    '/:id/moves/:assignmentId/complete',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id, assignmentId } = request.params as {
-        id: string;
-        assignmentId: string;
-      };
-
-      // Verify plan exists and belongs to dealership
-      const [plan] = await app.db
-        .select({ id: stagingPlans.id })
-        .from(stagingPlans)
-        .where(
-          and(
-            eq(stagingPlans.id, id),
-            eq(stagingPlans.dealershipId, request.dealershipId),
-          ),
-        )
-        .limit(1);
-
-      if (!plan) {
-        throw notFound('Staging plan not found');
-      }
-
-      // Verify assignment exists and belongs to this plan
-      const [assignment] = await app.db
-        .select()
-        .from(stagingAssignments)
-        .where(
-          and(
-            eq(stagingAssignments.id, assignmentId),
-            eq(stagingAssignments.planId, id),
-          ),
-        )
-        .limit(1);
-
-      if (!assignment) {
-        throw notFound('Assignment not found');
-      }
-
-      if (assignment.status === 'completed') {
-        throw badRequest('Assignment is already completed');
-      }
-
-      if (assignment.status === 'skipped') {
-        throw badRequest('Assignment was skipped and cannot be completed');
-      }
-
-      const [updated] = await app.db
-        .update(stagingAssignments)
-        .set({
-          status: 'completed',
-          completedAt: new Date(),
-        })
-        .where(eq(stagingAssignments.id, assignmentId))
-        .returning();
-
-      await logAction(app.db, {
-        dealershipId: request.dealershipId,
-        userId: request.user.sub,
-        action: AuditAction.STATUS_CHANGE,
-        entityType: 'staging_assignment',
-        entityId: assignmentId,
-        changes: { status: 'completed' },
-        ipAddress: request.ip,
-      });
-
-      return reply.status(200).send({ data: updated });
-    },
-  );
-
-  // ── POST /:id/moves/:assignmentId/skip — skip a move ----------------------
-
-  app.post(
-    '/:id/moves/:assignmentId/skip',
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      const { id, assignmentId } = request.params as {
-        id: string;
-        assignmentId: string;
-      };
-
-      // Verify plan exists and belongs to dealership
-      const [plan] = await app.db
-        .select({ id: stagingPlans.id })
-        .from(stagingPlans)
-        .where(
-          and(
-            eq(stagingPlans.id, id),
-            eq(stagingPlans.dealershipId, request.dealershipId),
-          ),
-        )
-        .limit(1);
-
-      if (!plan) {
-        throw notFound('Staging plan not found');
-      }
-
-      // Verify assignment exists and belongs to this plan
-      const [assignment] = await app.db
-        .select()
-        .from(stagingAssignments)
-        .where(
-          and(
-            eq(stagingAssignments.id, assignmentId),
-            eq(stagingAssignments.planId, id),
-          ),
-        )
-        .limit(1);
-
-      if (!assignment) {
-        throw notFound('Assignment not found');
-      }
-
-      if (assignment.status === 'completed') {
-        throw badRequest('Assignment is already completed and cannot be skipped');
-      }
-
-      if (assignment.status === 'skipped') {
-        throw badRequest('Assignment is already skipped');
-      }
-
-      const [updated] = await app.db
-        .update(stagingAssignments)
-        .set({ status: 'skipped' })
-        .where(eq(stagingAssignments.id, assignmentId))
-        .returning();
-
-      await logAction(app.db, {
-        dealershipId: request.dealershipId,
-        userId: request.user.sub,
-        action: AuditAction.STATUS_CHANGE,
-        entityType: 'staging_assignment',
-        entityId: assignmentId,
-        changes: { status: 'skipped' },
-        ipAddress: request.ip,
-      });
-
-      return reply.status(200).send({ data: updated });
-    },
-  );
-
-  // ── GET /:id/compliance — get compliance score for the plan's lot ----------
-
-  app.get('/:id/compliance', async (request: FastifyRequest, reply: FastifyReply) => {
-    const { id } = request.params as { id: string };
-
-    const [plan] = await app.db
-      .select()
-      .from(stagingPlans)
-      .where(
-        and(
-          eq(stagingPlans.id, id),
-          eq(stagingPlans.dealershipId, request.dealershipId),
-        ),
-      )
-      .limit(1);
-
-    if (!plan) {
-      throw notFound('Staging plan not found');
-    }
-
-    if (!plan.lotId) {
-      throw badRequest('Staging plan has no associated lot');
-    }
-
-    const score = await computeComplianceScore(
-      app.db,
-      plan.lotId,
-      request.dealershipId,
-    );
-
-    // Take a snapshot for history
-    await snapshotCompliance(app.db, plan.lotId, request.dealershipId);
-
-    return reply.status(200).send({ data: score });
-  });
+  // ── Move + compliance routes (extracted to staging/ directory) ──────────
+  registerMoveRoutes(app);
+  registerComplianceRoutes(app);
 }

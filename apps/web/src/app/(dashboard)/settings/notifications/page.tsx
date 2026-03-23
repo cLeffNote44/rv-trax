@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import StatusNotificationSettings from './components/StatusNotificationSettings';
 
 interface NotificationPreference {
   alert_type: string;
@@ -22,7 +23,10 @@ const ALERT_TYPES = [
   { key: 'aged_inventory', label: 'Aged Inventory' },
 ];
 
-const CHANNELS: { key: keyof Pick<NotificationPreference, 'in_app' | 'push' | 'email' | 'sms'>; label: string }[] = [
+const CHANNELS: {
+  key: keyof Pick<NotificationPreference, 'in_app' | 'push' | 'email' | 'sms'>;
+  label: string;
+}[] = [
   { key: 'in_app', label: 'In-App' },
   { key: 'push', label: 'Push' },
   { key: 'email', label: 'Email' },
@@ -65,14 +69,12 @@ export default function NotificationsPage() {
 
   const togglePreference = (
     alertType: string,
-    channel: keyof Pick<NotificationPreference, 'in_app' | 'push' | 'email' | 'sms'>
+    channel: keyof Pick<NotificationPreference, 'in_app' | 'push' | 'email' | 'sms'>,
   ) => {
     setPreferences((prev) =>
       prev.map((pref) =>
-        pref.alert_type === alertType
-          ? { ...pref, [channel]: !pref[channel] }
-          : pref
-      )
+        pref.alert_type === alertType ? { ...pref, [channel]: !pref[channel] } : pref,
+      ),
     );
     setDirty(true);
     setSuccessMessage('');
@@ -109,8 +111,8 @@ export default function NotificationsPage() {
       </div>
 
       <p className="text-sm text-[var(--color-text-secondary)]">
-        Choose which alerts you receive and how they are delivered. These settings
-        apply to your account. Per-role defaults are shown as initially checked.
+        Choose which alerts you receive and how they are delivered. These settings apply to your
+        account. Per-role defaults are shown as initially checked.
       </p>
 
       {/* Matrix Table */}
@@ -143,8 +145,7 @@ export default function NotificationsPage() {
             <tbody>
               {preferences.map((pref) => {
                 const alertLabel =
-                  ALERT_TYPES.find((at) => at.key === pref.alert_type)?.label ??
-                  pref.alert_type;
+                  ALERT_TYPES.find((at) => at.key === pref.alert_type)?.label ?? pref.alert_type;
                 return (
                   <tr
                     key={pref.alert_type}
@@ -158,9 +159,7 @@ export default function NotificationsPage() {
                         <input
                           type="checkbox"
                           checked={pref[ch.key]}
-                          onChange={() =>
-                            togglePreference(pref.alert_type, ch.key)
-                          }
+                          onChange={() => togglePreference(pref.alert_type, ch.key)}
                           className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[var(--color-brand-600)] focus:ring-[var(--color-brand-500)]"
                         />
                       </td>
@@ -178,10 +177,14 @@ export default function NotificationsPage() {
         <Button onClick={handleSave} disabled={saving || !dirty}>
           {saving ? 'Saving...' : 'Save Preferences'}
         </Button>
-        {successMessage && (
-          <p className="text-sm font-medium text-green-600">{successMessage}</p>
-        )}
+        {successMessage && <p className="text-sm font-medium text-green-600">{successMessage}</p>}
       </div>
+
+      {/* Divider */}
+      <hr className="border-[var(--color-border)]" />
+
+      {/* Status change notifications */}
+      <StatusNotificationSettings />
     </div>
   );
 }

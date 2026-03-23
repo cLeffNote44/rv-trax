@@ -5,17 +5,14 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { eq, and, desc, asc, ilike, or, gt, isNull, count } from 'drizzle-orm';
 import { units, trackerAssignments, trackers } from '@rv-trax/db';
-import {
-  createUnitSchema,
-  updateUnitSchema,
-  paginationSchema,
-} from '@rv-trax/shared';
+import { createUnitSchema, updateUnitSchema, paginationSchema } from '@rv-trax/shared';
 import { AuditAction } from '@rv-trax/shared';
 import { enforceTenant } from '../middleware/tenant.js';
 import { notFound, conflict, validationError, badRequest } from '../utils/errors.js';
 import { canAddUnit, isRestricted, getBillingOverview } from '../services/billing.js';
 import { decodeCursor, buildPaginatedResponse } from '../utils/pagination.js';
 import { logAction } from '../services/audit.js';
+import { notifyStatusChange } from '../services/status-notifications.js';
 
 export default async function unitRoutes(app: FastifyInstance): Promise<void> {
   // All routes require auth + tenant
@@ -33,7 +30,9 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
     }
 
     if (!(await canAddUnit(app.db, request.dealershipId))) {
-      throw badRequest('Unit limit reached for your subscription tier. Please upgrade to add more units.');
+      throw badRequest(
+        'Unit limit reached for your subscription tier. Please upgrade to add more units.',
+      );
     }
 
     // Check stock_number unique within dealership
@@ -92,10 +91,7 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
     const query = request.query as Record<string, string | undefined>;
     const { limit, cursor } = paginationSchema.parse(query);
 
-    const conditions = [
-      eq(units.dealershipId, request.dealershipId),
-      isNull(units.archivedAt),
-    ];
+    const conditions = [eq(units.dealershipId, request.dealershipId), isNull(units.archivedAt)];
 
     if (query['status']) {
       conditions.push(eq(units.status, query['status']));
@@ -130,10 +126,7 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
     const where = and(...conditions);
 
     // Get total count
-    const [countResult] = await app.db
-      .select({ value: count() })
-      .from(units)
-      .where(where);
+    const [countResult] = await app.db.select({ value: count() }).from(units).where(where);
 
     const totalCount = countResult?.value ?? 0;
 
@@ -161,12 +154,7 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
     const [unit] = await app.db
       .select()
       .from(units)
-      .where(
-        and(
-          eq(units.id, id),
-          eq(units.dealershipId, request.dealershipId),
-        ),
-      )
+      .where(and(eq(units.id, id), eq(units.dealershipId, request.dealershipId)))
       .limit(1);
 
     if (!unit) {
@@ -187,12 +175,7 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
       })
       .from(trackerAssignments)
       .innerJoin(trackers, eq(trackers.id, trackerAssignments.trackerId))
-      .where(
-        and(
-          eq(trackerAssignments.unitId, id),
-          isNull(trackerAssignments.unassignedAt),
-        ),
-      )
+      .where(and(eq(trackerAssignments.unitId, id), isNull(trackerAssignments.unassignedAt)))
       .limit(1);
 
     return reply.status(200).send({
@@ -213,12 +196,7 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
     const [existing] = await app.db
       .select()
       .from(units)
-      .where(
-        and(
-          eq(units.id, id),
-          eq(units.dealershipId, request.dealershipId),
-        ),
-      )
+      .where(and(eq(units.id, id), eq(units.dealershipId, request.dealershipId)))
       .limit(1);
 
     if (!existing) {
@@ -257,11 +235,7 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
     if (body.msrp !== undefined) updates['msrp'] = body.msrp?.toString();
     if (body.status !== undefined) updates['status'] = body.status;
 
-    const [updated] = await app.db
-      .update(units)
-      .set(updates)
-      .where(eq(units.id, id))
-      .returning();
+    const [updated] = await app.db.update(units).set(updates).where(eq(units.id, id)).returning();
 
     await logAction(app.db, {
       dealershipId: request.dealershipId,
@@ -272,6 +246,22 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
       changes: body as Record<string, unknown>,
       ipAddress: request.ip,
     });
+
+    // Dispatch status-change notifications (fire-and-forget — never blocks response)
+    if (body.status && body.status !== existing.status) {
+      notifyStatusChange({
+        db: app.db,
+        redis: app.redis,
+        log: request.log,
+        dealershipId: request.dealershipId,
+        unitId: id,
+        userId: request.user.sub,
+        oldStatus: existing.status,
+        newStatus: body.status,
+      }).catch((err) => {
+        request.log.error({ err, unitId: id }, 'Status notification dispatch failed');
+      });
+    }
 
     return reply.status(200).send({ data: updated });
   });
@@ -387,7 +377,7 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
       }
 
       const overview = await getBillingOverview(app.db, request.dealershipId);
-      if (overview && (overview.unitCount + valuesToInsert.length) > overview.unitLimit) {
+      if (overview && overview.unitCount + valuesToInsert.length > overview.unitLimit) {
         throw badRequest(
           `Import would exceed unit limit (current: ${overview.unitCount}, importing: ${valuesToInsert.length}, limit: ${overview.unitLimit}). Please upgrade your plan.`,
         );
@@ -415,10 +405,7 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
   app.get('/export', async (request: FastifyRequest, reply: FastifyReply) => {
     const query = request.query as Record<string, string | undefined>;
 
-    const conditions = [
-      eq(units.dealershipId, request.dealershipId),
-      isNull(units.archivedAt),
-    ];
+    const conditions = [eq(units.dealershipId, request.dealershipId), isNull(units.archivedAt)];
 
     if (query['status']) {
       conditions.push(eq(units.status, query['status']));
@@ -440,24 +427,34 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
 
     // Build CSV
     const csvHeaders = [
-      'stock_number', 'vin', 'year', 'make', 'model', 'floorplan',
-      'unit_type', 'length_ft', 'msrp', 'status',
+      'stock_number',
+      'vin',
+      'year',
+      'make',
+      'model',
+      'floorplan',
+      'unit_type',
+      'length_ft',
+      'msrp',
+      'status',
     ];
     const csvLines = [csvHeaders.join(',')];
 
     for (const row of rows) {
-      csvLines.push([
-        escapeCsv(row.stockNumber),
-        escapeCsv(row.vin ?? ''),
-        String(row.year ?? ''),
-        escapeCsv(row.make ?? ''),
-        escapeCsv(row.model ?? ''),
-        escapeCsv(row.floorplan ?? ''),
-        row.unitType,
-        row.lengthFt?.toString() ?? '',
-        row.msrp?.toString() ?? '',
-        row.status,
-      ].join(','));
+      csvLines.push(
+        [
+          escapeCsv(row.stockNumber),
+          escapeCsv(row.vin ?? ''),
+          String(row.year ?? ''),
+          escapeCsv(row.make ?? ''),
+          escapeCsv(row.model ?? ''),
+          escapeCsv(row.floorplan ?? ''),
+          row.unitType,
+          row.lengthFt?.toString() ?? '',
+          row.msrp?.toString() ?? '',
+          row.status,
+        ].join(','),
+      );
     }
 
     return reply
@@ -472,13 +469,20 @@ export default async function unitRoutes(app: FastifyInstance): Promise<void> {
 
 function getSortColumn(sortBy: string) {
   switch (sortBy) {
-    case 'stock_number': return units.stockNumber;
-    case 'year': return units.year;
-    case 'make': return units.make;
-    case 'model': return units.model;
-    case 'status': return units.status;
-    case 'updated_at': return units.updatedAt;
-    default: return units.createdAt;
+    case 'stock_number':
+      return units.stockNumber;
+    case 'year':
+      return units.year;
+    case 'make':
+      return units.make;
+    case 'model':
+      return units.model;
+    case 'status':
+      return units.status;
+    case 'updated_at':
+      return units.updatedAt;
+    default:
+      return units.createdAt;
   }
 }
 
