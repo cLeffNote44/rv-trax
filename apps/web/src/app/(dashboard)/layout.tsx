@@ -6,12 +6,9 @@ import { WebSocketProvider } from '@/providers/WebSocketProvider';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { CommandPalette } from '@/components/layout/CommandPalette';
+import { SkipNav } from '@/components/ui/SkipNav';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated } = useAuth();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
@@ -32,6 +29,7 @@ export default function DashboardLayout({
 
   return (
     <WebSocketProvider>
+      <SkipNav />
       <div className="flex h-screen overflow-hidden">
         {/* Sidebar */}
         <Sidebar
@@ -43,10 +41,13 @@ export default function DashboardLayout({
 
         {/* Main area */}
         <div className="flex flex-1 flex-col overflow-hidden">
-          <Header
-            onMenuClick={() => setSidebarMobileOpen(true)}
-          />
-          <main className="flex-1 overflow-y-auto bg-[var(--color-bg-secondary)] p-6">
+          <div role="banner">
+            <Header onMenuClick={() => setSidebarMobileOpen(true)} />
+          </div>
+          <main
+            id="main-content"
+            className="flex-1 overflow-y-auto bg-[var(--color-bg-secondary)] p-6"
+          >
             {children}
           </main>
         </div>

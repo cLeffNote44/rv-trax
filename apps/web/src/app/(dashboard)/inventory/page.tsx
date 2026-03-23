@@ -3,11 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { SortingState, RowSelectionState } from '@tanstack/react-table';
-import {
-  Plus,
-  Upload,
-  Download,
-} from 'lucide-react';
+import { Package, Plus, Upload, Download } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,6 +20,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Dialog } from '@/components/ui/Dialog';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { AlertBanner } from '@/components/ui/AlertBanner';
 import { PaginationControls } from '@/components/shared/PaginationControls';
 import InventoryTable from './components/InventoryTable';
 import InventoryFilters from './components/InventoryFilters';
@@ -123,10 +121,7 @@ export default function InventoryPage() {
     isLoading,
     error,
     refetch,
-  } = useApi<PaginatedResponse<Unit>>(
-    () => getUnits(apiQuery),
-    [JSON.stringify(apiQuery)],
-  );
+  } = useApi<PaginatedResponse<Unit>>(() => getUnits(apiQuery), [JSON.stringify(apiQuery)]);
 
   // ---- Sync pagination info from response ----
   useEffect(() => {
@@ -136,7 +131,6 @@ export default function InventoryPage() {
         totalCount: unitsResponse.pagination.total_count,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unitsResponse]);
 
   // Derive units and total count
@@ -265,33 +259,27 @@ export default function InventoryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-            Inventory
-          </h1>
-          <Badge variant="default">{totalCount}</Badge>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport}>
-            <Download className="h-4 w-4" />
-            Export CSV
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setImportWizardOpen(true)}
-          >
-            <Upload className="h-4 w-4" />
-            Import CSV
-          </Button>
-          <Button size="sm" onClick={() => setAddDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Add Unit
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        icon={Package}
+        title="Inventory"
+        badge={<Badge variant="default">{totalCount}</Badge>}
+        actions={
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleExport}>
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setImportWizardOpen(true)}>
+              <Upload className="h-4 w-4" />
+              Import CSV
+            </Button>
+            <Button size="sm" onClick={() => setAddDialogOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Add Unit
+            </Button>
+          </div>
+        }
+      />
 
       {/* Filters */}
       <InventoryFilters
@@ -302,16 +290,11 @@ export default function InventoryPage() {
 
       {/* Error state */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300">
-          Failed to load inventory: {error}
-          <button
-            type="button"
-            onClick={refetch}
-            className="ml-2 font-medium underline"
-          >
-            Retry
-          </button>
-        </div>
+        <AlertBanner
+          variant="error"
+          message={`Failed to load inventory: ${error}`}
+          onRetry={refetch}
+        />
       )}
 
       {/* Table */}
@@ -418,11 +401,7 @@ export default function InventoryPage() {
           </div>
 
           <div className="flex justify-end gap-3 border-t border-[var(--color-border)] pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCloseAddDialog}
-            >
+            <Button type="button" variant="outline" onClick={handleCloseAddDialog}>
               Cancel
             </Button>
             <Button type="submit" isLoading={isSubmitting}>

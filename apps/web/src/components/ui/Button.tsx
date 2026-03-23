@@ -7,16 +7,14 @@ import { Loader2 } from 'lucide-react';
 // ---------------------------------------------------------------------------
 
 const VARIANT_CLASSES = {
-  primary:
-    'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500',
+  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500',
   secondary:
     'bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] focus-visible:ring-slate-500',
   outline:
     'border border-[var(--color-border)] bg-transparent text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)] focus-visible:ring-slate-500',
   ghost:
     'bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-secondary)] hover:text-[var(--color-text-primary)] focus-visible:ring-slate-500',
-  destructive:
-    'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500',
+  destructive: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500',
 } as const;
 
 const SIZE_CLASSES = {
@@ -50,19 +48,21 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
+        aria-disabled={disabled || isLoading || undefined}
+        aria-busy={isLoading || undefined}
         className={cn(
           'inline-flex items-center justify-center rounded-lg font-medium transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
           'disabled:pointer-events-none disabled:opacity-50',
           VARIANT_CLASSES[variant],
           SIZE_CLASSES[size],
-          className
+          className,
         )}
         {...props}
       >
@@ -70,7 +70,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {children}
       </button>
     );
-  }
+  },
 );
 
 Button.displayName = 'Button';

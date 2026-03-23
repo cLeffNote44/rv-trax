@@ -107,7 +107,11 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+      <nav
+        className="flex-1 space-y-1 overflow-y-auto px-3 py-4"
+        role="navigation"
+        aria-label="Main navigation"
+      >
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -119,6 +123,7 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
               key={item.label}
               href={item.href}
               onClick={onCloseMobile}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
                 isActive
@@ -185,12 +190,16 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
 
         {/* User dropdown */}
         {showUserMenu && (
-          <div className="absolute bottom-full left-3 right-3 mb-1 rounded-lg border border-white/10 bg-slate-800 py-1 shadow-lg">
+          <div
+            className="absolute bottom-full left-3 right-3 mb-1 rounded-lg border border-white/10 bg-slate-800 py-1 shadow-lg"
+            role="menu"
+          >
             <button
               onClick={() => {
                 setShowUserMenu(false);
                 logout();
               }}
+              role="menuitem"
               className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-white/5"
             >
               <LogOut className="h-4 w-4" />

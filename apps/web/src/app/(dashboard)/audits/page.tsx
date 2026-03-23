@@ -2,20 +2,15 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import {
-  ClipboardCheck,
-  Plus,
-  AlertTriangle,
-  Calendar,
-  BarChart3,
-  Clock,
-  CheckCircle2,
-  Eye,
-} from 'lucide-react';
+import { ClipboardCheck, Plus, Calendar, BarChart3, Clock, CheckCircle2, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Dialog } from '@/components/ui/Dialog';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { AlertBanner } from '@/components/ui/AlertBanner';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useApi } from '@/hooks/useApi';
 import { getFloorPlanAudits, startFloorPlanAudit, type FloorPlanAudit } from '@/lib/api';
 import { formatDate, cn } from '@/lib/utils';
@@ -88,32 +83,21 @@ export default function AuditsPage() {
         {/* Header skeleton */}
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <div className="h-7 w-56 animate-pulse rounded-lg bg-[var(--color-bg-tertiary)]" />
-            <div className="h-4 w-72 animate-pulse rounded-lg bg-[var(--color-bg-tertiary)]" />
+            <Skeleton className="h-7 w-56" />
+            <Skeleton className="h-4 w-72" />
           </div>
-          <div className="h-10 w-36 animate-pulse rounded-lg bg-[var(--color-bg-tertiary)]" />
+          <Skeleton className="h-10 w-36" />
         </div>
         {/* Summary cards skeleton */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="h-4 w-24 animate-pulse rounded bg-[var(--color-bg-tertiary)]" />
-                  <div className="h-8 w-16 animate-pulse rounded bg-[var(--color-bg-tertiary)]" />
-                </div>
-              </CardContent>
-            </Card>
+            <Skeleton key={i} variant="card" />
           ))}
         </div>
         {/* Table skeleton */}
         <Card>
           <CardContent>
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-10 animate-pulse rounded bg-[var(--color-bg-tertiary)]" />
-              ))}
-            </div>
+            <Skeleton variant="text" lines={5} />
           </CardContent>
         </Card>
       </div>
@@ -124,23 +108,12 @@ export default function AuditsPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Floor Plan Audits</h1>
-        </div>
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-900/50 dark:bg-red-900/20">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-red-800 dark:text-red-300">
-                Failed to load audits
-              </p>
-              <p className="mt-1 text-sm text-red-700 dark:text-red-400">{error}</p>
-              <Button variant="outline" size="sm" className="mt-3" onClick={refetch}>
-                Retry
-              </Button>
-            </div>
-          </div>
-        </div>
+        <PageHeader icon={ClipboardCheck} title="Floor Plan Audits" />
+        <AlertBanner
+          variant="error"
+          message={`Failed to load audits: ${error}`}
+          onRetry={refetch}
+        />
       </div>
     );
   }
@@ -148,25 +121,17 @@ export default function AuditsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-            <ClipboardCheck className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-              Floor Plan Audits
-            </h1>
-            <p className="mt-0.5 text-sm text-[var(--color-text-secondary)]">
-              Verify inventory against your floor plan records
-            </p>
-          </div>
-        </div>
-        <Button onClick={() => setConfirmOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Start New Audit
-        </Button>
-      </div>
+      <PageHeader
+        icon={ClipboardCheck}
+        title="Floor Plan Audits"
+        description="Verify inventory against your floor plan records"
+        actions={
+          <Button onClick={() => setConfirmOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Start New Audit
+          </Button>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -235,13 +200,11 @@ export default function AuditsPage() {
 
       {/* Audit Table */}
       {audits.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--color-border)] py-16">
-          <ClipboardCheck className="mb-3 h-10 w-10 text-[var(--color-text-tertiary)]" />
-          <p className="text-sm font-medium text-[var(--color-text-secondary)]">No audits yet</p>
-          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-            Start a new floor plan audit to verify your inventory.
-          </p>
-        </div>
+        <EmptyState
+          icon={ClipboardCheck}
+          title="No audits yet"
+          description="Start a new floor plan audit to verify your inventory."
+        />
       ) : (
         <Card>
           <CardContent className="p-0">

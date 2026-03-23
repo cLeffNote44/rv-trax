@@ -8,10 +8,18 @@ import { Badge } from '@/components/ui/Badge';
 import { Dialog } from '@/components/ui/Dialog';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useApi } from '@/hooks/useApi';
-import { getLots, getStagingPlans, createStagingPlan, activateStagingPlan, getComplianceScore } from '@/lib/api';
-import { formatDate, cn } from '@/lib/utils';
-import type { MoveListItem, ComplianceScore, StagingPlan } from '@rv-trax/shared';
+import {
+  getLots,
+  getStagingPlans,
+  createStagingPlan,
+  activateStagingPlan,
+  getComplianceScore,
+} from '@/lib/api';
+import { cn } from '@/lib/utils';
+import type { MoveListItem, ComplianceScore } from '@rv-trax/shared';
 
 export default function StagingPage() {
   const [createOpen, setCreateOpen] = useState(false);
@@ -30,15 +38,15 @@ export default function StagingPage() {
   const { data: lotsData } = useApi(() => getLots(), []);
   const lots = lotsData ?? [];
 
-  const { data: plansData, isLoading, refetch } = useApi(
-    () => getStagingPlans(),
-    []
-  );
+  const { data: plansData, isLoading, refetch } = useApi(() => getStagingPlans(), []);
   const plans = plansData?.data ?? [];
 
   const { data: compliance } = useApi(
-    () => (complianceLotId ? getComplianceScore(complianceLotId) : Promise.resolve(null as unknown as ComplianceScore)),
-    [complianceLotId]
+    () =>
+      complianceLotId
+        ? getComplianceScore(complianceLotId)
+        : Promise.resolve(null as unknown as ComplianceScore),
+    [complianceLotId],
   );
 
   // Auto-select first lot for compliance if available
@@ -91,35 +99,38 @@ export default function StagingPage() {
         setActivatingId(null);
       }
     },
-    [refetch]
+    [refetch],
   );
 
   const scoreColor = (pct: number) =>
     pct >= 80 ? 'text-green-600' : pct >= 50 ? 'text-amber-600' : 'text-red-600';
   const scoreBg = (pct: number) =>
-    pct >= 80 ? 'bg-green-50 border-green-200' : pct >= 50 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200';
+    pct >= 80
+      ? 'bg-green-50 border-green-200'
+      : pct >= 50
+        ? 'bg-amber-50 border-amber-200'
+        : 'bg-red-50 border-red-200';
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-            Lot Staging
-          </h1>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            Organize and optimize your lot layout
-          </p>
-        </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" />
-          Create Plan
-        </Button>
-      </div>
+      <PageHeader
+        icon={LayoutGrid}
+        title="Lot Staging"
+        description="Organize and optimize your lot layout"
+        actions={
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4" />
+            Create Plan
+          </Button>
+        }
+      />
 
       {/* Compliance Score Card */}
       {lots.length > 0 && (
-        <Card className={cn('border', displayCompliance ? scoreBg(displayCompliance.score_pct) : '')}>
+        <Card
+          className={cn('border', displayCompliance ? scoreBg(displayCompliance.score_pct) : '')}
+        >
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
@@ -139,11 +150,14 @@ export default function StagingPage() {
             {displayCompliance ? (
               <div className="space-y-3">
                 <div className="flex items-baseline gap-3">
-                  <span className={cn('text-4xl font-bold', scoreColor(displayCompliance.score_pct))}>
+                  <span
+                    className={cn('text-4xl font-bold', scoreColor(displayCompliance.score_pct))}
+                  >
                     {displayCompliance.score_pct}%
                   </span>
                   <span className="text-sm text-[var(--color-text-secondary)]">
-                    {displayCompliance.in_correct_zone} of {displayCompliance.total_tracked} units in correct zone
+                    {displayCompliance.in_correct_zone} of {displayCompliance.total_tracked} units
+                    in correct zone
                   </span>
                 </div>
 
@@ -164,7 +178,10 @@ export default function StagingPage() {
                         </thead>
                         <tbody>
                           {displayCompliance.out_of_place.map((u) => (
-                            <tr key={u.unit_id} className="border-b border-[var(--color-border)] last:border-0">
+                            <tr
+                              key={u.unit_id}
+                              className="border-b border-[var(--color-border)] last:border-0"
+                            >
                               <td className="px-3 py-1.5 font-medium text-[var(--color-text-primary)]">
                                 {u.stock_number}
                               </td>
@@ -197,15 +214,11 @@ export default function StagingPage() {
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
         </div>
       ) : plans.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--color-border)] py-16">
-          <LayoutGrid className="mb-3 h-10 w-10 text-[var(--color-text-tertiary)]" />
-          <p className="text-sm font-medium text-[var(--color-text-secondary)]">
-            No staging plans yet
-          </p>
-          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-            Create a plan to organize your lot layout.
-          </p>
-        </div>
+        <EmptyState
+          icon={LayoutGrid}
+          title="No staging plans yet"
+          description="Create a plan to organize your lot layout."
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {plans.map((plan) => {
@@ -223,9 +236,7 @@ export default function StagingPage() {
                   </div>
 
                   {lot && (
-                    <p className="text-xs text-[var(--color-text-tertiary)]">
-                      Lot: {lot.name}
-                    </p>
+                    <p className="text-xs text-[var(--color-text-tertiary)]">Lot: {lot.name}</p>
                   )}
 
                   {plan.description && (
@@ -312,7 +323,7 @@ export default function StagingPage() {
                               ? 'bg-green-100 text-green-800'
                               : item.status === 'in_progress'
                                 ? 'bg-amber-100 text-amber-800'
-                                : 'bg-gray-100 text-gray-700'
+                                : 'bg-gray-100 text-gray-700',
                           )}
                         >
                           {item.status.replace('_', ' ')}

@@ -15,17 +15,24 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
-import { Package, Clock, TrendingUp, MapPin } from 'lucide-react';
+import { Package, Clock, TrendingUp, MapPin, BarChart3 } from 'lucide-react';
 import type { InventoryAnalytics, LotUtilization, MovementAnalytics } from '@rv-trax/shared';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { cn, formatStatus } from '@/lib/utils';
-import {
-  getInventoryAnalytics,
-  getLotUtilization,
-  getMovementAnalytics,
-} from '@/lib/api';
+import { getInventoryAnalytics, getLotUtilization, getMovementAnalytics } from '@/lib/api';
 
-const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+const CHART_COLORS = [
+  '#3b82f6',
+  '#10b981',
+  '#f59e0b',
+  '#ef4444',
+  '#8b5cf6',
+  '#ec4899',
+  '#06b6d4',
+  '#84cc16',
+];
 
 const STATUS_COLOR_MAP: Record<string, string> = {
   new_arrival: '#3b82f6',
@@ -50,12 +57,8 @@ interface AnalyticsData {
   movement: MovementAnalytics;
 }
 
-function SkeletonCard() {
-  return <div className="h-[120px] animate-pulse rounded-xl border border-slate-200 bg-slate-50" />;
-}
-
 function SkeletonChart() {
-  return <div className="h-[320px] animate-pulse rounded-xl border border-slate-200 bg-slate-50" />;
+  return <Skeleton className="h-[320px] rounded-xl" />;
 }
 
 export default function AnalyticsPage() {
@@ -83,7 +86,9 @@ export default function AnalyticsPage() {
     }
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const avgLotUtilization = data?.lots.length
@@ -118,17 +123,16 @@ export default function AnalyticsPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Analytics</h1>
-        <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-          Inventory insights, lot utilization, and movement trends
-        </p>
-      </div>
+      <PageHeader
+        icon={BarChart3}
+        title="Analytics"
+        description="Inventory insights, lot utilization, and movement trends"
+      />
 
       {/* Row 1 - Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {loading ? (
-          Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} variant="card" />)
         ) : data ? (
           <>
             <SummaryCard
@@ -198,9 +202,7 @@ export default function AnalyticsPage() {
                       cy="50%"
                       outerRadius={100}
                       dataKey="value"
-                      label={({ name, percent }) =>
-                        `${name} ${(percent * 100).toFixed(0)}%`
-                      }
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     >
                       {typeChartData.map((entry, i) => (
                         <Cell key={i} fill={entry.fill} />
@@ -257,9 +259,7 @@ export default function AnalyticsPage() {
                       }}
                     />
                     <YAxis />
-                    <Tooltip
-                      labelFormatter={(v: string) => new Date(v).toLocaleDateString()}
-                    />
+                    <Tooltip labelFormatter={(v: string) => new Date(v).toLocaleDateString()} />
                     <Area
                       type="monotone"
                       dataKey="count"
@@ -303,13 +303,19 @@ export default function AnalyticsPage() {
                   <tbody>
                     {data.movement.most_moved_units.length === 0 ? (
                       <tr>
-                        <td colSpan={2} className="px-6 py-8 text-center text-[var(--color-text-tertiary)]">
+                        <td
+                          colSpan={2}
+                          className="px-6 py-8 text-center text-[var(--color-text-tertiary)]"
+                        >
                           No movement data available
                         </td>
                       </tr>
                     ) : (
                       data.movement.most_moved_units.map((unit) => (
-                        <tr key={unit.unit_id} className="border-b border-[var(--color-border)] last:border-0">
+                        <tr
+                          key={unit.unit_id}
+                          className="border-b border-[var(--color-border)] last:border-0"
+                        >
                           <td className="px-6 py-3 font-medium text-[var(--color-text-primary)]">
                             {unit.stock_number}
                           </td>
@@ -343,13 +349,19 @@ export default function AnalyticsPage() {
                   <tbody>
                     {data.movement.idle_units.length === 0 ? (
                       <tr>
-                        <td colSpan={2} className="px-6 py-8 text-center text-[var(--color-text-tertiary)]">
+                        <td
+                          colSpan={2}
+                          className="px-6 py-8 text-center text-[var(--color-text-tertiary)]"
+                        >
                           No idle units
                         </td>
                       </tr>
                     ) : (
                       data.movement.idle_units.map((unit) => (
-                        <tr key={unit.unit_id} className="border-b border-[var(--color-border)] last:border-0">
+                        <tr
+                          key={unit.unit_id}
+                          className="border-b border-[var(--color-border)] last:border-0"
+                        >
                           <td className="px-6 py-3 font-medium text-[var(--color-text-primary)]">
                             {unit.stock_number}
                           </td>
@@ -358,7 +370,7 @@ export default function AnalyticsPage() {
                               'px-6 py-3 text-right font-medium',
                               unit.days_idle > 90
                                 ? 'text-red-600'
-                                : 'text-[var(--color-text-secondary)]'
+                                : 'text-[var(--color-text-secondary)]',
                             )}
                           >
                             {unit.days_idle}

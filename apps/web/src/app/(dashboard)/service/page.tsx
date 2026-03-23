@@ -4,18 +4,13 @@ import Link from 'next/link';
 import { Wrench, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useApi } from '@/hooks/useApi';
 import { getWorkOrders, getRecalls } from '@/lib/api';
 
 export default function ServicePage() {
-  const { data: workOrderData } = useApi(
-    () => getWorkOrders({ status: 'pending' }),
-    []
-  );
-  const { data: recallData } = useApi(
-    () => getRecalls({ status: 'open' }),
-    []
-  );
+  const { data: workOrderData } = useApi(() => getWorkOrders({ status: 'pending' }), []);
+  const { data: recallData } = useApi(() => getRecalls({ status: 'open' }), []);
 
   const openWorkOrderCount = workOrderData?.pagination.total_count ?? 0;
   const activeRecallCount = recallData?.pagination.total_count ?? 0;
@@ -41,9 +36,7 @@ export default function ServicePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
-        Service
-      </h1>
+      <PageHeader icon={Wrench} title="Service" description="Manage work orders and recalls" />
 
       <div className="grid gap-4 sm:grid-cols-2">
         {links.map((link) => (
@@ -59,12 +52,8 @@ export default function ServicePage() {
                   </Badge>
                 )}
               </div>
-              <h3 className="font-semibold text-[var(--color-text-primary)]">
-                {link.title}
-              </h3>
-              <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                {link.description}
-              </p>
+              <h3 className="font-semibold text-[var(--color-text-primary)]">{link.title}</h3>
+              <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{link.description}</p>
             </Card>
           </Link>
         ))}

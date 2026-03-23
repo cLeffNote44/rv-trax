@@ -4,11 +4,14 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { getTrackers, createTracker } from '@/lib/api';
 import type { Tracker, PaginatedResponse } from '@rv-trax/shared';
 import { TrackerStatus } from '@rv-trax/shared';
+import { Radio } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Dialog } from '@/components/ui/Dialog';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { Tabs } from '@/components/ui/Tabs';
 import { TrackerTable } from './components/TrackerTable';
 import { BatteryDashboard } from './components/BatteryDashboard';
 import { BatteryHealthPanel } from './components/BatteryHealthPanel';
@@ -138,76 +141,77 @@ export default function TrackersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Trackers</h1>
-          <Badge>{totalCount}</Badge>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv"
-            className="hidden"
-            onChange={handleBulkUpload}
-          />
-          <Button
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={bulkUploading}
-          >
-            {bulkUploading ? 'Uploading...' : 'Bulk Register (CSV)'}
-          </Button>
+      <PageHeader
+        icon={Radio}
+        title="Trackers"
+        badge={<Badge>{totalCount}</Badge>}
+        actions={
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={handleBulkUpload}
+            />
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={bulkUploading}
+            >
+              {bulkUploading ? 'Uploading...' : 'Bulk Register (CSV)'}
+            </Button>
 
-          <Button onClick={() => setRegisterOpen(true)}>Register Tracker</Button>
+            <Button onClick={() => setRegisterOpen(true)}>Register Tracker</Button>
 
-          <Dialog
-            open={registerOpen}
-            onClose={() => setRegisterOpen(false)}
-            title="Register Tracker"
-            description="Enter the Device EUI from the tracker hardware label."
-          >
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label
-                  htmlFor="device-eui"
-                  className="text-sm font-medium text-[var(--color-text-primary)]"
-                >
-                  Device EUI *
-                </label>
-                <Input
-                  id="device-eui"
-                  placeholder="e.g. A84041000181F5E2"
-                  value={newDeviceEui}
-                  onChange={(e) => setNewDeviceEui(e.target.value)}
-                />
+            <Dialog
+              open={registerOpen}
+              onClose={() => setRegisterOpen(false)}
+              title="Register Tracker"
+              description="Enter the Device EUI from the tracker hardware label."
+            >
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="device-eui"
+                    className="text-sm font-medium text-[var(--color-text-primary)]"
+                  >
+                    Device EUI *
+                  </label>
+                  <Input
+                    id="device-eui"
+                    placeholder="e.g. A84041000181F5E2"
+                    value={newDeviceEui}
+                    onChange={(e) => setNewDeviceEui(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label
+                    htmlFor="tracker-label"
+                    className="text-sm font-medium text-[var(--color-text-primary)]"
+                  >
+                    Label (optional)
+                  </label>
+                  <Input
+                    id="tracker-label"
+                    placeholder="e.g. Lot A - Row 3"
+                    value={newLabel}
+                    onChange={(e) => setNewLabel(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label
-                  htmlFor="tracker-label"
-                  className="text-sm font-medium text-[var(--color-text-primary)]"
-                >
-                  Label (optional)
-                </label>
-                <Input
-                  id="tracker-label"
-                  placeholder="e.g. Lot A - Row 3"
-                  value={newLabel}
-                  onChange={(e) => setNewLabel(e.target.value)}
-                />
+              <div className="mt-4 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setRegisterOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleRegister} disabled={!newDeviceEui.trim() || registering}>
+                  {registering ? 'Registering...' : 'Register'}
+                </Button>
               </div>
-            </div>
-            <div className="mt-4 flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setRegisterOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleRegister} disabled={!newDeviceEui.trim() || registering}>
-                {registering ? 'Registering...' : 'Register'}
-              </Button>
-            </div>
-          </Dialog>
-        </div>
-      </div>
+            </Dialog>
+          </div>
+        }
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -234,21 +238,7 @@ export default function TrackersPage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-1 rounded-lg bg-[var(--color-bg-secondary)] p-1">
-        {FILTER_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setActiveTab(tab.value)}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              activeTab === tab.value
-                ? 'bg-white text-[var(--color-text-primary)] shadow-sm dark:bg-[var(--color-bg-tertiary)]'
-                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs value={activeTab} onChange={(v) => setActiveTab(v as FilterTab)} items={FILTER_TABS} />
 
       {/* Battery Dashboard */}
       <BatteryDashboard trackers={trackers} />

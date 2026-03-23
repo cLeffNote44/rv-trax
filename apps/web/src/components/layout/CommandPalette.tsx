@@ -200,7 +200,12 @@ export function CommandPalette() {
       />
 
       {/* Modal */}
-      <div className="fixed inset-x-0 top-[15%] z-[101] mx-auto w-full max-w-lg px-4">
+      <div
+        className="fixed inset-x-0 top-[15%] z-[101] mx-auto w-full max-w-lg px-4"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command palette"
+      >
         <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] shadow-2xl">
           {/* Search input */}
           <div className="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
@@ -208,6 +213,15 @@ export function CommandPalette() {
             <input
               ref={inputRef}
               type="text"
+              role="combobox"
+              aria-expanded={results.length > 0}
+              aria-controls="command-palette-listbox"
+              aria-activedescendant={
+                results[activeIndex]
+                  ? `command-palette-option-${results[activeIndex].id}`
+                  : undefined
+              }
+              aria-autocomplete="list"
               placeholder="Search units by stock#, pages, actions..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -220,7 +234,12 @@ export function CommandPalette() {
           </div>
 
           {/* Results */}
-          <div className="max-h-80 overflow-y-auto py-2">
+          <div
+            id="command-palette-listbox"
+            role="listbox"
+            aria-label="Search results"
+            className="max-h-80 overflow-y-auto py-2"
+          >
             {results.length === 0 && query.trim() && (
               <p className="px-4 py-8 text-center text-sm text-[var(--color-text-tertiary)]">
                 No results found for &ldquo;{query}&rdquo;
@@ -255,6 +274,9 @@ export function CommandPalette() {
                   return (
                     <button
                       key={result.id}
+                      id={`command-palette-option-${result.id}`}
+                      role="option"
+                      aria-selected={globalIndex === activeIndex}
                       onClick={() => selectResult(result)}
                       onMouseEnter={() => setActiveIndex(globalIndex)}
                       className={cn(

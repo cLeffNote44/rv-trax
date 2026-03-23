@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   Activity,
-  AlertTriangle,
   RefreshCw,
   Filter,
   User,
@@ -21,6 +20,10 @@ import {
 import { getStaffActivity, getStaffActivityStats, getUsers } from '@/lib/api';
 import type { StaffActivityEntry } from '@/lib/api';
 import type { User as UserType } from '@rv-trax/shared';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { AlertBanner } from '@/components/ui/AlertBanner';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 // ---------------------------------------------------------------------------
 // Action display config
@@ -64,21 +67,15 @@ function timeAgo(dateStr: string): string {
 // Skeletons
 // ---------------------------------------------------------------------------
 
-function SkeletonCard() {
-  return (
-    <div className="h-[100px] animate-pulse rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)]" />
-  );
-}
-
 function SkeletonRow() {
   return (
     <div className="flex items-center gap-4 border-b border-[var(--color-border)] px-4 py-3">
-      <div className="h-9 w-9 animate-pulse rounded-full bg-[var(--color-bg-tertiary)]" />
+      <Skeleton variant="circle" className="h-9 w-9" />
       <div className="flex-1 space-y-2">
-        <div className="h-4 w-48 animate-pulse rounded bg-[var(--color-bg-tertiary)]" />
-        <div className="h-3 w-32 animate-pulse rounded bg-[var(--color-bg-tertiary)]" />
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-3 w-32" />
       </div>
-      <div className="h-3 w-16 animate-pulse rounded bg-[var(--color-bg-tertiary)]" />
+      <Skeleton className="h-3 w-16" />
     </div>
   );
 }
@@ -135,30 +132,26 @@ export default function StaffActivityPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <Activity className="h-7 w-7 text-[var(--color-brand-500)]" />
-            <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">Staff Activity</h1>
-          </div>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            Track who did what across your dealership
-          </p>
-        </div>
-        <button
-          onClick={load}
-          className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </button>
-      </div>
+      <PageHeader
+        icon={Activity}
+        title="Staff Activity"
+        description="Track who did what across your dealership"
+        actions={
+          <button
+            onClick={load}
+            className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] px-4 py-2 text-sm font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-bg-secondary)]"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </button>
+        }
+      />
 
       {/* Stats Cards */}
       {loading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonCard key={i} />
+            <Skeleton key={i} variant="card" />
           ))}
         </div>
       ) : stats ? (
@@ -226,18 +219,7 @@ export default function StaffActivityPage() {
       ) : null}
 
       {/* Error */}
-      {error && (
-        <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
-          <AlertTriangle className="h-5 w-5 flex-shrink-0 text-red-600" />
-          <p className="flex-1 text-sm text-red-700 dark:text-red-400">{error}</p>
-          <button
-            onClick={load}
-            className="rounded-lg bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-200 dark:bg-red-800 dark:text-red-300"
-          >
-            Retry
-          </button>
-        </div>
-      )}
+      {error && <AlertBanner variant="error" message={error} onRetry={load} />}
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
@@ -282,15 +264,11 @@ export default function StaffActivityPage() {
             ))}
           </div>
         ) : activities.length === 0 ? (
-          <div className="py-16 text-center">
-            <Activity className="mx-auto h-12 w-12 text-[var(--color-text-tertiary)]" />
-            <p className="mt-3 text-sm font-medium text-[var(--color-text-secondary)]">
-              No activity recorded yet
-            </p>
-            <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
-              Staff actions will appear here as they happen
-            </p>
-          </div>
+          <EmptyState
+            icon={Activity}
+            title="No activity recorded yet"
+            description="Staff actions will appear here as they happen"
+          />
         ) : (
           <div className="divide-y divide-[var(--color-border)]">
             {activities.map((entry) => {

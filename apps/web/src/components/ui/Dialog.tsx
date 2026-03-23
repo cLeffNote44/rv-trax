@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  type ReactNode,
-} from 'react';
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -62,6 +57,44 @@ export function Dialog({
     };
   }, [open]);
 
+  // Focus trap — cycle Tab within the dialog
+  useEffect(() => {
+    if (!open || !contentRef.current) return;
+    const focusableSelector =
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function handleTab(e: KeyboardEvent) {
+      if (e.key !== 'Tab' || !contentRef.current) return;
+      const focusable = contentRef.current.querySelectorAll<HTMLElement>(focusableSelector);
+      if (focusable.length === 0) return;
+
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleTab);
+
+    // Auto-focus first focusable element
+    const focusable = contentRef.current.querySelectorAll<HTMLElement>(focusableSelector);
+    if (focusable.length > 0) {
+      focusable[0]!.focus();
+    }
+
+    return () => document.removeEventListener('keydown', handleTab);
+  }, [open]);
+
   // Close on overlay click
   const handleOverlayClick = useCallback(
     (e: React.MouseEvent) => {
@@ -69,7 +102,7 @@ export function Dialog({
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   if (!open) return null;
@@ -89,7 +122,7 @@ export function Dialog({
         className={cn(
           'w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] shadow-xl',
           maxWidth,
-          className
+          className,
         )}
       >
         {/* Header */}

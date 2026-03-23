@@ -44,6 +44,18 @@ export function Header({ onMenuClick }: HeaderProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Close user menu on Escape
+  useEffect(() => {
+    if (!showUserMenu) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setShowUserMenu(false);
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showUserMenu]);
+
   // Open command palette on Cmd+K / Ctrl+K
   const handleSearchClick = () => {
     const event = new KeyboardEvent('keydown', {
@@ -68,6 +80,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       {/* Search bar */}
       <button
         onClick={handleSearchClick}
+        aria-label="Search units, pages (Ctrl+K)"
         className="flex flex-1 items-center gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-tertiary)] transition-colors hover:border-[var(--color-border-hover)] lg:max-w-md"
       >
         <Search className="h-4 w-4" />
@@ -88,7 +101,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         <button
           onClick={() => router.push('/alerts')}
           className="relative rounded-lg p-2 text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-bg-tertiary)]"
-          aria-label="View alerts"
+          aria-label={`${alertCount} unread alerts`}
         >
           <Bell className="h-5 w-5" />
           {alertCount > 0 && (
@@ -102,6 +115,9 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div ref={userMenuRef} className="relative">
           <button
             onClick={() => setShowUserMenu((prev) => !prev)}
+            aria-expanded={showUserMenu}
+            aria-haspopup="true"
+            aria-label="User menu"
             className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-[var(--color-bg-tertiary)]"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
@@ -116,12 +132,16 @@ export function Header({ onMenuClick }: HeaderProps) {
           </button>
 
           {showUserMenu && (
-            <div className="absolute right-0 top-full z-50 mt-1 w-56 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] py-1 shadow-lg">
+            <div
+              role="menu"
+              className="absolute right-0 top-full z-50 mt-1 w-56 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-primary)] py-1 shadow-lg"
+            >
               <div className="border-b border-[var(--color-border)] px-4 py-3">
                 <p className="text-sm font-medium text-[var(--color-text-primary)]">{user?.name}</p>
                 <p className="text-xs text-[var(--color-text-tertiary)]">{user?.email}</p>
               </div>
               <button
+                role="menuitem"
                 onClick={() => {
                   setShowUserMenu(false);
                   router.push('/settings');
@@ -132,6 +152,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 Profile
               </button>
               <button
+                role="menuitem"
                 onClick={() => {
                   setShowUserMenu(false);
                   router.push('/settings');
@@ -143,6 +164,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               </button>
               <div className="border-t border-[var(--color-border)]">
                 <button
+                  role="menuitem"
                   onClick={() => {
                     setShowUserMenu(false);
                     logout();
