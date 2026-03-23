@@ -4,7 +4,7 @@ RV Trax uses **PostgreSQL 16** with the **TimescaleDB** extension, managed by **
 
 ## Schema Overview
 
-36 tables across 26 schema files in `packages/db/src/schema/`:
+42 tables across 30 schema files in `packages/db/src/schema/`:
 
 ### Business Domain
 
@@ -86,6 +86,17 @@ RV Trax uses **PostgreSQL 16** with the **TimescaleDB** extension, managed by **
 | `feature_flags`     | Per-dealership feature toggles   | `name`, `enabled`, `dealership_id`              |
 | `widget_configs`    | Public inventory widget settings | `dealership_id`, `theme`, `filters`             |
 | `unit_transfers`    | Inter-lot transfer records       | `unit_id`, `from_lot_id`, `to_lot_id`, `status` |
+
+### v0.3.0 — Dealer-Ready Features
+
+| Table                     | Purpose                           | Key Columns                                                    |
+| ------------------------- | --------------------------------- | -------------------------------------------------------------- |
+| `staff_activity_log`      | Who did what and when             | `user_id`, `action`, `entity_type`, `entity_id`, `metadata`    |
+| `floor_plan_audits`       | Monthly inventory audits          | `dealership_id`, `status`, `total_units`, `verified_units`     |
+| `floor_plan_audit_items`  | Per-unit audit checklist entries  | `audit_id`, `unit_id`, `status`, `expected_zone`, `found_zone` |
+| `service_bays`            | Physical service bay definitions  | `name`, `bay_type`, `status`, `dealership_id`                  |
+| `service_bay_assignments` | Unit-to-bay tracking with stages  | `bay_id`, `unit_id`, `stage`, `checked_in_at`, `total_minutes` |
+| `dashboard_configs`       | Per-user dashboard widget layouts | `user_id`, `layout` (jsonb)                                    |
 
 ## TimescaleDB
 

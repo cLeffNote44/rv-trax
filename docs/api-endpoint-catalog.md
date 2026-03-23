@@ -11,6 +11,7 @@ All endpoints (except public auth) require `Authorization: Bearer <jwt>` or API 
 **Pagination**: Cursor-based (`?limit=50&cursor=...`). Responses include `data` + `pagination` object.
 
 **Error Format**:
+
 ```json
 {
   "error": {
@@ -49,42 +50,50 @@ graph TD
 ## Key Endpoints
 
 ### Auth
+
 - `POST /auth/login` - JWT login
 - `POST /auth/refresh` - Rotate tokens
 - `POST /auth/logout` - Invalidate refresh token
 
 ### Units & Inventory
+
 - `POST/GET/PATCH/DELETE /units` - CRUD + search/filter
 - `GET /units/:id/location-history` - Timeline
 - `POST /units/import` - CSV bulk import
 
 ### Trackers
+
 - `POST/GET /trackers` - Manage devices
 - `POST /trackers/:id/assign` - Link to unit
 - `POST /trackers/:id/unassign`
 
 ### Lots & Mapping
+
 - `POST/GET /lots` - Lot management
 - `POST /lots/:id/grid` - Define row/spot grid
 - `GET /lots/:id/live-positions` - Current locations
 
 ### Geo-fencing & Alerts
+
 - `POST/GET /geofences` - Define zones/boundaries
 - `POST/GET /alert-rules` - Configurable rules
 - `GET /alerts` - List + acknowledge
 
 ### Staging & Operations
+
 - `POST/GET /staging-plans` - Lot organization plans
 - `GET /staging-plans/:id/move-list` - Porter tasks
 - `POST/GET /work-orders` - Service workflows
 - `POST/GET /recalls` - VIN-based recall matching
 
 ### Real-time & Analytics
+
 - `ws://.../ws` - Live location updates, alerts
 - `GET /analytics/*` - Inventory, utilization, compliance
 - `GET /reports` - Scheduled CSV/PDF exports
 
 ### Management
+
 - `GET/POST /gateways` - Hardware monitoring
 - `GET /billing` - Subscription status
 - `POST /dms/sync` - DMS integration
@@ -98,17 +107,18 @@ See [The Code/README.md](The Code/README.md) and [planning/DEVELOPMENT_ROADMAP.m
 
 ## 3.1 Auth
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| POST | `/api/v1/auth/register` | Register a new user account | Public |
-| POST | `/api/v1/auth/login` | Authenticate and receive JWT tokens | Public |
-| POST | `/api/v1/auth/refresh` | Refresh an expired access token | Public (valid refresh token) |
-| POST | `/api/v1/auth/logout` | Invalidate current refresh token | Authenticated |
-| POST | `/api/v1/auth/forgot-password` | Send password reset email | Public |
-| POST | `/api/v1/auth/reset-password` | Reset password with token | Public (valid reset token) |
-| POST | `/api/v1/auth/verify-email` | Verify email address with token | Public (valid verification token) |
+| Method | Path                           | Description                         | Required Permission               |
+| ------ | ------------------------------ | ----------------------------------- | --------------------------------- |
+| POST   | `/api/v1/auth/register`        | Register a new user account         | Public                            |
+| POST   | `/api/v1/auth/login`           | Authenticate and receive JWT tokens | Public                            |
+| POST   | `/api/v1/auth/refresh`         | Refresh an expired access token     | Public (valid refresh token)      |
+| POST   | `/api/v1/auth/logout`          | Invalidate current refresh token    | Authenticated                     |
+| POST   | `/api/v1/auth/forgot-password` | Send password reset email           | Public                            |
+| POST   | `/api/v1/auth/reset-password`  | Reset password with token           | Public (valid reset token)        |
+| POST   | `/api/v1/auth/verify-email`    | Verify email address with token     | Public (valid verification token) |
 
 **Login Request**
+
 ```json
 POST /api/v1/auth/login
 {
@@ -119,6 +129,7 @@ POST /api/v1/auth/login
 ```
 
 **Login Response**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfMDFIWjRG...",
@@ -132,13 +143,21 @@ POST /api/v1/auth/login
     "lastName": "Harrison",
     "role": "sales_manager",
     "dealershipId": "dlr_01HZ3ABC123",
-    "permissions": ["leads:read", "leads:write", "deals:read", "deals:write", "customers:read", "customers:write"],
+    "permissions": [
+      "leads:read",
+      "leads:write",
+      "deals:read",
+      "deals:write",
+      "customers:read",
+      "customers:write"
+    ],
     "lastLoginAt": "2026-02-23T14:30:00Z"
   }
 }
 ```
 
 **Refresh Token Request**
+
 ```json
 POST /api/v1/auth/refresh
 {
@@ -147,6 +166,7 @@ POST /api/v1/auth/refresh
 ```
 
 **Refresh Token Response**
+
 ```json
 {
   "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfMDFIWjRG...",
@@ -160,21 +180,22 @@ POST /api/v1/auth/refresh
 
 ## 3.2 Users
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/users` | List users (paginated, filterable by role/status) | `users:read` |
-| POST | `/api/v1/users` | Create a new user account | `users:create` |
-| GET | `/api/v1/users/:id` | Get user details by ID | `users:read` |
-| PATCH | `/api/v1/users/:id` | Update user profile/role | `users:update` |
-| DELETE | `/api/v1/users/:id` | Soft-delete a user | `users:delete` |
-| POST | `/api/v1/users/invite` | Send invitation email to new user | `users:create` |
-| PATCH | `/api/v1/users/:id/deactivate` | Deactivate a user account | `users:update` |
-| PATCH | `/api/v1/users/:id/reactivate` | Reactivate a deactivated user | `users:update` |
-| GET | `/api/v1/users/me` | Get current authenticated user profile | Authenticated |
-| PATCH | `/api/v1/users/me` | Update own profile | Authenticated |
-| PATCH | `/api/v1/users/me/password` | Change own password | Authenticated |
+| Method | Path                           | Description                                       | Required Permission |
+| ------ | ------------------------------ | ------------------------------------------------- | ------------------- |
+| GET    | `/api/v1/users`                | List users (paginated, filterable by role/status) | `users:read`        |
+| POST   | `/api/v1/users`                | Create a new user account                         | `users:create`      |
+| GET    | `/api/v1/users/:id`            | Get user details by ID                            | `users:read`        |
+| PATCH  | `/api/v1/users/:id`            | Update user profile/role                          | `users:update`      |
+| DELETE | `/api/v1/users/:id`            | Soft-delete a user                                | `users:delete`      |
+| POST   | `/api/v1/users/invite`         | Send invitation email to new user                 | `users:create`      |
+| PATCH  | `/api/v1/users/:id/deactivate` | Deactivate a user account                         | `users:update`      |
+| PATCH  | `/api/v1/users/:id/reactivate` | Reactivate a deactivated user                     | `users:update`      |
+| GET    | `/api/v1/users/me`             | Get current authenticated user profile            | Authenticated       |
+| PATCH  | `/api/v1/users/me`             | Update own profile                                | Authenticated       |
+| PATCH  | `/api/v1/users/me/password`    | Change own password                               | Authenticated       |
 
 **Create User Request**
+
 ```json
 POST /api/v1/users
 {
@@ -189,6 +210,7 @@ POST /api/v1/users
 ```
 
 **Create User Response**
+
 ```json
 {
   "id": "usr_01HZ5GNR8TCBW4X2K9PLA3F7",
@@ -207,11 +229,13 @@ POST /api/v1/users
 ```
 
 **List Users Request**
+
 ```
 GET /api/v1/users?page=1&limit=10&role=sales_consultant&status=active
 ```
 
 **List Users Response**
+
 ```json
 {
   "data": [
@@ -233,17 +257,18 @@ GET /api/v1/users?page=1&limit=10&role=sales_consultant&status=active
 
 ## 3.3 Roles
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/roles` | List all roles | `roles:read` |
-| POST | `/api/v1/roles` | Create a custom role | `roles:create` |
-| GET | `/api/v1/roles/:id` | Get role details with permissions | `roles:read` |
-| PATCH | `/api/v1/roles/:id` | Update role name or permissions | `roles:update` |
-| DELETE | `/api/v1/roles/:id` | Delete a custom role | `roles:delete` |
-| GET | `/api/v1/roles/:id/users` | List users assigned to a role | `roles:read` |
-| GET | `/api/v1/permissions` | List all available permissions | `roles:read` |
+| Method | Path                      | Description                       | Required Permission |
+| ------ | ------------------------- | --------------------------------- | ------------------- |
+| GET    | `/api/v1/roles`           | List all roles                    | `roles:read`        |
+| POST   | `/api/v1/roles`           | Create a custom role              | `roles:create`      |
+| GET    | `/api/v1/roles/:id`       | Get role details with permissions | `roles:read`        |
+| PATCH  | `/api/v1/roles/:id`       | Update role name or permissions   | `roles:update`      |
+| DELETE | `/api/v1/roles/:id`       | Delete a custom role              | `roles:delete`      |
+| GET    | `/api/v1/roles/:id/users` | List users assigned to a role     | `roles:read`        |
+| GET    | `/api/v1/permissions`     | List all available permissions    | `roles:read`        |
 
 **Create Role Request**
+
 ```json
 POST /api/v1/roles
 {
@@ -260,6 +285,7 @@ POST /api/v1/roles
 ```
 
 **Create Role Response**
+
 ```json
 {
   "id": "role_01HZ6KPQ2RBDC",
@@ -267,11 +293,15 @@ POST /api/v1/roles
   "description": "Business Development Center agent handling inbound leads and appointment setting",
   "isSystem": false,
   "permissions": [
-    "leads:read", "leads:write",
+    "leads:read",
+    "leads:write",
     "customers:read",
-    "appointments:read", "appointments:write",
-    "communications:read", "communications:write",
-    "tasks:read", "tasks:write"
+    "appointments:read",
+    "appointments:write",
+    "communications:read",
+    "communications:write",
+    "tasks:read",
+    "tasks:write"
   ],
   "userCount": 0,
   "createdAt": "2026-02-23T10:00:00Z"
@@ -279,6 +309,7 @@ POST /api/v1/roles
 ```
 
 **List Permissions Response**
+
 ```json
 {
   "data": [
@@ -298,21 +329,22 @@ POST /api/v1/roles
 
 ## 3.4 Settings
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/settings` | Get all dealership settings | `settings:read` |
-| PATCH | `/api/v1/settings` | Update settings (partial) | `settings:update` |
-| GET | `/api/v1/settings/:category` | Get settings by category | `settings:read` |
-| GET | `/api/v1/notification-preferences` | Get current user notification preferences | Authenticated |
-| PATCH | `/api/v1/notification-preferences` | Update notification preferences | Authenticated |
-| GET | `/api/v1/audit-logs` | List audit log entries (paginated, filtered) | `audit-logs:read` |
-| GET | `/api/v1/dealership` | Get dealership profile | `settings:read` |
-| PATCH | `/api/v1/dealership` | Update dealership profile | `settings:update` |
-| POST | `/api/v1/dealership/logo` | Upload dealership logo (multipart) | `settings:update` |
-| GET | `/api/v1/business-hours` | Get business hours configuration | `settings:read` |
-| PATCH | `/api/v1/business-hours` | Update business hours | `settings:update` |
+| Method | Path                               | Description                                  | Required Permission |
+| ------ | ---------------------------------- | -------------------------------------------- | ------------------- |
+| GET    | `/api/v1/settings`                 | Get all dealership settings                  | `settings:read`     |
+| PATCH  | `/api/v1/settings`                 | Update settings (partial)                    | `settings:update`   |
+| GET    | `/api/v1/settings/:category`       | Get settings by category                     | `settings:read`     |
+| GET    | `/api/v1/notification-preferences` | Get current user notification preferences    | Authenticated       |
+| PATCH  | `/api/v1/notification-preferences` | Update notification preferences              | Authenticated       |
+| GET    | `/api/v1/audit-logs`               | List audit log entries (paginated, filtered) | `audit-logs:read`   |
+| GET    | `/api/v1/dealership`               | Get dealership profile                       | `settings:read`     |
+| PATCH  | `/api/v1/dealership`               | Update dealership profile                    | `settings:update`   |
+| POST   | `/api/v1/dealership/logo`          | Upload dealership logo (multipart)           | `settings:update`   |
+| GET    | `/api/v1/business-hours`           | Get business hours configuration             | `settings:read`     |
+| PATCH  | `/api/v1/business-hours`           | Update business hours                        | `settings:update`   |
 
 **Update Dealership Request**
+
 ```json
 PATCH /api/v1/dealership
 {
@@ -332,11 +364,13 @@ PATCH /api/v1/dealership
 ```
 
 **Audit Logs Request**
+
 ```
 GET /api/v1/audit-logs?page=1&limit=25&userId=usr_01HZ4FKX9Q&action=deal.status_change&from=2026-02-01&to=2026-02-23
 ```
 
 **Audit Logs Response**
+
 ```json
 {
   "data": [
@@ -362,31 +396,32 @@ GET /api/v1/audit-logs?page=1&limit=25&userId=usr_01HZ4FKX9Q&action=deal.status_
 
 ## 3.5 Customers
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/customers` | Search/filter/paginate customers | `customers:read` |
-| POST | `/api/v1/customers` | Create a new customer record | `customers:create` |
-| GET | `/api/v1/customers/:id` | Get customer 360-degree view | `customers:read` |
-| PATCH | `/api/v1/customers/:id` | Update customer information | `customers:update` |
-| DELETE | `/api/v1/customers/:id` | Soft-delete a customer | `customers:delete` |
-| GET | `/api/v1/customers/:id/interactions` | List customer interaction history | `customers:read` |
-| POST | `/api/v1/customers/:id/interactions` | Log a customer interaction | `customers:update` |
-| GET | `/api/v1/customers/:id/vehicles` | List vehicles owned by customer | `customers:read` |
-| POST | `/api/v1/customers/:id/vehicles` | Link a vehicle to customer | `customers:update` |
-| GET | `/api/v1/customers/:id/documents` | List customer documents | `customers:read` |
-| POST | `/api/v1/customers/:id/documents` | Upload a document (multipart) | `customers:update` |
-| DELETE | `/api/v1/customers/:id/documents/:docId` | Remove a customer document | `customers:update` |
-| GET | `/api/v1/customers/:id/deals` | List customer deal history | `customers:read` |
-| GET | `/api/v1/customers/:id/service-orders` | List customer service history | `customers:read` |
-| POST | `/api/v1/customers/merge` | Merge duplicate customer records | `customers:delete` |
-| GET | `/api/v1/customers/duplicates` | Find potential duplicate customers | `customers:read` |
-| POST | `/api/v1/customers/:id/credit-app` | Submit credit application | `customers:update` |
-| GET | `/api/v1/customers/:id/tags` | List tags on a customer | `customers:read` |
-| POST | `/api/v1/customers/:id/tags` | Add a tag to a customer | `customers:update` |
-| DELETE | `/api/v1/customers/:id/tags/:tag` | Remove a tag from a customer | `customers:update` |
-| GET | `/api/v1/customers/export` | Export customers as CSV/XLSX | `customers:export` |
+| Method | Path                                     | Description                        | Required Permission |
+| ------ | ---------------------------------------- | ---------------------------------- | ------------------- |
+| GET    | `/api/v1/customers`                      | Search/filter/paginate customers   | `customers:read`    |
+| POST   | `/api/v1/customers`                      | Create a new customer record       | `customers:create`  |
+| GET    | `/api/v1/customers/:id`                  | Get customer 360-degree view       | `customers:read`    |
+| PATCH  | `/api/v1/customers/:id`                  | Update customer information        | `customers:update`  |
+| DELETE | `/api/v1/customers/:id`                  | Soft-delete a customer             | `customers:delete`  |
+| GET    | `/api/v1/customers/:id/interactions`     | List customer interaction history  | `customers:read`    |
+| POST   | `/api/v1/customers/:id/interactions`     | Log a customer interaction         | `customers:update`  |
+| GET    | `/api/v1/customers/:id/vehicles`         | List vehicles owned by customer    | `customers:read`    |
+| POST   | `/api/v1/customers/:id/vehicles`         | Link a vehicle to customer         | `customers:update`  |
+| GET    | `/api/v1/customers/:id/documents`        | List customer documents            | `customers:read`    |
+| POST   | `/api/v1/customers/:id/documents`        | Upload a document (multipart)      | `customers:update`  |
+| DELETE | `/api/v1/customers/:id/documents/:docId` | Remove a customer document         | `customers:update`  |
+| GET    | `/api/v1/customers/:id/deals`            | List customer deal history         | `customers:read`    |
+| GET    | `/api/v1/customers/:id/service-orders`   | List customer service history      | `customers:read`    |
+| POST   | `/api/v1/customers/merge`                | Merge duplicate customer records   | `customers:delete`  |
+| GET    | `/api/v1/customers/duplicates`           | Find potential duplicate customers | `customers:read`    |
+| POST   | `/api/v1/customers/:id/credit-app`       | Submit credit application          | `customers:update`  |
+| GET    | `/api/v1/customers/:id/tags`             | List tags on a customer            | `customers:read`    |
+| POST   | `/api/v1/customers/:id/tags`             | Add a tag to a customer            | `customers:update`  |
+| DELETE | `/api/v1/customers/:id/tags/:tag`        | Remove a tag from a customer       | `customers:update`  |
+| GET    | `/api/v1/customers/export`               | Export customers as CSV/XLSX       | `customers:export`  |
 
 **Customer 360 View Response**
+
 ```json
 GET /api/v1/customers/cust_01HZ5RVT789
 {
@@ -462,6 +497,7 @@ GET /api/v1/customers/cust_01HZ5RVT789
 ```
 
 **Create Customer Request**
+
 ```json
 POST /api/v1/customers
 {
@@ -484,6 +520,7 @@ POST /api/v1/customers
 ```
 
 **Create Customer Response**
+
 ```json
 {
   "id": "cust_01HZ9NEW001",
@@ -503,20 +540,21 @@ POST /api/v1/customers
 
 ## 3.6 Leads
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/leads` | List leads with pipeline view | `leads:read` |
-| POST | `/api/v1/leads` | Create a new lead | `leads:create` |
-| GET | `/api/v1/leads/:id` | Get lead details | `leads:read` |
-| PATCH | `/api/v1/leads/:id` | Update lead information | `leads:update` |
-| DELETE | `/api/v1/leads/:id` | Delete a lead | `leads:delete` |
-| PATCH | `/api/v1/leads/:id/stage` | Move lead to a different pipeline stage | `leads:update` |
-| POST | `/api/v1/leads/:id/assign` | Assign lead to a salesperson | `leads:assign` |
-| GET | `/api/v1/leads/pipeline-stats` | Get pipeline statistics and conversion rates | `leads:read` |
-| GET | `/api/v1/leads/sources` | List lead sources with counts | `leads:read` |
-| POST | `/api/v1/leads/import` | Bulk import leads from CSV | `leads:create` |
+| Method | Path                           | Description                                  | Required Permission |
+| ------ | ------------------------------ | -------------------------------------------- | ------------------- |
+| GET    | `/api/v1/leads`                | List leads with pipeline view                | `leads:read`        |
+| POST   | `/api/v1/leads`                | Create a new lead                            | `leads:create`      |
+| GET    | `/api/v1/leads/:id`            | Get lead details                             | `leads:read`        |
+| PATCH  | `/api/v1/leads/:id`            | Update lead information                      | `leads:update`      |
+| DELETE | `/api/v1/leads/:id`            | Delete a lead                                | `leads:delete`      |
+| PATCH  | `/api/v1/leads/:id/stage`      | Move lead to a different pipeline stage      | `leads:update`      |
+| POST   | `/api/v1/leads/:id/assign`     | Assign lead to a salesperson                 | `leads:assign`      |
+| GET    | `/api/v1/leads/pipeline-stats` | Get pipeline statistics and conversion rates | `leads:read`        |
+| GET    | `/api/v1/leads/sources`        | List lead sources with counts                | `leads:read`        |
+| POST   | `/api/v1/leads/import`         | Bulk import leads from CSV                   | `leads:create`      |
 
 **Pipeline Stats Response**
+
 ```json
 GET /api/v1/leads/pipeline-stats?from=2026-02-01&to=2026-02-23
 {
@@ -550,6 +588,7 @@ GET /api/v1/leads/pipeline-stats?from=2026-02-01&to=2026-02-23
 ```
 
 **Create Lead Request**
+
 ```json
 POST /api/v1/leads
 {
@@ -573,18 +612,19 @@ POST /api/v1/leads
 
 ## 3.7 Tasks
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/tasks` | List tasks with filters | `tasks:read` |
-| POST | `/api/v1/tasks` | Create a new task | `tasks:create` |
-| GET | `/api/v1/tasks/:id` | Get task details | `tasks:read` |
-| PATCH | `/api/v1/tasks/:id` | Update a task | `tasks:update` |
-| DELETE | `/api/v1/tasks/:id` | Delete a task | `tasks:delete` |
-| PATCH | `/api/v1/tasks/:id/complete` | Mark task as completed | `tasks:update` |
-| GET | `/api/v1/tasks/overdue` | List all overdue tasks | `tasks:read` |
-| GET | `/api/v1/tasks/my-tasks` | List tasks assigned to current user | Authenticated |
+| Method | Path                         | Description                         | Required Permission |
+| ------ | ---------------------------- | ----------------------------------- | ------------------- |
+| GET    | `/api/v1/tasks`              | List tasks with filters             | `tasks:read`        |
+| POST   | `/api/v1/tasks`              | Create a new task                   | `tasks:create`      |
+| GET    | `/api/v1/tasks/:id`          | Get task details                    | `tasks:read`        |
+| PATCH  | `/api/v1/tasks/:id`          | Update a task                       | `tasks:update`      |
+| DELETE | `/api/v1/tasks/:id`          | Delete a task                       | `tasks:delete`      |
+| PATCH  | `/api/v1/tasks/:id/complete` | Mark task as completed              | `tasks:update`      |
+| GET    | `/api/v1/tasks/overdue`      | List all overdue tasks              | `tasks:read`        |
+| GET    | `/api/v1/tasks/my-tasks`     | List tasks assigned to current user | Authenticated       |
 
 **Create Task Request**
+
 ```json
 POST /api/v1/tasks
 {
@@ -600,6 +640,7 @@ POST /api/v1/tasks
 ```
 
 **My Tasks Response**
+
 ```json
 GET /api/v1/tasks/my-tasks?status=pending&sort=dueAt
 {
@@ -633,19 +674,20 @@ GET /api/v1/tasks/my-tasks?status=pending&sort=dueAt
 
 ## 3.8 Appointments
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/appointments` | List appointments with filters | `appointments:read` |
-| POST | `/api/v1/appointments` | Create an appointment | `appointments:create` |
-| GET | `/api/v1/appointments/:id` | Get appointment details | `appointments:read` |
-| PATCH | `/api/v1/appointments/:id` | Update an appointment | `appointments:update` |
-| DELETE | `/api/v1/appointments/:id` | Delete an appointment | `appointments:delete` |
-| PATCH | `/api/v1/appointments/:id/cancel` | Cancel an appointment with reason | `appointments:update` |
-| PATCH | `/api/v1/appointments/:id/confirm` | Confirm an appointment | `appointments:update` |
-| GET | `/api/v1/appointments/availability` | Get available time slots | `appointments:read` |
-| GET | `/api/v1/appointments/calendar` | Get calendar view of appointments | `appointments:read` |
+| Method | Path                                | Description                       | Required Permission   |
+| ------ | ----------------------------------- | --------------------------------- | --------------------- |
+| GET    | `/api/v1/appointments`              | List appointments with filters    | `appointments:read`   |
+| POST   | `/api/v1/appointments`              | Create an appointment             | `appointments:create` |
+| GET    | `/api/v1/appointments/:id`          | Get appointment details           | `appointments:read`   |
+| PATCH  | `/api/v1/appointments/:id`          | Update an appointment             | `appointments:update` |
+| DELETE | `/api/v1/appointments/:id`          | Delete an appointment             | `appointments:delete` |
+| PATCH  | `/api/v1/appointments/:id/cancel`   | Cancel an appointment with reason | `appointments:update` |
+| PATCH  | `/api/v1/appointments/:id/confirm`  | Confirm an appointment            | `appointments:update` |
+| GET    | `/api/v1/appointments/availability` | Get available time slots          | `appointments:read`   |
+| GET    | `/api/v1/appointments/calendar`     | Get calendar view of appointments | `appointments:read`   |
 
 **Create Appointment Request**
+
 ```json
 POST /api/v1/appointments
 {
@@ -663,6 +705,7 @@ POST /api/v1/appointments
 ```
 
 **Availability Response**
+
 ```json
 GET /api/v1/appointments/availability?date=2026-02-25&type=test_drive&userId=usr_01HZ4FKX9Q
 {
@@ -685,27 +728,28 @@ GET /api/v1/appointments/availability?date=2026-02-25&type=test_drive&userId=usr
 
 ## 3.9 Vehicles
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/vehicles` | List vehicles with 20+ filters | `vehicles:read` |
-| POST | `/api/v1/vehicles` | Add a vehicle to inventory | `vehicles:create` |
-| GET | `/api/v1/vehicles/:id` | Get vehicle details | `vehicles:read` |
-| PATCH | `/api/v1/vehicles/:id` | Update vehicle information | `vehicles:update` |
-| DELETE | `/api/v1/vehicles/:id` | Archive a vehicle | `vehicles:delete` |
-| POST | `/api/v1/vehicles/:id/photos` | Upload photos (multipart, up to 50) | `vehicles:update` |
-| PATCH | `/api/v1/vehicles/:id/photos/reorder` | Reorder vehicle photos | `vehicles:update` |
-| DELETE | `/api/v1/vehicles/:id/photos/:photoId` | Delete a vehicle photo | `vehicles:update` |
-| POST | `/api/v1/vehicles/:id/costs` | Add a cost/recon entry | `vehicles:update` |
-| GET | `/api/v1/vehicles/:id/costs` | List vehicle costs | `vehicles:read` |
-| GET | `/api/v1/vehicles/:id/history` | Get vehicle history (ownership, service) | `vehicles:read` |
-| GET | `/api/v1/vehicles/decode/:vin` | Decode VIN and return specs | `vehicles:read` |
-| GET | `/api/v1/vehicles/stats` | Get inventory statistics | `vehicles:read` |
-| GET | `/api/v1/vehicles/search` | Full-text search across inventory | `vehicles:read` |
-| POST | `/api/v1/vehicles/import` | Bulk import vehicles from CSV | `vehicles:create` |
-| GET | `/api/v1/vehicles/export` | Export inventory as CSV/XLSX | `vehicles:export` |
-| GET | `/api/v1/vehicles/similar/:id` | Find similar vehicles in inventory | `vehicles:read` |
+| Method | Path                                   | Description                              | Required Permission |
+| ------ | -------------------------------------- | ---------------------------------------- | ------------------- |
+| GET    | `/api/v1/vehicles`                     | List vehicles with 20+ filters           | `vehicles:read`     |
+| POST   | `/api/v1/vehicles`                     | Add a vehicle to inventory               | `vehicles:create`   |
+| GET    | `/api/v1/vehicles/:id`                 | Get vehicle details                      | `vehicles:read`     |
+| PATCH  | `/api/v1/vehicles/:id`                 | Update vehicle information               | `vehicles:update`   |
+| DELETE | `/api/v1/vehicles/:id`                 | Archive a vehicle                        | `vehicles:delete`   |
+| POST   | `/api/v1/vehicles/:id/photos`          | Upload photos (multipart, up to 50)      | `vehicles:update`   |
+| PATCH  | `/api/v1/vehicles/:id/photos/reorder`  | Reorder vehicle photos                   | `vehicles:update`   |
+| DELETE | `/api/v1/vehicles/:id/photos/:photoId` | Delete a vehicle photo                   | `vehicles:update`   |
+| POST   | `/api/v1/vehicles/:id/costs`           | Add a cost/recon entry                   | `vehicles:update`   |
+| GET    | `/api/v1/vehicles/:id/costs`           | List vehicle costs                       | `vehicles:read`     |
+| GET    | `/api/v1/vehicles/:id/history`         | Get vehicle history (ownership, service) | `vehicles:read`     |
+| GET    | `/api/v1/vehicles/decode/:vin`         | Decode VIN and return specs              | `vehicles:read`     |
+| GET    | `/api/v1/vehicles/stats`               | Get inventory statistics                 | `vehicles:read`     |
+| GET    | `/api/v1/vehicles/search`              | Full-text search across inventory        | `vehicles:read`     |
+| POST   | `/api/v1/vehicles/import`              | Bulk import vehicles from CSV            | `vehicles:create`   |
+| GET    | `/api/v1/vehicles/export`              | Export inventory as CSV/XLSX             | `vehicles:export`   |
+| GET    | `/api/v1/vehicles/similar/:id`         | Find similar vehicles in inventory       | `vehicles:read`     |
 
 **VIN Decode Response**
+
 ```json
 GET /api/v1/vehicles/decode/1FTNW21F3YEA12345
 {
@@ -735,6 +779,7 @@ GET /api/v1/vehicles/decode/1FTNW21F3YEA12345
 ```
 
 **Create Vehicle Request**
+
 ```json
 POST /api/v1/vehicles
 {
@@ -767,6 +812,7 @@ POST /api/v1/vehicles
 ```
 
 **Create Vehicle Response**
+
 ```json
 {
   "id": "veh_01HZ9VEH001",
@@ -779,9 +825,9 @@ POST /api/v1/vehicles
   "condition": "new",
   "status": "in_stock",
   "bodyType": "class_b_plus",
-  "msrp": 142950.00,
-  "invoiceCost": 121507.50,
-  "askingPrice": 139995.00,
+  "msrp": 142950.0,
+  "invoiceCost": 121507.5,
+  "askingPrice": 139995.0,
   "mileage": 12,
   "daysInStock": 0,
   "photoCount": 0,
@@ -795,27 +841,28 @@ POST /api/v1/vehicles
 
 ## 3.10 Deals
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| POST | `/api/v1/deals` | Create a new deal | `deals:create` |
-| GET | `/api/v1/deals` | List deals with filters | `deals:read` |
-| GET | `/api/v1/deals/:id` | Get full deal jacket | `deals:read` |
-| PATCH | `/api/v1/deals/:id` | Update deal details | `deals:update` |
-| PATCH | `/api/v1/deals/:id/status` | Change deal status | `deals:update` |
-| POST | `/api/v1/deals/:id/fi-products` | Add F&I product to deal | `deals:update` |
-| DELETE | `/api/v1/deals/:id/fi-products/:productId` | Remove F&I product | `deals:update` |
-| PATCH | `/api/v1/deals/:id/fi-products/:productId` | Update F&I product details | `deals:update` |
-| POST | `/api/v1/deals/:id/calculate` | Calculate payments for deal | `deals:read` |
-| POST | `/api/v1/deals/:id/trade-in` | Add trade-in vehicle to deal | `deals:update` |
-| DELETE | `/api/v1/deals/:id/trade-in` | Remove trade-in from deal | `deals:update` |
-| GET | `/api/v1/deals/:id/documents` | List deal documents | `deals:read` |
-| POST | `/api/v1/deals/:id/documents/generate` | Generate deal documents (PDF) | `deals:update` |
-| GET | `/api/v1/deals/stats` | Get deal statistics | `deals:read` |
-| GET | `/api/v1/deals/:id/profit-analysis` | Get deal profit breakdown | `deals:read_profit` |
-| PATCH | `/api/v1/deals/:id/cancel` | Cancel a deal | `deals:cancel` |
-| POST | `/api/v1/deals/:id/unwind` | Unwind a completed deal | `deals:unwind` |
+| Method | Path                                       | Description                   | Required Permission |
+| ------ | ------------------------------------------ | ----------------------------- | ------------------- |
+| POST   | `/api/v1/deals`                            | Create a new deal             | `deals:create`      |
+| GET    | `/api/v1/deals`                            | List deals with filters       | `deals:read`        |
+| GET    | `/api/v1/deals/:id`                        | Get full deal jacket          | `deals:read`        |
+| PATCH  | `/api/v1/deals/:id`                        | Update deal details           | `deals:update`      |
+| PATCH  | `/api/v1/deals/:id/status`                 | Change deal status            | `deals:update`      |
+| POST   | `/api/v1/deals/:id/fi-products`            | Add F&I product to deal       | `deals:update`      |
+| DELETE | `/api/v1/deals/:id/fi-products/:productId` | Remove F&I product            | `deals:update`      |
+| PATCH  | `/api/v1/deals/:id/fi-products/:productId` | Update F&I product details    | `deals:update`      |
+| POST   | `/api/v1/deals/:id/calculate`              | Calculate payments for deal   | `deals:read`        |
+| POST   | `/api/v1/deals/:id/trade-in`               | Add trade-in vehicle to deal  | `deals:update`      |
+| DELETE | `/api/v1/deals/:id/trade-in`               | Remove trade-in from deal     | `deals:update`      |
+| GET    | `/api/v1/deals/:id/documents`              | List deal documents           | `deals:read`        |
+| POST   | `/api/v1/deals/:id/documents/generate`     | Generate deal documents (PDF) | `deals:update`      |
+| GET    | `/api/v1/deals/stats`                      | Get deal statistics           | `deals:read`        |
+| GET    | `/api/v1/deals/:id/profit-analysis`        | Get deal profit breakdown     | `deals:read_profit` |
+| PATCH  | `/api/v1/deals/:id/cancel`                 | Cancel a deal                 | `deals:cancel`      |
+| POST   | `/api/v1/deals/:id/unwind`                 | Unwind a completed deal       | `deals:unwind`      |
 
 **Payment Calculator Response**
+
 ```json
 POST /api/v1/deals/deal_01HZ7XYZ456/calculate
 {
@@ -871,6 +918,7 @@ POST /api/v1/deals/deal_01HZ7XYZ456/calculate
 ```
 
 **Create Deal Request**
+
 ```json
 POST /api/v1/deals
 {
@@ -885,6 +933,7 @@ POST /api/v1/deals
 ```
 
 **Deal Profit Analysis Response**
+
 ```json
 GET /api/v1/deals/deal_01HZ7XYZ456/profit-analysis
 {
@@ -923,17 +972,18 @@ GET /api/v1/deals/deal_01HZ7XYZ456/profit-analysis
 
 ## 3.11 Consignments
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/consignments` | List consignment agreements | `consignments:read` |
-| POST | `/api/v1/consignments` | Create a consignment agreement | `consignments:create` |
-| GET | `/api/v1/consignments/:id` | Get consignment details | `consignments:read` |
-| PATCH | `/api/v1/consignments/:id` | Update consignment terms | `consignments:update` |
-| POST | `/api/v1/consignments/:id/settle` | Settle/close a consignment after sale | `consignments:settle` |
-| GET | `/api/v1/consignments/:id/statement` | Generate consignor statement | `consignments:read` |
-| GET | `/api/v1/consignments/stats` | Get consignment portfolio stats | `consignments:read` |
+| Method | Path                                 | Description                           | Required Permission   |
+| ------ | ------------------------------------ | ------------------------------------- | --------------------- |
+| GET    | `/api/v1/consignments`               | List consignment agreements           | `consignments:read`   |
+| POST   | `/api/v1/consignments`               | Create a consignment agreement        | `consignments:create` |
+| GET    | `/api/v1/consignments/:id`           | Get consignment details               | `consignments:read`   |
+| PATCH  | `/api/v1/consignments/:id`           | Update consignment terms              | `consignments:update` |
+| POST   | `/api/v1/consignments/:id/settle`    | Settle/close a consignment after sale | `consignments:settle` |
+| GET    | `/api/v1/consignments/:id/statement` | Generate consignor statement          | `consignments:read`   |
+| GET    | `/api/v1/consignments/stats`         | Get consignment portfolio stats       | `consignments:read`   |
 
 **Create Consignment Request**
+
 ```json
 POST /api/v1/consignments
 {
@@ -950,6 +1000,7 @@ POST /api/v1/consignments
 ```
 
 **Consignment Stats Response**
+
 ```json
 GET /api/v1/consignments/stats
 {
@@ -971,21 +1022,22 @@ GET /api/v1/consignments/stats
 
 ## 3.12 Floor Plans
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/floor-plans` | List floor plan lines | `floor-plans:read` |
-| POST | `/api/v1/floor-plans` | Create a floor plan line | `floor-plans:create` |
-| GET | `/api/v1/floor-plans/:id` | Get floor plan details | `floor-plans:read` |
-| PATCH | `/api/v1/floor-plans/:id` | Update floor plan terms | `floor-plans:update` |
-| POST | `/api/v1/floor-plans/:id/vehicles` | Add vehicle to floor plan | `floor-plans:update` |
-| PATCH | `/api/v1/floor-plans/:id/vehicles/:vid` | Update vehicle floor plan status | `floor-plans:update` |
-| DELETE | `/api/v1/floor-plans/:id/vehicles/:vid` | Pay off and remove vehicle from floor plan | `floor-plans:update` |
-| POST | `/api/v1/floor-plans/:id/accrue` | Run interest accrual for the period | `floor-plans:accrue` |
-| GET | `/api/v1/floor-plans/:id/audit` | Get floor plan audit trail | `floor-plans:read` |
-| POST | `/api/v1/floor-plans/:id/audit` | Record a floor plan audit/count | `floor-plans:audit` |
-| GET | `/api/v1/floor-plans/exposure-summary` | Get total floor plan exposure across all lines | `floor-plans:read` |
+| Method | Path                                    | Description                                    | Required Permission  |
+| ------ | --------------------------------------- | ---------------------------------------------- | -------------------- |
+| GET    | `/api/v1/floor-plans`                   | List floor plan lines                          | `floor-plans:read`   |
+| POST   | `/api/v1/floor-plans`                   | Create a floor plan line                       | `floor-plans:create` |
+| GET    | `/api/v1/floor-plans/:id`               | Get floor plan details                         | `floor-plans:read`   |
+| PATCH  | `/api/v1/floor-plans/:id`               | Update floor plan terms                        | `floor-plans:update` |
+| POST   | `/api/v1/floor-plans/:id/vehicles`      | Add vehicle to floor plan                      | `floor-plans:update` |
+| PATCH  | `/api/v1/floor-plans/:id/vehicles/:vid` | Update vehicle floor plan status               | `floor-plans:update` |
+| DELETE | `/api/v1/floor-plans/:id/vehicles/:vid` | Pay off and remove vehicle from floor plan     | `floor-plans:update` |
+| POST   | `/api/v1/floor-plans/:id/accrue`        | Run interest accrual for the period            | `floor-plans:accrue` |
+| GET    | `/api/v1/floor-plans/:id/audit`         | Get floor plan audit trail                     | `floor-plans:read`   |
+| POST   | `/api/v1/floor-plans/:id/audit`         | Record a floor plan audit/count                | `floor-plans:audit`  |
+| GET    | `/api/v1/floor-plans/exposure-summary`  | Get total floor plan exposure across all lines | `floor-plans:read`   |
 
 **Exposure Summary Response**
+
 ```json
 GET /api/v1/floor-plans/exposure-summary
 {
@@ -1028,6 +1080,7 @@ GET /api/v1/floor-plans/exposure-summary
 ```
 
 **Add Vehicle to Floor Plan Request**
+
 ```json
 POST /api/v1/floor-plans/fp_01HZ6FP001/vehicles
 {
@@ -1046,22 +1099,23 @@ POST /api/v1/floor-plans/fp_01HZ6FP001/vehicles
 
 ## 3.13 Storage
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/storage/lots` | List storage lots | `storage:read` |
-| POST | `/api/v1/storage/lots` | Create a storage lot | `storage:create` |
-| GET | `/api/v1/storage/lots/:id` | Get lot details | `storage:read` |
-| PATCH | `/api/v1/storage/lots/:id` | Update lot information | `storage:update` |
-| GET | `/api/v1/storage/contracts` | List storage contracts | `storage:read` |
-| POST | `/api/v1/storage/contracts` | Create a storage contract | `storage:create` |
-| GET | `/api/v1/storage/contracts/:id` | Get contract details | `storage:read` |
-| PATCH | `/api/v1/storage/contracts/:id` | Update storage contract | `storage:update` |
-| POST | `/api/v1/storage/contracts/:id/bill` | Generate billing for a contract period | `storage:billing` |
-| POST | `/api/v1/storage/contracts/:id/terminate` | Terminate a storage contract | `storage:update` |
-| GET | `/api/v1/storage/availability` | Get available spaces across all lots | `storage:read` |
-| GET | `/api/v1/storage/occupancy` | Get occupancy metrics | `storage:read` |
+| Method | Path                                      | Description                            | Required Permission |
+| ------ | ----------------------------------------- | -------------------------------------- | ------------------- |
+| GET    | `/api/v1/storage/lots`                    | List storage lots                      | `storage:read`      |
+| POST   | `/api/v1/storage/lots`                    | Create a storage lot                   | `storage:create`    |
+| GET    | `/api/v1/storage/lots/:id`                | Get lot details                        | `storage:read`      |
+| PATCH  | `/api/v1/storage/lots/:id`                | Update lot information                 | `storage:update`    |
+| GET    | `/api/v1/storage/contracts`               | List storage contracts                 | `storage:read`      |
+| POST   | `/api/v1/storage/contracts`               | Create a storage contract              | `storage:create`    |
+| GET    | `/api/v1/storage/contracts/:id`           | Get contract details                   | `storage:read`      |
+| PATCH  | `/api/v1/storage/contracts/:id`           | Update storage contract                | `storage:update`    |
+| POST   | `/api/v1/storage/contracts/:id/bill`      | Generate billing for a contract period | `storage:billing`   |
+| POST   | `/api/v1/storage/contracts/:id/terminate` | Terminate a storage contract           | `storage:update`    |
+| GET    | `/api/v1/storage/availability`            | Get available spaces across all lots   | `storage:read`      |
+| GET    | `/api/v1/storage/occupancy`               | Get occupancy metrics                  | `storage:read`      |
 
 **Create Storage Contract Request**
+
 ```json
 POST /api/v1/storage/contracts
 {
@@ -1082,6 +1136,7 @@ POST /api/v1/storage/contracts
 ```
 
 **Occupancy Response**
+
 ```json
 GET /api/v1/storage/occupancy
 {
@@ -1107,22 +1162,23 @@ GET /api/v1/storage/occupancy
 
 ## 3.14 PDI
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/pdi/templates` | List PDI checklist templates | `pdi:read` |
-| POST | `/api/v1/pdi/templates` | Create a PDI template | `pdi:create` |
-| GET | `/api/v1/pdi/templates/:id` | Get template details with items | `pdi:read` |
-| PATCH | `/api/v1/pdi/templates/:id` | Update a PDI template | `pdi:update` |
-| POST | `/api/v1/pdi/templates/:id/clone` | Clone an existing template | `pdi:create` |
-| GET | `/api/v1/pdi/inspections` | List PDI inspections | `pdi:read` |
-| POST | `/api/v1/pdi/inspections` | Start a new PDI inspection | `pdi:create` |
-| GET | `/api/v1/pdi/inspections/:id` | Get inspection details | `pdi:read` |
-| PATCH | `/api/v1/pdi/inspections/:id/items/:itemId` | Update an inspection line item result | `pdi:update` |
-| POST | `/api/v1/pdi/inspections/:id/complete` | Mark inspection as complete | `pdi:update` |
-| GET | `/api/v1/pdi/inspections/:id/report` | Generate PDI report (PDF) | `pdi:read` |
-| GET | `/api/v1/pdi/stats` | Get PDI completion statistics | `pdi:read` |
+| Method | Path                                        | Description                           | Required Permission |
+| ------ | ------------------------------------------- | ------------------------------------- | ------------------- |
+| GET    | `/api/v1/pdi/templates`                     | List PDI checklist templates          | `pdi:read`          |
+| POST   | `/api/v1/pdi/templates`                     | Create a PDI template                 | `pdi:create`        |
+| GET    | `/api/v1/pdi/templates/:id`                 | Get template details with items       | `pdi:read`          |
+| PATCH  | `/api/v1/pdi/templates/:id`                 | Update a PDI template                 | `pdi:update`        |
+| POST   | `/api/v1/pdi/templates/:id/clone`           | Clone an existing template            | `pdi:create`        |
+| GET    | `/api/v1/pdi/inspections`                   | List PDI inspections                  | `pdi:read`          |
+| POST   | `/api/v1/pdi/inspections`                   | Start a new PDI inspection            | `pdi:create`        |
+| GET    | `/api/v1/pdi/inspections/:id`               | Get inspection details                | `pdi:read`          |
+| PATCH  | `/api/v1/pdi/inspections/:id/items/:itemId` | Update an inspection line item result | `pdi:update`        |
+| POST   | `/api/v1/pdi/inspections/:id/complete`      | Mark inspection as complete           | `pdi:update`        |
+| GET    | `/api/v1/pdi/inspections/:id/report`        | Generate PDI report (PDF)             | `pdi:read`          |
+| GET    | `/api/v1/pdi/stats`                         | Get PDI completion statistics         | `pdi:read`          |
 
 **Start PDI Inspection Request**
+
 ```json
 POST /api/v1/pdi/inspections
 {
@@ -1135,6 +1191,7 @@ POST /api/v1/pdi/inspections
 ```
 
 **PDI Stats Response**
+
 ```json
 GET /api/v1/pdi/stats?from=2026-02-01&to=2026-02-23
 {
@@ -1166,24 +1223,25 @@ GET /api/v1/pdi/stats?from=2026-02-01&to=2026-02-23
 
 ## 3.15 Service Orders
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/service-orders` | List service orders with filters | `service-orders:read` |
-| POST | `/api/v1/service-orders` | Create a service order | `service-orders:create` |
-| GET | `/api/v1/service-orders/:id` | Get service order details | `service-orders:read` |
-| PATCH | `/api/v1/service-orders/:id` | Update service order | `service-orders:update` |
-| PATCH | `/api/v1/service-orders/:id/status` | Change service order status | `service-orders:update` |
-| POST | `/api/v1/service-orders/:id/lines` | Add a service line item | `service-orders:update` |
-| PATCH | `/api/v1/service-orders/:id/lines/:lineId` | Update a service line item | `service-orders:update` |
-| DELETE | `/api/v1/service-orders/:id/lines/:lineId` | Remove a service line item | `service-orders:update` |
-| POST | `/api/v1/service-orders/:id/invoice` | Generate invoice for service order | `service-orders:invoice` |
-| POST | `/api/v1/service-orders/:id/assign-bay` | Assign service order to a bay | `service-orders:update` |
-| POST | `/api/v1/service-orders/:id/assign-tech` | Assign technician to service order | `service-orders:update` |
-| GET | `/api/v1/service-orders/board` | Get service board view (kanban) | `service-orders:read` |
-| GET | `/api/v1/service-orders/stats` | Get service department statistics | `service-orders:read` |
-| GET | `/api/v1/service-orders/:id/rect-timeline` | Get RECT timeline for the order | `service-orders:read` |
+| Method | Path                                       | Description                        | Required Permission      |
+| ------ | ------------------------------------------ | ---------------------------------- | ------------------------ |
+| GET    | `/api/v1/service-orders`                   | List service orders with filters   | `service-orders:read`    |
+| POST   | `/api/v1/service-orders`                   | Create a service order             | `service-orders:create`  |
+| GET    | `/api/v1/service-orders/:id`               | Get service order details          | `service-orders:read`    |
+| PATCH  | `/api/v1/service-orders/:id`               | Update service order               | `service-orders:update`  |
+| PATCH  | `/api/v1/service-orders/:id/status`        | Change service order status        | `service-orders:update`  |
+| POST   | `/api/v1/service-orders/:id/lines`         | Add a service line item            | `service-orders:update`  |
+| PATCH  | `/api/v1/service-orders/:id/lines/:lineId` | Update a service line item         | `service-orders:update`  |
+| DELETE | `/api/v1/service-orders/:id/lines/:lineId` | Remove a service line item         | `service-orders:update`  |
+| POST   | `/api/v1/service-orders/:id/invoice`       | Generate invoice for service order | `service-orders:invoice` |
+| POST   | `/api/v1/service-orders/:id/assign-bay`    | Assign service order to a bay      | `service-orders:update`  |
+| POST   | `/api/v1/service-orders/:id/assign-tech`   | Assign technician to service order | `service-orders:update`  |
+| GET    | `/api/v1/service-orders/board`             | Get service board view (kanban)    | `service-orders:read`    |
+| GET    | `/api/v1/service-orders/stats`             | Get service department statistics  | `service-orders:read`    |
+| GET    | `/api/v1/service-orders/:id/rect-timeline` | Get RECT timeline for the order    | `service-orders:read`    |
 
 **Create Service Order Request**
+
 ```json
 POST /api/v1/service-orders
 {
@@ -1213,6 +1271,7 @@ POST /api/v1/service-orders
 ```
 
 **Service Board Response**
+
 ```json
 GET /api/v1/service-orders/board
 {
@@ -1278,18 +1337,19 @@ GET /api/v1/service-orders/board
 
 ## 3.16 Service Bays
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/service-bays` | List all service bays | `service-bays:read` |
-| POST | `/api/v1/service-bays` | Create a service bay | `service-bays:create` |
-| GET | `/api/v1/service-bays/:id` | Get bay details | `service-bays:read` |
-| PATCH | `/api/v1/service-bays/:id` | Update bay information | `service-bays:update` |
-| GET | `/api/v1/service-bays/schedule` | Get bay schedule (week view) | `service-bays:read` |
-| POST | `/api/v1/service-bays/:id/assign` | Assign a service order to the bay | `service-bays:update` |
-| PATCH | `/api/v1/service-bays/:id/release` | Release a bay (mark available) | `service-bays:update` |
-| GET | `/api/v1/service-bays/utilization` | Get bay utilization metrics | `service-bays:read` |
+| Method | Path                               | Description                       | Required Permission   |
+| ------ | ---------------------------------- | --------------------------------- | --------------------- |
+| GET    | `/api/v1/service-bays`             | List all service bays             | `service-bays:read`   |
+| POST   | `/api/v1/service-bays`             | Create a service bay              | `service-bays:create` |
+| GET    | `/api/v1/service-bays/:id`         | Get bay details                   | `service-bays:read`   |
+| PATCH  | `/api/v1/service-bays/:id`         | Update bay information            | `service-bays:update` |
+| GET    | `/api/v1/service-bays/schedule`    | Get bay schedule (week view)      | `service-bays:read`   |
+| POST   | `/api/v1/service-bays/:id/assign`  | Assign a service order to the bay | `service-bays:update` |
+| PATCH  | `/api/v1/service-bays/:id/release` | Release a bay (mark available)    | `service-bays:update` |
+| GET    | `/api/v1/service-bays/utilization` | Get bay utilization metrics       | `service-bays:read`   |
 
 **Bay Utilization Response**
+
 ```json
 GET /api/v1/service-bays/utilization?from=2026-02-17&to=2026-02-23
 {
@@ -1308,6 +1368,7 @@ GET /api/v1/service-bays/utilization?from=2026-02-17&to=2026-02-23
 ```
 
 **Create Bay Request**
+
 ```json
 POST /api/v1/service-bays
 {
@@ -1324,18 +1385,19 @@ POST /api/v1/service-bays
 
 ## 3.17 Technicians
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/technicians` | List all technicians | `technicians:read` |
-| POST | `/api/v1/technicians` | Create a technician profile | `technicians:create` |
-| GET | `/api/v1/technicians/:id` | Get technician details | `technicians:read` |
-| PATCH | `/api/v1/technicians/:id` | Update technician profile | `technicians:update` |
-| GET | `/api/v1/technicians/:id/schedule` | Get technician schedule | `technicians:read` |
-| GET | `/api/v1/technicians/:id/performance` | Get technician performance metrics | `technicians:read` |
-| GET | `/api/v1/technicians/utilization` | Get all technician utilization | `technicians:read` |
-| GET | `/api/v1/technicians/availability` | Get technician availability for scheduling | `technicians:read` |
+| Method | Path                                  | Description                                | Required Permission  |
+| ------ | ------------------------------------- | ------------------------------------------ | -------------------- |
+| GET    | `/api/v1/technicians`                 | List all technicians                       | `technicians:read`   |
+| POST   | `/api/v1/technicians`                 | Create a technician profile                | `technicians:create` |
+| GET    | `/api/v1/technicians/:id`             | Get technician details                     | `technicians:read`   |
+| PATCH  | `/api/v1/technicians/:id`             | Update technician profile                  | `technicians:update` |
+| GET    | `/api/v1/technicians/:id/schedule`    | Get technician schedule                    | `technicians:read`   |
+| GET    | `/api/v1/technicians/:id/performance` | Get technician performance metrics         | `technicians:read`   |
+| GET    | `/api/v1/technicians/utilization`     | Get all technician utilization             | `technicians:read`   |
+| GET    | `/api/v1/technicians/availability`    | Get technician availability for scheduling | `technicians:read`   |
 
 **Technician Performance Response**
+
 ```json
 GET /api/v1/technicians/tech_01HZ8TCH002/performance?from=2026-02-01&to=2026-02-23
 {
@@ -1362,6 +1424,7 @@ GET /api/v1/technicians/tech_01HZ8TCH002/performance?from=2026-02-01&to=2026-02-
 ```
 
 **Create Technician Request**
+
 ```json
 POST /api/v1/technicians
 {
@@ -1380,14 +1443,15 @@ POST /api/v1/technicians
 
 ## 3.18 RECT
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/rect/dashboard` | Get RECT (Repair Event Cycle Time) dashboard | `rect:read` |
-| GET | `/api/v1/rect/by-stage` | Get RECT breakdown by stage | `rect:read` |
-| GET | `/api/v1/rect/by-type` | Get RECT breakdown by repair type | `rect:read` |
-| GET | `/api/v1/rect/:serviceOrderId` | Get RECT timeline for a specific order | `rect:read` |
+| Method | Path                           | Description                                  | Required Permission |
+| ------ | ------------------------------ | -------------------------------------------- | ------------------- |
+| GET    | `/api/v1/rect/dashboard`       | Get RECT (Repair Event Cycle Time) dashboard | `rect:read`         |
+| GET    | `/api/v1/rect/by-stage`        | Get RECT breakdown by stage                  | `rect:read`         |
+| GET    | `/api/v1/rect/by-type`         | Get RECT breakdown by repair type            | `rect:read`         |
+| GET    | `/api/v1/rect/:serviceOrderId` | Get RECT timeline for a specific order       | `rect:read`         |
 
 **RECT Dashboard Response**
+
 ```json
 GET /api/v1/rect/dashboard?from=2026-02-01&to=2026-02-23
 {
@@ -1413,6 +1477,7 @@ GET /api/v1/rect/dashboard?from=2026-02-01&to=2026-02-23
 ```
 
 **RECT by Service Order Response**
+
 ```json
 GET /api/v1/rect/so_01HZ8SO001
 {
@@ -1438,16 +1503,17 @@ GET /api/v1/rect/so_01HZ8SO001
 
 ## 3.19 Warranties
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/warranties` | List warranties | `warranties:read` |
-| POST | `/api/v1/warranties` | Register a warranty | `warranties:create` |
-| GET | `/api/v1/warranties/:id` | Get warranty details | `warranties:read` |
-| PATCH | `/api/v1/warranties/:id` | Update warranty information | `warranties:update` |
-| GET | `/api/v1/warranties/:id/coverage` | Get detailed coverage breakdown | `warranties:read` |
-| GET | `/api/v1/warranties/expiring` | List warranties expiring soon | `warranties:read` |
+| Method | Path                              | Description                     | Required Permission |
+| ------ | --------------------------------- | ------------------------------- | ------------------- |
+| GET    | `/api/v1/warranties`              | List warranties                 | `warranties:read`   |
+| POST   | `/api/v1/warranties`              | Register a warranty             | `warranties:create` |
+| GET    | `/api/v1/warranties/:id`          | Get warranty details            | `warranties:read`   |
+| PATCH  | `/api/v1/warranties/:id`          | Update warranty information     | `warranties:update` |
+| GET    | `/api/v1/warranties/:id/coverage` | Get detailed coverage breakdown | `warranties:read`   |
+| GET    | `/api/v1/warranties/expiring`     | List warranties expiring soon   | `warranties:read`   |
 
 **Register Warranty Request**
+
 ```json
 POST /api/v1/warranties
 {
@@ -1466,6 +1532,7 @@ POST /api/v1/warranties
 ```
 
 **Expiring Warranties Response**
+
 ```json
 GET /api/v1/warranties/expiring?withinDays=90
 {
@@ -1507,18 +1574,19 @@ GET /api/v1/warranties/expiring?withinDays=90
 
 ## 3.20 Warranty Claims
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| POST | `/api/v1/warranty-claims` | Create a warranty claim | `warranty-claims:create` |
-| GET | `/api/v1/warranty-claims` | List warranty claims | `warranty-claims:read` |
-| GET | `/api/v1/warranty-claims/:id` | Get claim details | `warranty-claims:read` |
-| PATCH | `/api/v1/warranty-claims/:id` | Update a claim | `warranty-claims:update` |
-| POST | `/api/v1/warranty-claims/:id/items` | Add claim line items | `warranty-claims:update` |
-| POST | `/api/v1/warranty-claims/:id/submit` | Submit claim to manufacturer | `warranty-claims:submit` |
-| POST | `/api/v1/warranty-claims/:id/documents` | Attach supporting documents | `warranty-claims:update` |
-| GET | `/api/v1/warranty-claims/stats` | Get warranty claims statistics | `warranty-claims:read` |
+| Method | Path                                    | Description                    | Required Permission      |
+| ------ | --------------------------------------- | ------------------------------ | ------------------------ |
+| POST   | `/api/v1/warranty-claims`               | Create a warranty claim        | `warranty-claims:create` |
+| GET    | `/api/v1/warranty-claims`               | List warranty claims           | `warranty-claims:read`   |
+| GET    | `/api/v1/warranty-claims/:id`           | Get claim details              | `warranty-claims:read`   |
+| PATCH  | `/api/v1/warranty-claims/:id`           | Update a claim                 | `warranty-claims:update` |
+| POST   | `/api/v1/warranty-claims/:id/items`     | Add claim line items           | `warranty-claims:update` |
+| POST   | `/api/v1/warranty-claims/:id/submit`    | Submit claim to manufacturer   | `warranty-claims:submit` |
+| POST   | `/api/v1/warranty-claims/:id/documents` | Attach supporting documents    | `warranty-claims:update` |
+| GET    | `/api/v1/warranty-claims/stats`         | Get warranty claims statistics | `warranty-claims:read`   |
 
 **Create Warranty Claim Request**
+
 ```json
 POST /api/v1/warranty-claims
 {
@@ -1553,6 +1621,7 @@ POST /api/v1/warranty-claims
 ```
 
 **Warranty Claims Stats Response**
+
 ```json
 GET /api/v1/warranty-claims/stats?from=2026-01-01&to=2026-02-23
 {
@@ -1589,24 +1658,25 @@ GET /api/v1/warranty-claims/stats?from=2026-01-01&to=2026-02-23
 
 ## 3.21 Parts
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/parts` | List parts catalog | `parts:read` |
-| POST | `/api/v1/parts` | Add a part to catalog | `parts:create` |
-| GET | `/api/v1/parts/:id` | Get part details | `parts:read` |
-| PATCH | `/api/v1/parts/:id` | Update part information | `parts:update` |
-| GET | `/api/v1/parts/inventory` | Get current inventory levels | `parts:read` |
-| POST | `/api/v1/parts/orders` | Create a parts purchase order | `parts:order` |
-| GET | `/api/v1/parts/orders` | List purchase orders | `parts:read` |
-| GET | `/api/v1/parts/orders/:id` | Get purchase order details | `parts:read` |
-| POST | `/api/v1/parts/orders/:id/receive` | Receive parts against a PO | `parts:receive` |
-| POST | `/api/v1/parts/orders/:id/cancel` | Cancel a purchase order | `parts:order` |
-| GET | `/api/v1/parts/low-stock` | List parts below reorder point | `parts:read` |
-| GET | `/api/v1/parts/search` | Full-text search parts catalog | `parts:read` |
-| POST | `/api/v1/parts/import` | Bulk import parts from CSV | `parts:create` |
-| GET | `/api/v1/parts/export` | Export parts inventory | `parts:export` |
+| Method | Path                               | Description                    | Required Permission |
+| ------ | ---------------------------------- | ------------------------------ | ------------------- |
+| GET    | `/api/v1/parts`                    | List parts catalog             | `parts:read`        |
+| POST   | `/api/v1/parts`                    | Add a part to catalog          | `parts:create`      |
+| GET    | `/api/v1/parts/:id`                | Get part details               | `parts:read`        |
+| PATCH  | `/api/v1/parts/:id`                | Update part information        | `parts:update`      |
+| GET    | `/api/v1/parts/inventory`          | Get current inventory levels   | `parts:read`        |
+| POST   | `/api/v1/parts/orders`             | Create a parts purchase order  | `parts:order`       |
+| GET    | `/api/v1/parts/orders`             | List purchase orders           | `parts:read`        |
+| GET    | `/api/v1/parts/orders/:id`         | Get purchase order details     | `parts:read`        |
+| POST   | `/api/v1/parts/orders/:id/receive` | Receive parts against a PO     | `parts:receive`     |
+| POST   | `/api/v1/parts/orders/:id/cancel`  | Cancel a purchase order        | `parts:order`       |
+| GET    | `/api/v1/parts/low-stock`          | List parts below reorder point | `parts:read`        |
+| GET    | `/api/v1/parts/search`             | Full-text search parts catalog | `parts:read`        |
+| POST   | `/api/v1/parts/import`             | Bulk import parts from CSV     | `parts:create`      |
+| GET    | `/api/v1/parts/export`             | Export parts inventory         | `parts:export`      |
 
 **Create Parts Order Request**
+
 ```json
 POST /api/v1/parts/orders
 {
@@ -1642,6 +1712,7 @@ POST /api/v1/parts/orders
 ```
 
 **Low Stock Response**
+
 ```json
 GET /api/v1/parts/low-stock
 {
@@ -1683,21 +1754,22 @@ GET /api/v1/parts/low-stock
 
 ## 3.22 Communications
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| POST | `/api/v1/communications/email` | Send an email | `communications:send` |
-| POST | `/api/v1/communications/sms` | Send an SMS message | `communications:send` |
-| POST | `/api/v1/communications/call` | Log a phone call | `communications:send` |
-| GET | `/api/v1/communications/inbox` | Get communication inbox | `communications:read` |
-| GET | `/api/v1/communications/customer/:id` | Get all comms for a customer | `communications:read` |
-| GET | `/api/v1/communications/threads` | List conversation threads | `communications:read` |
-| GET | `/api/v1/communications/threads/:id` | Get thread messages | `communications:read` |
-| POST | `/api/v1/communications/webhook/ses` | SES inbound webhook (system) | System |
-| POST | `/api/v1/communications/webhook/twilio` | Twilio SMS webhook (system) | System |
-| POST | `/api/v1/communications/webhook/twilio-voice` | Twilio voice webhook (system) | System |
-| GET | `/api/v1/communications/stats` | Get communication statistics | `communications:read` |
+| Method | Path                                          | Description                   | Required Permission   |
+| ------ | --------------------------------------------- | ----------------------------- | --------------------- |
+| POST   | `/api/v1/communications/email`                | Send an email                 | `communications:send` |
+| POST   | `/api/v1/communications/sms`                  | Send an SMS message           | `communications:send` |
+| POST   | `/api/v1/communications/call`                 | Log a phone call              | `communications:send` |
+| GET    | `/api/v1/communications/inbox`                | Get communication inbox       | `communications:read` |
+| GET    | `/api/v1/communications/customer/:id`         | Get all comms for a customer  | `communications:read` |
+| GET    | `/api/v1/communications/threads`              | List conversation threads     | `communications:read` |
+| GET    | `/api/v1/communications/threads/:id`          | Get thread messages           | `communications:read` |
+| POST   | `/api/v1/communications/webhook/ses`          | SES inbound webhook (system)  | System                |
+| POST   | `/api/v1/communications/webhook/twilio`       | Twilio SMS webhook (system)   | System                |
+| POST   | `/api/v1/communications/webhook/twilio-voice` | Twilio voice webhook (system) | System                |
+| GET    | `/api/v1/communications/stats`                | Get communication statistics  | `communications:read` |
 
 **Send SMS Request**
+
 ```json
 POST /api/v1/communications/sms
 {
@@ -1709,6 +1781,7 @@ POST /api/v1/communications/sms
 ```
 
 **Communication Stats Response**
+
 ```json
 GET /api/v1/communications/stats?from=2026-02-01&to=2026-02-23
 {
@@ -1735,16 +1808,17 @@ GET /api/v1/communications/stats?from=2026-02-01&to=2026-02-23
 
 ## 3.23 Templates
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/templates` | List message templates | `templates:read` |
-| POST | `/api/v1/templates` | Create a message template | `templates:create` |
-| GET | `/api/v1/templates/:id` | Get template details | `templates:read` |
-| PATCH | `/api/v1/templates/:id` | Update a template | `templates:update` |
-| DELETE | `/api/v1/templates/:id` | Delete a template | `templates:delete` |
-| POST | `/api/v1/templates/:id/preview` | Preview template with merge data | `templates:read` |
+| Method | Path                            | Description                      | Required Permission |
+| ------ | ------------------------------- | -------------------------------- | ------------------- |
+| GET    | `/api/v1/templates`             | List message templates           | `templates:read`    |
+| POST   | `/api/v1/templates`             | Create a message template        | `templates:create`  |
+| GET    | `/api/v1/templates/:id`         | Get template details             | `templates:read`    |
+| PATCH  | `/api/v1/templates/:id`         | Update a template                | `templates:update`  |
+| DELETE | `/api/v1/templates/:id`         | Delete a template                | `templates:delete`  |
+| POST   | `/api/v1/templates/:id/preview` | Preview template with merge data | `templates:read`    |
 
 **Create Template Request**
+
 ```json
 POST /api/v1/templates
 {
@@ -1758,6 +1832,7 @@ POST /api/v1/templates
 ```
 
 **Template Preview Response**
+
 ```json
 POST /api/v1/templates/tpl_01HZ9TPL001/preview
 {
@@ -1771,20 +1846,21 @@ POST /api/v1/templates/tpl_01HZ9TPL001/preview
 
 ## 3.24 Campaigns
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/campaigns` | List marketing campaigns | `campaigns:read` |
-| POST | `/api/v1/campaigns` | Create a campaign | `campaigns:create` |
-| GET | `/api/v1/campaigns/:id` | Get campaign details | `campaigns:read` |
-| PATCH | `/api/v1/campaigns/:id` | Update a campaign | `campaigns:update` |
-| DELETE | `/api/v1/campaigns/:id` | Delete a campaign | `campaigns:delete` |
-| POST | `/api/v1/campaigns/:id/schedule` | Schedule campaign for future send | `campaigns:send` |
-| POST | `/api/v1/campaigns/:id/send` | Send campaign immediately | `campaigns:send` |
-| POST | `/api/v1/campaigns/:id/cancel` | Cancel a scheduled campaign | `campaigns:update` |
-| GET | `/api/v1/campaigns/:id/analytics` | Get campaign performance analytics | `campaigns:read` |
-| GET | `/api/v1/campaigns/analytics/summary` | Get cross-campaign analytics summary | `campaigns:read` |
+| Method | Path                                  | Description                          | Required Permission |
+| ------ | ------------------------------------- | ------------------------------------ | ------------------- |
+| GET    | `/api/v1/campaigns`                   | List marketing campaigns             | `campaigns:read`    |
+| POST   | `/api/v1/campaigns`                   | Create a campaign                    | `campaigns:create`  |
+| GET    | `/api/v1/campaigns/:id`               | Get campaign details                 | `campaigns:read`    |
+| PATCH  | `/api/v1/campaigns/:id`               | Update a campaign                    | `campaigns:update`  |
+| DELETE | `/api/v1/campaigns/:id`               | Delete a campaign                    | `campaigns:delete`  |
+| POST   | `/api/v1/campaigns/:id/schedule`      | Schedule campaign for future send    | `campaigns:send`    |
+| POST   | `/api/v1/campaigns/:id/send`          | Send campaign immediately            | `campaigns:send`    |
+| POST   | `/api/v1/campaigns/:id/cancel`        | Cancel a scheduled campaign          | `campaigns:update`  |
+| GET    | `/api/v1/campaigns/:id/analytics`     | Get campaign performance analytics   | `campaigns:read`    |
+| GET    | `/api/v1/campaigns/analytics/summary` | Get cross-campaign analytics summary | `campaigns:read`    |
 
 **Create Campaign Request**
+
 ```json
 POST /api/v1/campaigns
 {
@@ -1809,6 +1885,7 @@ POST /api/v1/campaigns
 ```
 
 **Campaign Analytics Response**
+
 ```json
 GET /api/v1/campaigns/camp_01HZ9CMP001/analytics
 {
@@ -1850,23 +1927,24 @@ GET /api/v1/campaigns/camp_01HZ9CMP001/analytics
 
 ## 3.25 RV Shows
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/rv-shows` | List RV shows | `rv-shows:read` |
-| POST | `/api/v1/rv-shows` | Create an RV show event | `rv-shows:create` |
-| GET | `/api/v1/rv-shows/:id` | Get show details | `rv-shows:read` |
-| PATCH | `/api/v1/rv-shows/:id` | Update show details | `rv-shows:update` |
-| DELETE | `/api/v1/rv-shows/:id` | Delete an RV show | `rv-shows:delete` |
-| POST | `/api/v1/rv-shows/:id/inventory` | Add vehicle to show inventory | `rv-shows:update` |
-| DELETE | `/api/v1/rv-shows/:id/inventory/:vehicleId` | Remove vehicle from show | `rv-shows:update` |
-| POST | `/api/v1/rv-shows/:id/leads` | Add a lead captured at the show | `rv-shows:update` |
-| GET | `/api/v1/rv-shows/:id/leads` | List leads from the show | `rv-shows:read` |
-| GET | `/api/v1/rv-shows/:id/analytics` | Get show performance analytics | `rv-shows:read` |
-| POST | `/api/v1/rv-shows/:id/follow-up-all` | Trigger follow-up for all show leads | `rv-shows:update` |
-| PATCH | `/api/v1/rv-shows/:id/status` | Update show status | `rv-shows:update` |
-| GET | `/api/v1/rv-shows/upcoming` | List upcoming shows | `rv-shows:read` |
+| Method | Path                                        | Description                          | Required Permission |
+| ------ | ------------------------------------------- | ------------------------------------ | ------------------- |
+| GET    | `/api/v1/rv-shows`                          | List RV shows                        | `rv-shows:read`     |
+| POST   | `/api/v1/rv-shows`                          | Create an RV show event              | `rv-shows:create`   |
+| GET    | `/api/v1/rv-shows/:id`                      | Get show details                     | `rv-shows:read`     |
+| PATCH  | `/api/v1/rv-shows/:id`                      | Update show details                  | `rv-shows:update`   |
+| DELETE | `/api/v1/rv-shows/:id`                      | Delete an RV show                    | `rv-shows:delete`   |
+| POST   | `/api/v1/rv-shows/:id/inventory`            | Add vehicle to show inventory        | `rv-shows:update`   |
+| DELETE | `/api/v1/rv-shows/:id/inventory/:vehicleId` | Remove vehicle from show             | `rv-shows:update`   |
+| POST   | `/api/v1/rv-shows/:id/leads`                | Add a lead captured at the show      | `rv-shows:update`   |
+| GET    | `/api/v1/rv-shows/:id/leads`                | List leads from the show             | `rv-shows:read`     |
+| GET    | `/api/v1/rv-shows/:id/analytics`            | Get show performance analytics       | `rv-shows:read`     |
+| POST   | `/api/v1/rv-shows/:id/follow-up-all`        | Trigger follow-up for all show leads | `rv-shows:update`   |
+| PATCH  | `/api/v1/rv-shows/:id/status`               | Update show status                   | `rv-shows:update`   |
+| GET    | `/api/v1/rv-shows/upcoming`                 | List upcoming shows                  | `rv-shows:read`     |
 
 **Create RV Show Request**
+
 ```json
 POST /api/v1/rv-shows
 {
@@ -1893,6 +1971,7 @@ POST /api/v1/rv-shows
 ```
 
 **Show Analytics Response**
+
 ```json
 GET /api/v1/rv-shows/show_01HZ7RVS001/analytics
 {
@@ -1944,17 +2023,18 @@ GET /api/v1/rv-shows/show_01HZ7RVS001/analytics
 
 ## 3.26 AI
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| POST | `/api/v1/ai/chat` | Interactive AI chat assistant (streaming) | `ai:chat` |
-| POST | `/api/v1/ai/generate-description` | Generate vehicle listing description | `ai:use` |
-| POST | `/api/v1/ai/draft-response` | Draft customer communication response | `ai:use` |
-| POST | `/api/v1/ai/analyze-sentiment` | Analyze customer sentiment | `ai:use` |
-| POST | `/api/v1/ai/score-lead` | AI-powered lead scoring | `ai:use` |
-| GET | `/api/v1/ai/insights/:entityType/:id` | Get AI insights for an entity | `ai:use` |
-| GET | `/api/v1/ai/usage` | Get AI usage and token stats | `ai:read` |
+| Method | Path                                  | Description                               | Required Permission |
+| ------ | ------------------------------------- | ----------------------------------------- | ------------------- |
+| POST   | `/api/v1/ai/chat`                     | Interactive AI chat assistant (streaming) | `ai:chat`           |
+| POST   | `/api/v1/ai/generate-description`     | Generate vehicle listing description      | `ai:use`            |
+| POST   | `/api/v1/ai/draft-response`           | Draft customer communication response     | `ai:use`            |
+| POST   | `/api/v1/ai/analyze-sentiment`        | Analyze customer sentiment                | `ai:use`            |
+| POST   | `/api/v1/ai/score-lead`               | AI-powered lead scoring                   | `ai:use`            |
+| GET    | `/api/v1/ai/insights/:entityType/:id` | Get AI insights for an entity             | `ai:use`            |
+| GET    | `/api/v1/ai/usage`                    | Get AI usage and token stats              | `ai:read`           |
 
 **Chat Request (Streaming)**
+
 ```json
 POST /api/v1/ai/chat
 {
@@ -1965,6 +2045,7 @@ POST /api/v1/ai/chat
 ```
 
 **Chat Response (Server-Sent Events)**
+
 ```
 HTTP/1.1 200 OK
 Content-Type: text/event-stream
@@ -1993,6 +2074,7 @@ data: {"type":"end","tokensUsed":342,"messageId":"msg_01HZ9AI001"}
 ```
 
 **Generate Vehicle Description Request**
+
 ```json
 POST /api/v1/ai/generate-description
 {
@@ -2005,6 +2087,7 @@ POST /api/v1/ai/generate-description
 ```
 
 **Generate Vehicle Description Response**
+
 ```json
 {
   "vehicleId": "veh_01HZ9VEH001",
@@ -2018,19 +2101,20 @@ POST /api/v1/ai/generate-description
 
 ## 3.27 Reports
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/reports` | List saved reports | `reports:read` |
-| POST | `/api/v1/reports` | Create a custom report definition | `reports:create` |
-| GET | `/api/v1/reports/:id` | Get report definition | `reports:read` |
-| POST | `/api/v1/reports/:id/run` | Execute a report and return results | `reports:run` |
-| DELETE | `/api/v1/reports/:id` | Delete a saved report | `reports:delete` |
-| GET | `/api/v1/reports/templates` | List report templates | `reports:read` |
-| POST | `/api/v1/reports/:id/schedule` | Schedule recurring report execution | `reports:schedule` |
-| GET | `/api/v1/reports/:id/export/:format` | Export report as PDF, CSV, or XLSX | `reports:export` |
-| GET | `/api/v1/reports/pre-built/:type` | Run a pre-built report by type | `reports:run` |
+| Method | Path                                 | Description                         | Required Permission |
+| ------ | ------------------------------------ | ----------------------------------- | ------------------- |
+| GET    | `/api/v1/reports`                    | List saved reports                  | `reports:read`      |
+| POST   | `/api/v1/reports`                    | Create a custom report definition   | `reports:create`    |
+| GET    | `/api/v1/reports/:id`                | Get report definition               | `reports:read`      |
+| POST   | `/api/v1/reports/:id/run`            | Execute a report and return results | `reports:run`       |
+| DELETE | `/api/v1/reports/:id`                | Delete a saved report               | `reports:delete`    |
+| GET    | `/api/v1/reports/templates`          | List report templates               | `reports:read`      |
+| POST   | `/api/v1/reports/:id/schedule`       | Schedule recurring report execution | `reports:schedule`  |
+| GET    | `/api/v1/reports/:id/export/:format` | Export report as PDF, CSV, or XLSX  | `reports:export`    |
+| GET    | `/api/v1/reports/pre-built/:type`    | Run a pre-built report by type      | `reports:run`       |
 
 **Create Report Request**
+
 ```json
 POST /api/v1/reports
 {
@@ -2056,6 +2140,7 @@ POST /api/v1/reports
 ```
 
 **Pre-Built Report Response**
+
 ```json
 GET /api/v1/reports/pre-built/inventory-aging?asOf=2026-02-23
 {
@@ -2106,20 +2191,21 @@ GET /api/v1/reports/pre-built/inventory-aging?asOf=2026-02-23
 
 ## 3.28 Dashboards
 
-| Method | Path | Description | Required Permission |
-|--------|------|-------------|---------------------|
-| GET | `/api/v1/dashboards` | List dashboards | `dashboards:read` |
-| POST | `/api/v1/dashboards` | Create a custom dashboard | `dashboards:create` |
-| GET | `/api/v1/dashboards/:id` | Get dashboard with widget data | `dashboards:read` |
-| PATCH | `/api/v1/dashboards/:id` | Update dashboard layout/settings | `dashboards:update` |
-| DELETE | `/api/v1/dashboards/:id` | Delete a dashboard | `dashboards:delete` |
-| POST | `/api/v1/dashboards/:id/widgets` | Add a widget to a dashboard | `dashboards:update` |
-| PATCH | `/api/v1/dashboards/:id/widgets/:wid` | Update a widget configuration | `dashboards:update` |
-| DELETE | `/api/v1/dashboards/:id/widgets/:wid` | Remove a widget from a dashboard | `dashboards:update` |
-| POST | `/api/v1/dashboards/:id/clone` | Clone an existing dashboard | `dashboards:create` |
-| GET | `/api/v1/dashboards/default` | Get the default dashboard for current user's role | `dashboards:read` |
+| Method | Path                                  | Description                                       | Required Permission |
+| ------ | ------------------------------------- | ------------------------------------------------- | ------------------- |
+| GET    | `/api/v1/dashboards`                  | List dashboards                                   | `dashboards:read`   |
+| POST   | `/api/v1/dashboards`                  | Create a custom dashboard                         | `dashboards:create` |
+| GET    | `/api/v1/dashboards/:id`              | Get dashboard with widget data                    | `dashboards:read`   |
+| PATCH  | `/api/v1/dashboards/:id`              | Update dashboard layout/settings                  | `dashboards:update` |
+| DELETE | `/api/v1/dashboards/:id`              | Delete a dashboard                                | `dashboards:delete` |
+| POST   | `/api/v1/dashboards/:id/widgets`      | Add a widget to a dashboard                       | `dashboards:update` |
+| PATCH  | `/api/v1/dashboards/:id/widgets/:wid` | Update a widget configuration                     | `dashboards:update` |
+| DELETE | `/api/v1/dashboards/:id/widgets/:wid` | Remove a widget from a dashboard                  | `dashboards:update` |
+| POST   | `/api/v1/dashboards/:id/clone`        | Clone an existing dashboard                       | `dashboards:create` |
+| GET    | `/api/v1/dashboards/default`          | Get the default dashboard for current user's role | `dashboards:read`   |
 
 **Create Dashboard Request**
+
 ```json
 POST /api/v1/dashboards
 {
@@ -2170,6 +2256,7 @@ POST /api/v1/dashboards
 ```
 
 **Default Dashboard Response**
+
 ```json
 GET /api/v1/dashboards/default
 {
@@ -2260,19 +2347,19 @@ GET /api/v1/dashboards/default
 
 ## Appendix: Common Response Codes
 
-| Code | Meaning |
-|------|---------|
-| `200` | Success |
-| `201` | Created |
-| `204` | No Content (successful DELETE) |
-| `400` | Bad Request (validation error) |
-| `401` | Unauthorized (missing/invalid token) |
-| `403` | Forbidden (insufficient permissions) |
-| `404` | Not Found |
-| `409` | Conflict (duplicate, optimistic lock) |
+| Code  | Meaning                                        |
+| ----- | ---------------------------------------------- |
+| `200` | Success                                        |
+| `201` | Created                                        |
+| `204` | No Content (successful DELETE)                 |
+| `400` | Bad Request (validation error)                 |
+| `401` | Unauthorized (missing/invalid token)           |
+| `403` | Forbidden (insufficient permissions)           |
+| `404` | Not Found                                      |
+| `409` | Conflict (duplicate, optimistic lock)          |
 | `422` | Unprocessable Entity (business rule violation) |
-| `429` | Too Many Requests (rate limited) |
-| `500` | Internal Server Error |
+| `429` | Too Many Requests (rate limited)               |
+| `500` | Internal Server Error                          |
 
 ## Appendix: Standard Error Response
 
@@ -2294,6 +2381,7 @@ GET /api/v1/dashboards/default
 ## Appendix: Pagination Envelope
 
 All paginated endpoints return:
+
 ```json
 {
   "data": [ ... ],
@@ -2307,3 +2395,87 @@ All paginated endpoints return:
 ```
 
 Query parameters: `?page=1&limit=25&sort=createdAt&order=desc`
+
+---
+
+## Phase 12: v0.3.0 — Dealer-Ready Features
+
+### Staff Activity
+
+| Method | Path              | Description                   | Auth |
+| ------ | ----------------- | ----------------------------- | ---- |
+| GET    | `/activity`       | Paginated activity feed       | JWT  |
+| GET    | `/activity/stats` | Staff efficiency metrics (7d) | JWT  |
+
+**Query params** (GET `/activity`): `?user_id=`, `?action=`, `?entity_type=`, `?cursor=`, `?limit=`
+
+**Query params** (GET `/activity/stats`): `?days=7`
+
+### Floor Plan Audits
+
+| Method | Path                                   | Description                        | Auth |
+| ------ | -------------------------------------- | ---------------------------------- | ---- |
+| POST   | `/floor-plan-audits`                   | Start new audit (snapshots units)  | JWT  |
+| GET    | `/floor-plan-audits`                   | List audits                        | JWT  |
+| GET    | `/floor-plan-audits/:id`               | Get audit with items + unit detail | JWT  |
+| PATCH  | `/floor-plan-audits/:id/items/:itemId` | Verify/mark unit                   | JWT  |
+| POST   | `/floor-plan-audits/:id/complete`      | Finalize audit                     | JWT  |
+
+**Request body** (POST `/floor-plan-audits`):
+
+```json
+{ "lot_id": "uuid (optional)", "notes": "string (optional)" }
+```
+
+**Request body** (PATCH `...items/:itemId`):
+
+```json
+{ "status": "verified|missing|mislocated", "found_zone": "string", "notes": "string" }
+```
+
+### Service Bays
+
+| Method | Path                          | Description                     | Auth |
+| ------ | ----------------------------- | ------------------------------- | ---- |
+| GET    | `/service-bays`               | List bays with assignments      | JWT  |
+| POST   | `/service-bays`               | Create bay                      | JWT  |
+| PATCH  | `/service-bays/:id`           | Update bay                      | JWT  |
+| DELETE | `/service-bays/:id`           | Delete bay (must be unoccupied) | JWT  |
+| POST   | `/service-bays/:id/check-in`  | Assign unit to bay              | JWT  |
+| PATCH  | `/service-bays/:id/stage`     | Advance service stage           | JWT  |
+| POST   | `/service-bays/:id/check-out` | Release bay                     | JWT  |
+| GET    | `/service-bays/metrics`       | Bay utilization and throughput  | JWT  |
+
+**Stage transitions**: `checked_in → diagnosis → in_repair → quality_check → ready`
+
+**Request body** (POST `.../check-in`):
+
+```json
+{
+  "unit_id": "uuid",
+  "work_order_id": "uuid (optional)",
+  "technician_id": "uuid (optional)",
+  "notes": "string (optional)"
+}
+```
+
+### Dashboard Config
+
+| Method | Path                      | Description              | Auth |
+| ------ | ------------------------- | ------------------------ | ---- |
+| GET    | `/dashboard-config`       | Get user's widget layout | JWT  |
+| PUT    | `/dashboard-config`       | Save widget layout       | JWT  |
+| POST   | `/dashboard-config/reset` | Reset to default layout  | JWT  |
+
+**Request body** (PUT `/dashboard-config`):
+
+```json
+{
+  "layout": [
+    { "widget_id": "inventory_summary", "x": 0, "y": 0, "w": 2, "h": 1 },
+    { "widget_id": "tracker_health", "x": 2, "y": 0, "w": 1, "h": 1 }
+  ]
+}
+```
+
+**Available widget IDs**: `inventory_summary`, `tracker_health`, `alert_feed`, `aging_chart`, `lot_utilization`, `recent_activity`, `unit_status_breakdown`, `quick_actions`

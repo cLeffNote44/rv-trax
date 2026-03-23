@@ -75,7 +75,7 @@ Fastify plugins are registered in order:
 
 ### Route Organization
 
-Routes are organized by domain (28 modules):
+Routes are organized by domain (32 modules):
 
 | Module       | Endpoints                                        | Auth                   |
 | ------------ | ------------------------------------------------ | ---------------------- |
@@ -84,6 +84,10 @@ Routes are organized by domain (28 modules):
 | `trackers`   | CRUD, assign/unassign, telemetry                 | JWT required           |
 | `public-api` | Public inventory endpoints                       | API key                |
 | `admin`      | System administration                            | Admin token            |
+| `activity`   | Staff activity feed, efficiency stats            | JWT required           |
+| `audits`     | Floor plan audit workflow                        | JWT required           |
+| `svc-bays`   | Service bay management, kanban stages            | JWT required           |
+| `dashboard`  | Per-user dashboard widget layouts                | JWT required           |
 | _...24 more_ | See `docs/api-endpoint-catalog.md`               | Varies                 |
 
 ### Authentication Flow
@@ -143,15 +147,17 @@ MQTT/Webhook → Validate → Deduplicate → Redis Stream → Worker
 app/
 ├── page.tsx                    # Marketing landing page
 ├── (auth)/                     # Login, register, reset-password
-├── (dashboard)/                # Authenticated pages (33 routes)
+├── (dashboard)/                # Authenticated pages (37+ routes)
 │   ├── layout.tsx              # Sidebar + header chrome
-│   ├── page.tsx                # Dashboard home
+│   ├── dashboard/              # Customizable widget dashboard
 │   ├── inventory/              # Unit management + detail views
 │   ├── trackers/               # Device management
 │   ├── alerts/                 # Alert rules + history
 │   ├── analytics/              # Charts + aging dashboard
 │   ├── staging/                # Lot planning
-│   ├── service/                # Work orders + recalls
+│   ├── service/                # Work orders, recalls, service bays
+│   ├── audits/                 # Floor plan audit workflow
+│   ├── activity/               # Staff activity timeline
 │   ├── test-drives/            # Test drive tracking
 │   └── settings/               # Config, users, billing, DMS, widget
 └── api/health/                 # Health check endpoint
