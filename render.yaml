@@ -5,9 +5,16 @@ services:
   - type: web
     name: rv-trax-api
     runtime: node
-    region: ohio # us-east, closest to Neon us-east-1
+    region: ohio
     plan: free
-    buildCommand: pnpm install --frozen-lockfile && pnpm --filter @rv-trax/shared build && pnpm --filter @rv-trax/db build && pnpm --filter @rv-trax/api build
+    nodeVersion: '22'
+    buildCommand: |
+      corepack enable &&
+      corepack prepare pnpm@9 --activate &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @rv-trax/shared build &&
+      pnpm --filter @rv-trax/db build &&
+      pnpm --filter @rv-trax/api build
     startCommand: node apps/api/dist/server.js
     healthCheckPath: /health
     envVars:
@@ -18,14 +25,14 @@ services:
       - key: API_PORT
         value: 10000
       - key: DATABASE_URL
-        sync: false # Set manually in Render dashboard
+        sync: false
       - key: REDIS_URL
-        sync: false # Set manually in Render dashboard
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: COOKIE_SECRET
         generateValue: true
       - key: CORS_ORIGINS
-        sync: false # Set to your Vercel URL
+        sync: false
       - key: LOG_LEVEL
         value: info
