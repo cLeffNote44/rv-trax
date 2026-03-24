@@ -3,5 +3,11 @@
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter @rv-trax/shared build && pnpm --filter @rv-trax/web build",
-  "outputDirectory": "apps/web/.next"
+  "outputDirectory": "apps/web/.next",
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://rv-trax-api.onrender.com/api/v1/:path*"
+    }
+  ]
 }
