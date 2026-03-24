@@ -143,9 +143,8 @@ export async function notifyStatusChange(params: StatusChangeParams): Promise<vo
       title,
       message,
       severity: 'info',
-      is_acknowledged: false,
+      status: 'new_alert',
       acknowledged_by: null,
-      acknowledged_at: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

@@ -4,13 +4,14 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { eq, and } from 'drizzle-orm';
-import { stagingPlans, lots } from '@rv-trax/db';
+import { stagingPlans, lots, stagingAssignments } from '@rv-trax/db';
 import { createStagingPlanSchema, updateStagingPlanSchema, AuditAction } from '@rv-trax/shared';
 import { enforceTenant } from '../middleware/tenant.js';
 import { notFound, badRequest } from '../utils/errors.js';
 import { logAction } from '../services/audit.js';
 import { registerMoveRoutes } from './staging/moves.js';
 import { registerComplianceRoutes } from './staging/compliance.js';
+import { computeComplianceScore, snapshotCompliance } from '../services/compliance.js';
 import { z } from 'zod';
 
 // ── Local query schemas ----------------------------------------------------

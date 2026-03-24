@@ -30,7 +30,7 @@ export default async function v2Routes(app: FastifyInstance): Promise<void> {
   app.addHook('preHandler', enforceTenant);
 
   // v2 adds standard response envelope + deprecation headers
-  app.addHook('onSend', async (request, reply, payload) => {
+  app.addHook('onSend', async (_request, reply, payload) => {
     // Add API version header
     reply.header('X-API-Version', '2');
     reply.header('X-RateLimit-Policy', 'sliding-window');

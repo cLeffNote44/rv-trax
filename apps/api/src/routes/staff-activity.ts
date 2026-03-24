@@ -43,7 +43,7 @@ export default async function staffActivityRoutes(app: FastifyInstance): Promise
       .orderBy(desc(staffActivityLog.createdAt))
       .limit(limit + 1);
 
-    return reply.send(buildPaginatedResponse(rows, limit, cursor));
+    return reply.send(buildPaginatedResponse(rows, limit, rows.length));
   });
 
   // ── GET /stats — staff efficiency metrics ----------------------------------

@@ -37,7 +37,7 @@ export function registerMoveRoutes(app: FastifyInstance): void {
       ? (JSON.parse(plan.rules as string) as StagingRule[])
       : [];
 
-    const moves = await computeMoveList(app.db, plan.lotId!, request.dealershipId, rules);
+    const moves = await computeMoveList(app.db, id, plan.lotId!, request.dealershipId, rules);
 
     // Create assignment records for each move
     const movesWithIds = await Promise.all(
@@ -47,7 +47,8 @@ export function registerMoveRoutes(app: FastifyInstance): void {
           .values({
             planId: id,
             unitId: move.unitId,
-            spotId: move.toSpotId,
+            targetRow: move.targetRow,
+            targetSpot: move.targetSpot,
             status: 'pending',
           })
           .returning();

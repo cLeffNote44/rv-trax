@@ -174,7 +174,7 @@ export function registerV2UnitRoutes(app: FastifyInstance): void {
         deviceEui: trackers.deviceEui,
         batteryPct: trackers.batteryPct,
         status: trackers.status,
-        lastSeen: trackers.lastSeen,
+        lastSeen: trackers.lastSeenAt,
       })
       .from(trackerAssignments)
       .innerJoin(trackers, eq(trackerAssignments.trackerId, trackers.id))
