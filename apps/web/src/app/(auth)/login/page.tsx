@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { useAuth } from '@/providers/AuthProvider';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { MapPin } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -75,12 +76,11 @@ function LoginForm() {
       <div className="rounded-xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <img src="/icons/icon.svg" alt="RV Trax" className="mx-auto mb-3 h-14 w-14 rounded-xl" />
-          <h1 className="text-2xl font-bold">
-            <span className="text-[#E8D5B5]">RV</span>
-            <span className="text-[#C4943D]"> Trax</span>
-          </h1>
-          <p className="mt-1 text-sm text-[#B5A48A]">Sign in to your dealership dashboard</p>
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600">
+            <MapPin className="h-8 w-8 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-white">RV Trax</h1>
+          <p className="mt-1 text-sm text-slate-400">Sign in to your dealership dashboard</p>
         </div>
 
         {/* Error message */}
@@ -98,7 +98,7 @@ function LoginForm() {
             autoComplete="email"
             placeholder="you@dealership.com"
             error={errors.email?.message}
-            className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-[#C4943D]"
+            className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-blue-500"
             labelClassName="text-slate-300"
             {...register('email')}
           />
@@ -109,7 +109,7 @@ function LoginForm() {
             autoComplete="current-password"
             placeholder="Enter your password"
             error={errors.password?.message}
-            className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-[#C4943D]"
+            className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-blue-500"
             labelClassName="text-slate-300"
             {...register('password')}
           />
@@ -128,7 +128,7 @@ function LoginForm() {
         {/* Footer link */}
         <p className="mt-6 text-center text-sm text-slate-500">
           Forgot your password?{' '}
-          <a href="/forgot-password" className="text-[#D4A456] hover:text-[#E8D5B5]">
+          <a href="/forgot-password" className="text-blue-400 hover:text-blue-300">
             Reset it
           </a>
         </p>

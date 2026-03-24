@@ -1,32 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  <!-- Background -->
-  <rect width="512" height="512" rx="108" fill="#3D2B1F"/>
-
-  <!-- RV silhouette -->
-  <g transform="translate(56, 180)">
-    <!-- Body -->
-    <rect x="20" y="50" width="260" height="100" rx="14" fill="#E8D5B5"/>
-    <!-- Cab -->
-    <path d="M280 50 L340 50 Q354 50 354 64 L354 150 L280 150 Z" fill="#D4C4A8"/>
-    <!-- Windshield -->
-    <path d="M288 58 L332 58 Q344 58 344 70 L344 115 L288 115 Z" fill="#5C4033" opacity="0.5"/>
-    <!-- Windows -->
-    <rect x="42" y="68" width="44" height="34" rx="6" fill="#5C4033" opacity="0.4"/>
-    <rect x="102" y="68" width="44" height="34" rx="6" fill="#5C4033" opacity="0.4"/>
-    <rect x="162" y="68" width="44" height="34" rx="6" fill="#5C4033" opacity="0.4"/>
-    <!-- Gold accent stripe -->
-    <rect x="20" y="118" width="334" height="6" rx="3" fill="#C4943D"/>
-    <!-- Wheels -->
-    <circle cx="100" cy="158" r="22" fill="#2A1A0F"/>
-    <circle cx="100" cy="158" r="10" fill="#5C4033"/>
-    <circle cx="300" cy="158" r="22" fill="#2A1A0F"/>
-    <circle cx="300" cy="158" r="10" fill="#5C4033"/>
-  </g>
-
-  <!-- GPS Pin -->
-  <g transform="translate(330, 40)">
-    <path d="M55 0 C85.4 0 110 24.6 110 55 C110 96.25 55 137.5 55 137.5 C55 137.5 0 96.25 0 55 C0 24.6 24.6 0 55 0Z" fill="#C4943D"/>
-    <circle cx="55" cy="50" r="24" fill="#3D2B1F"/>
-    <circle cx="55" cy="50" r="12" fill="#C4943D"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="108" fill="#2563eb"/>
+  <g transform="translate(256,240)" fill="none" stroke="white" stroke-width="32" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M0-120 C66-120 120-66 120 0 C120 80-0 160-0 160 C0 160-120 80-120 0 C-120-66-66-120 0-120Z" fill="white" fill-opacity="0.15"/>
+    <circle cx="0" cy="0" r="44" fill="white"/>
+    <path d="M0-120 C66-120 120-66 120 0 C120 80 0 160 0 160 C0 160-120 80-120 0 C-120-66-66-120 0-120Z"/>
   </g>
 </svg>

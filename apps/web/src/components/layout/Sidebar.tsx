@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  MapPin,
   X,
   Wifi,
   LayoutList,
@@ -90,18 +91,15 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
     <div className="flex h-full flex-col bg-[var(--color-bg-sidebar)]">
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-white/10 px-4">
-        <img src="/icons/icon.svg" alt="RV Trax" className="h-9 w-9 shrink-0 rounded-lg" />
-        {!collapsed && (
-          <span className="text-lg font-bold text-[#E8D5B5]">
-            <span className="text-[#E8D5B5]">RV</span>
-            <span className="text-[#C4943D]"> Trax</span>
-          </span>
-        )}
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600">
+          <MapPin className="h-5 w-5 text-white" />
+        </div>
+        {!collapsed && <span className="text-lg font-bold text-white">RV Trax</span>}
 
         {/* Mobile close button */}
         <button
           onClick={onCloseMobile}
-          className="ml-auto text-[#B5A48A] hover:text-white lg:hidden"
+          className="ml-auto text-slate-400 hover:text-white lg:hidden"
           aria-label="Close sidebar"
         >
           <X className="h-5 w-5" />
@@ -129,8 +127,8 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
                 isActive
-                  ? 'bg-[#C4943D]/20 text-[#D4A456]'
-                  : 'text-[#B5A48A] hover:bg-white/5 hover:text-[#E8D5B5]',
+                  ? 'bg-blue-600/20 text-blue-400'
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white',
                 collapsed && 'justify-center px-2',
               )}
               title={collapsed ? item.label : undefined}
@@ -158,7 +156,7 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
       <div className="hidden border-t border-white/10 px-3 py-2 lg:block">
         <button
           onClick={onToggleCollapse}
-          className="flex w-full items-center justify-center rounded-lg py-2 text-[#B5A48A] transition-colors hover:bg-white/5 hover:text-white"
+          className="flex w-full items-center justify-center rounded-lg py-2 text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -170,11 +168,11 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
         <button
           onClick={() => setShowUserMenu((prev) => !prev)}
           className={cn(
-            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#D4C4A8] transition-colors hover:bg-white/5',
+            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition-colors hover:bg-white/5',
             collapsed && 'justify-center px-2',
           )}
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#C4943D] text-xs font-bold text-[#1a120b]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">
             {user?.name
               ?.split(' ')
               .map((n) => n[0])

@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 // ---------------------------------------------------------------------------
 
 const VARIANT_CLASSES = {
-  primary: 'bg-[#C4943D] text-white hover:bg-[#8a6126] focus-visible:ring-[#C4943D]',
+  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500',
   secondary:
     'bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] hover:bg-[var(--color-border)] focus-visible:ring-slate-500',
   outline:
