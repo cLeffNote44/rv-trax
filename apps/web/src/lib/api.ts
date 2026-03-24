@@ -37,7 +37,13 @@ import { removeToken } from './auth';
 // Configuration
 // ---------------------------------------------------------------------------
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1';
+// In production, use relative URL so requests go through Vercel's rewrite proxy.
+// In development, call the local API server directly.
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    ? '/api/v1'
+    : 'http://localhost:3000/api/v1');
 
 // ---------------------------------------------------------------------------
 // Fetch wrapper
