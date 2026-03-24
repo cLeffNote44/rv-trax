@@ -79,7 +79,10 @@ function LoginForm() {
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600">
             <MapPin className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">RV Trax</h1>
+          <h1 className="text-2xl font-bold">
+            <span className="text-white">RV</span>
+            <span className="text-[var(--color-gold)]"> Trax</span>
+          </h1>
           <p className="mt-1 text-sm text-slate-400">Sign in to your dealership dashboard</p>
         </div>
 

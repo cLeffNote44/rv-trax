@@ -45,9 +45,7 @@ export default function ForgotPasswordPage() {
       });
       setSubmitted(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Something went wrong. Please try again.'
-      );
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     }
   };
 
@@ -67,8 +65,8 @@ export default function ForgotPasswordPage() {
 
         {submitted ? (
           <div className="rounded-lg border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-300">
-            If an account with that email exists, a password reset link has been
-            sent. Check your inbox.
+            If an account with that email exists, a password reset link has been sent. Check your
+            inbox.
           </div>
         ) : (
           <>
