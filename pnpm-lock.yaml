@@ -95,6 +95,15 @@ importers:
       '@sentry/node':
         specifier: ^9.0.0
         version: 9.47.1
+      '@types/bcrypt':
+        specifier: ^5.0.0
+        version: 5.0.2
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.11
+      '@types/ws':
+        specifier: ^8.5.0
+        version: 8.18.1
       bcrypt:
         specifier: ^5.1.0
         version: 5.1.1
@@ -125,6 +134,9 @@ importers:
       twilio:
         specifier: ^5.12.2
         version: 5.12.2
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
       ws:
         specifier: ^8.18.0
         version: 8.19.0
@@ -132,15 +144,6 @@ importers:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
-      '@types/bcrypt':
-        specifier: ^5.0.0
-        version: 5.0.2
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.19.11
-      '@types/ws':
-        specifier: ^8.5.0
-        version: 8.18.1
       '@vitest/coverage-v8':
         specifier: ^2.0.0
         version: 2.1.9(vitest@2.1.9(@types/node@22.19.11)(jsdom@28.1.0)(lightningcss@1.31.1)(terser@5.46.0))
@@ -150,9 +153,6 @@ importers:
       tsx:
         specifier: ^4.19.0
         version: 4.21.0
-      typescript:
-        specifier: ^5.7.0
-        version: 5.9.3
       vitest:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@22.19.11)(jsdom@28.1.0)(lightningcss@1.31.1)(terser@5.46.0)
@@ -402,6 +402,12 @@ importers:
       '@rv-trax/shared':
         specifier: workspace:*
         version: link:../shared
+      '@types/bcrypt':
+        specifier: ^5.0.0
+        version: 5.0.2
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.11
       bcrypt:
         specifier: ^5.1.0
         version: 5.1.1
@@ -411,32 +417,25 @@ importers:
       postgres:
         specifier: ^3.4.0
         version: 3.4.8
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
     devDependencies:
-      '@types/bcrypt':
-        specifier: ^5.0.0
-        version: 5.0.2
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.19.11
       drizzle-kit:
         specifier: ^0.30.0
         version: 0.30.6
       tsx:
         specifier: ^4.19.0
         version: 4.21.0
-      typescript:
-        specifier: ^5.7.0
-        version: 5.9.3
 
   packages/shared:
     dependencies:
-      zod:
-        specifier: ^3.24.0
-        version: 3.25.76
-    devDependencies:
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
+      zod:
+        specifier: ^3.24.0
+        version: 3.25.76
 
 packages:
 
