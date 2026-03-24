@@ -144,7 +144,11 @@ export async function notifyStatusChange(params: StatusChangeParams): Promise<vo
       message,
       severity: 'info',
       status: 'new_alert',
+      alert_rule_id: null,
+      tracker_id: null,
       acknowledged_by: null,
+      acknowledged_at: null,
+      snoozed_until: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };

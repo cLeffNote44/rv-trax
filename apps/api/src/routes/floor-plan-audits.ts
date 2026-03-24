@@ -104,7 +104,7 @@ export default async function floorPlanAuditRoutes(app: FastifyInstance): Promis
       conditions.push(eq(floorPlanAudits.status, query['status']));
     }
 
-    const decodedCursor = decodeCursor(cursor);
+    const decodedCursor = cursor ? decodeCursor(cursor) : null;
     if (decodedCursor) {
       conditions.push(eq(floorPlanAudits.id, decodedCursor) as ReturnType<typeof eq>);
     }
@@ -116,7 +116,7 @@ export default async function floorPlanAuditRoutes(app: FastifyInstance): Promis
       .orderBy(desc(floorPlanAudits.createdAt))
       .limit(limit + 1);
 
-    return reply.send(buildPaginatedResponse(rows, limit, cursor));
+    return reply.send(buildPaginatedResponse(rows, limit, rows.length));
   });
 
   // ── GET /:id — get audit with items ----------------------------------------

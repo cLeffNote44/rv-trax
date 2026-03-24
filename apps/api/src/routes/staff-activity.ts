@@ -31,9 +31,11 @@ export default async function staffActivityRoutes(app: FastifyInstance): Promise
       conditions.push(eq(staffActivityLog.entityType, query['entity_type']));
     }
 
-    const decodedCursor = decodeCursor(cursor);
-    if (decodedCursor) {
-      conditions.push(sql`${staffActivityLog.createdAt} < ${decodedCursor}`);
+    if (cursor) {
+      const decodedCursor = decodeCursor(cursor);
+      if (decodedCursor) {
+        conditions.push(sql`${staffActivityLog.createdAt} < ${decodedCursor}`);
+      }
     }
 
     const rows = await app.db
