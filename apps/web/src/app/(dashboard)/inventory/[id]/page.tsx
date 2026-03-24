@@ -77,8 +77,11 @@ const typeLabels: Record<string, string> = {
 // Helper: days on lot
 // ---------------------------------------------------------------------------
 
-function daysOnLot(createdAt: string): number {
-  return differenceInDays(new Date(), new Date(createdAt));
+function daysOnLot(createdAt: string | null | undefined): number {
+  if (!createdAt) return 0;
+  const d = new Date(createdAt);
+  if (isNaN(d.getTime())) return 0;
+  return differenceInDays(new Date(), d);
 }
 
 // ---------------------------------------------------------------------------

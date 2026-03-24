@@ -25,16 +25,20 @@ export function formatCurrency(value: number): string {
 /**
  * Format a date string as a readable date.
  */
-export function formatDate(date: string | Date): string {
+export function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return '--';
   const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return '--';
   return format(d, 'MMM d, yyyy');
 }
 
 /**
  * Format a date string as a relative time (e.g., "5 min ago").
  */
-export function formatRelativeTime(date: string | Date): string {
+export function formatRelativeTime(date: string | Date | null | undefined): string {
+  if (!date) return '--';
   const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return '--';
   return formatDistanceToNow(d, { addSuffix: true });
 }
 

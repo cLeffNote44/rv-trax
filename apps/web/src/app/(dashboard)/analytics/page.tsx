@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -21,6 +21,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { cn, formatStatus } from '@/lib/utils';
+import { AlertBanner } from '@/components/ui/AlertBanner';
 import { getInventoryAnalytics, getLotUtilization, getMovementAnalytics } from '@/lib/api';
 
 const CHART_COLORS = [
@@ -64,11 +65,14 @@ function SkeletonChart() {
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let cancelled = false;
+    setLoading(true);
+    setError(null);
 
-    async function load() {
+    async function run() {
       try {
         const [inventory, lots, movement] = await Promise.all([
           getInventoryAnalytics(),
@@ -78,18 +82,25 @@ export default function AnalyticsPage() {
         if (!cancelled) {
           setData({ inventory, lots, movement });
         }
-      } catch {
-        // Keep loading state for skeletons
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load analytics');
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
 
-    load();
+    run();
     return () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const cleanup = load();
+    return cleanup;
+  }, [load]);
 
   const avgLotUtilization = data?.lots.length
     ? Math.round(data.lots.reduce((sum, l) => sum + l.utilization_pct, 0) / data.lots.length)
@@ -128,6 +139,9 @@ export default function AnalyticsPage() {
         title="Analytics"
         description="Inventory insights, lot utilization, and movement trends"
       />
+
+      {/* Error State */}
+      {error && !loading && <AlertBanner variant="error" message={error} onRetry={() => load()} />}
 
       {/* Row 1 - Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

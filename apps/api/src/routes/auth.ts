@@ -93,7 +93,7 @@ export default async function authRoutes(app: FastifyInstance): Promise<void> {
     return reply.status(201).send({
       access_token: accessToken,
       token_type: 'Bearer',
-      expires_in: 900,
+      expires_in: 3600,
       user: {
         id: user.id,
         email: user.email,
@@ -175,7 +175,7 @@ export default async function authRoutes(app: FastifyInstance): Promise<void> {
       return reply.status(200).send({
         access_token: accessToken,
         token_type: 'Bearer',
-        expires_in: 900,
+        expires_in: 3600,
         user: {
           id: user.id,
           email: user.email,
@@ -250,7 +250,7 @@ export default async function authRoutes(app: FastifyInstance): Promise<void> {
     return reply.status(200).send({
       access_token: accessToken,
       token_type: 'Bearer',
-      expires_in: 900,
+      expires_in: 3600,
     });
   });
 
@@ -484,6 +484,6 @@ function accessCookieOptions() {
     httpOnly: true,
     secure: process.env['NODE_ENV'] === 'production',
     sameSite: 'lax' as const,
-    maxAge: 15 * 60, // 15 minutes — matches JWT expiry
+    maxAge: 60 * 60, // 1 hour — matches JWT expiry
   };
 }

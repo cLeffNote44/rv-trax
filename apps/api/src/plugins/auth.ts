@@ -25,7 +25,9 @@ declare module '@fastify/jwt' {
 declare module 'fastify' {
   interface FastifyInstance {
     authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
-    requireRole: (...roles: UserRole[]) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
+    requireRole: (
+      ...roles: UserRole[]
+    ) => (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
   }
 }
 
@@ -38,7 +40,7 @@ async function authPlugin(fastify: FastifyInstance): Promise<void> {
   await fastify.register(fastifyJwt, {
     secret,
     sign: {
-      expiresIn: '15m',
+      expiresIn: '1h',
     },
   });
 
@@ -48,7 +50,9 @@ async function authPlugin(fastify: FastifyInstance): Promise<void> {
     // If no Authorization header, try reading the HttpOnly access-token cookie
     const authHeader = request.headers.authorization;
     if (!authHeader) {
-      const cookieToken = (request.cookies as Record<string, string | undefined>)?.['rv-trax-token'];
+      const cookieToken = (request.cookies as Record<string, string | undefined>)?.[
+        'rv-trax-token'
+      ];
       if (cookieToken) {
         (request.headers as Record<string, string>).authorization = `Bearer ${cookieToken}`;
       }
