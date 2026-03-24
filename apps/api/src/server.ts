@@ -110,7 +110,7 @@ async function buildApp() {
     cookieOpts: {
       signed: true,
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: 'lax',
       secure: process.env['NODE_ENV'] === 'production',
       path: '/',
     },

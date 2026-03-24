@@ -106,82 +106,86 @@ export default async function authRoutes(app: FastifyInstance): Promise<void> {
 
   // ── POST /login ------------------------------------------------------------
 
-  app.post('/login', {
-    config: {
-      rateLimit: {
-        max: 5,
-        timeWindow: '15 minutes',
-        keyGenerator: (request: FastifyRequest) => {
-          const body = request.body as { email?: string };
-          return `${request.ip}:${body?.email ?? 'unknown'}`;
+  app.post(
+    '/login',
+    {
+      config: {
+        rateLimit: {
+          max: 30,
+          timeWindow: '15 minutes',
+          keyGenerator: (request: FastifyRequest) => {
+            const body = request.body as { email?: string };
+            return `${request.ip}:${body?.email ?? 'unknown'}`;
+          },
         },
       },
     },
-  }, async (request: FastifyRequest, reply: FastifyReply) => {
-    const body = loginSchema.parse(request.body);
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const body = loginSchema.parse(request.body);
 
-    // Find user by email
-    const [user] = await app.db
-      .select()
-      .from(users)
-      .where(eq(users.email, body.email.toLowerCase()))
-      .limit(1);
+      // Find user by email
+      const [user] = await app.db
+        .select()
+        .from(users)
+        .where(eq(users.email, body.email.toLowerCase()))
+        .limit(1);
 
-    if (!user) {
-      throw unauthorized('Invalid email or password');
-    }
+      if (!user) {
+        throw unauthorized('Invalid email or password');
+      }
 
-    if (!user.isActive) {
-      throw unauthorized('Account is deactivated');
-    }
+      if (!user.isActive) {
+        throw unauthorized('Account is deactivated');
+      }
 
-    // Verify password
-    const valid = await bcrypt.compare(body.password, user.passwordHash);
-    if (!valid) {
-      throw unauthorized('Invalid email or password');
-    }
+      // Verify password
+      const valid = await bcrypt.compare(body.password, user.passwordHash);
+      if (!valid) {
+        throw unauthorized('Invalid email or password');
+      }
 
-    // Update last login
-    await app.db
-      .update(users)
-      .set({ lastLoginAt: new Date(), updatedAt: new Date() })
-      .where(eq(users.id, user.id));
+      // Update last login
+      await app.db
+        .update(users)
+        .set({ lastLoginAt: new Date(), updatedAt: new Date() })
+        .where(eq(users.id, user.id));
 
-    // Issue tokens
-    const accessToken = app.jwt.sign({
-      sub: user.id,
-      dealershipId: user.dealershipId,
-      role: user.role as UserRole,
-    });
+      // Issue tokens
+      const accessToken = app.jwt.sign({
+        sub: user.id,
+        dealershipId: user.dealershipId,
+        role: user.role as UserRole,
+      });
 
-    const { cookie } = await createRefreshToken(app, user.id);
+      const { cookie } = await createRefreshToken(app, user.id);
 
-    // Audit
-    await logAction(app.db, {
-      dealershipId: user.dealershipId,
-      userId: user.id,
-      action: AuditAction.LOGIN,
-      entityType: 'user',
-      entityId: user.id,
-      ipAddress: request.ip,
-    });
+      // Audit
+      await logAction(app.db, {
+        dealershipId: user.dealershipId,
+        userId: user.id,
+        action: AuditAction.LOGIN,
+        entityType: 'user',
+        entityId: user.id,
+        ipAddress: request.ip,
+      });
 
-    reply.setCookie('refresh_token', cookie, refreshCookieOptions());
-    reply.setCookie('rv-trax-token', accessToken, accessCookieOptions());
+      reply.setCookie('refresh_token', cookie, refreshCookieOptions());
+      reply.setCookie('rv-trax-token', accessToken, accessCookieOptions());
 
-    return reply.status(200).send({
-      access_token: accessToken,
-      token_type: 'Bearer',
-      expires_in: 900,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        dealership_id: user.dealershipId,
-      },
-    });
-  });
+      return reply.status(200).send({
+        access_token: accessToken,
+        token_type: 'Bearer',
+        expires_in: 900,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          dealership_id: user.dealershipId,
+        },
+      });
+    },
+  );
 
   // ── POST /refresh ----------------------------------------------------------
 
@@ -198,12 +202,7 @@ export default async function authRoutes(app: FastifyInstance): Promise<void> {
     const [matchedToken] = await app.db
       .select()
       .from(refreshTokens)
-      .where(
-        and(
-          eq(refreshTokens.tokenHash, tokenHash),
-          isNull(refreshTokens.revokedAt),
-        ),
-      )
+      .where(and(eq(refreshTokens.tokenHash, tokenHash), isNull(refreshTokens.revokedAt)))
       .limit(1);
 
     if (!matchedToken) {
@@ -257,123 +256,131 @@ export default async function authRoutes(app: FastifyInstance): Promise<void> {
 
   // ── GET /me — return the current authenticated user -------------------------
 
-  app.get('/me', {
-    preHandler: [app.authenticate],
-  }, async (request: FastifyRequest, reply: FastifyReply) => {
-    const userId = request.user.sub;
-    const dealershipId = request.user.dealershipId;
+  app.get(
+    '/me',
+    {
+      preHandler: [app.authenticate],
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const userId = request.user.sub;
+      const dealershipId = request.user.dealershipId;
 
-    const [user] = await app.db
-      .select({
-        id: users.id,
-        dealershipId: users.dealershipId,
-        email: users.email,
-        name: users.name,
-        role: users.role,
-        avatarUrl: users.avatarUrl,
-        isActive: users.isActive,
-        lastLoginAt: users.lastLoginAt,
-        createdAt: users.createdAt,
-        updatedAt: users.updatedAt,
-      })
-      .from(users)
-      .where(
-        and(
-          eq(users.id, userId),
-          eq(users.dealershipId, dealershipId),
-        ),
-      )
-      .limit(1);
+      const [user] = await app.db
+        .select({
+          id: users.id,
+          dealershipId: users.dealershipId,
+          email: users.email,
+          name: users.name,
+          role: users.role,
+          avatarUrl: users.avatarUrl,
+          isActive: users.isActive,
+          lastLoginAt: users.lastLoginAt,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        })
+        .from(users)
+        .where(and(eq(users.id, userId), eq(users.dealershipId, dealershipId)))
+        .limit(1);
 
-    if (!user) {
-      throw unauthorized('User not found');
-    }
+      if (!user) {
+        throw unauthorized('User not found');
+      }
 
-    return reply.status(200).send(user);
-  });
+      return reply.status(200).send(user);
+    },
+  );
 
   // ── POST /logout -----------------------------------------------------------
 
-  app.post('/logout', {
-    preHandler: [app.authenticate],
-  }, async (request: FastifyRequest, reply: FastifyReply) => {
-    const rawToken = (request.cookies as Record<string, string | undefined>)['refresh_token'];
+  app.post(
+    '/logout',
+    {
+      preHandler: [app.authenticate],
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const rawToken = (request.cookies as Record<string, string | undefined>)['refresh_token'];
 
-    if (rawToken) {
-      // Hash the incoming token and revoke by direct lookup
-      const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+      if (rawToken) {
+        // Hash the incoming token and revoke by direct lookup
+        const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
 
-      await app.db
-        .update(refreshTokens)
-        .set({ revokedAt: new Date() })
-        .where(
-          and(
-            eq(refreshTokens.userId, request.user.sub),
-            eq(refreshTokens.tokenHash, tokenHash),
-            isNull(refreshTokens.revokedAt),
-          ),
-        );
-    }
+        await app.db
+          .update(refreshTokens)
+          .set({ revokedAt: new Date() })
+          .where(
+            and(
+              eq(refreshTokens.userId, request.user.sub),
+              eq(refreshTokens.tokenHash, tokenHash),
+              isNull(refreshTokens.revokedAt),
+            ),
+          );
+      }
 
-    // Audit
-    await logAction(app.db, {
-      dealershipId: request.user.dealershipId,
-      userId: request.user.sub,
-      action: AuditAction.LOGOUT,
-      entityType: 'user',
-      entityId: request.user.sub,
-      ipAddress: request.ip,
-    });
+      // Audit
+      await logAction(app.db, {
+        dealershipId: request.user.dealershipId,
+        userId: request.user.sub,
+        action: AuditAction.LOGOUT,
+        entityType: 'user',
+        entityId: request.user.sub,
+        ipAddress: request.ip,
+      });
 
-    reply.clearCookie('refresh_token', refreshCookieOptions());
-    reply.clearCookie('rv-trax-token', accessCookieOptions());
+      reply.clearCookie('refresh_token', refreshCookieOptions());
+      reply.clearCookie('rv-trax-token', accessCookieOptions());
 
-    return reply.status(200).send({ message: 'Logged out successfully' });
-  });
+      return reply.status(200).send({ message: 'Logged out successfully' });
+    },
+  );
 
   // ── POST /forgot-password ---------------------------------------------------
 
-  app.post('/forgot-password', {
-    config: {
-      rateLimit: {
-        max: 3,
-        timeWindow: '15 minutes',
-        keyGenerator: (request: FastifyRequest) => request.ip,
+  app.post(
+    '/forgot-password',
+    {
+      config: {
+        rateLimit: {
+          max: 3,
+          timeWindow: '15 minutes',
+          keyGenerator: (request: FastifyRequest) => request.ip,
+        },
       },
     },
-  }, async (request: FastifyRequest, reply: FastifyReply) => {
-    const { email } = z.object({
-      email: z.string().email('Invalid email address'),
-    }).parse(request.body);
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { email } = z
+        .object({
+          email: z.string().email('Invalid email address'),
+        })
+        .parse(request.body);
 
-    // Look up user — but always return 200 to avoid leaking email existence
-    const [user] = await app.db
-      .select({ id: users.id, email: users.email, name: users.name })
-      .from(users)
-      .where(eq(users.email, email.toLowerCase()))
-      .limit(1);
+      // Look up user — but always return 200 to avoid leaking email existence
+      const [user] = await app.db
+        .select({ id: users.id, email: users.email, name: users.name })
+        .from(users)
+        .where(eq(users.email, email.toLowerCase()))
+        .limit(1);
 
-    if (user) {
-      // Generate 32-byte token, store SHA-256 hash in Redis with 1h TTL
-      const resetToken = crypto.randomBytes(32).toString('hex');
-      const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+      if (user) {
+        // Generate 32-byte token, store SHA-256 hash in Redis with 1h TTL
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-      await app.redis.set(
-        `password_reset:${tokenHash}`,
-        JSON.stringify({ userId: user.id, email: user.email }),
-        'EX',
-        3600, // 1 hour
-      );
+        await app.redis.set(
+          `password_reset:${tokenHash}`,
+          JSON.stringify({ userId: user.id, email: user.email }),
+          'EX',
+          3600, // 1 hour
+        );
 
-      // Build reset URL and send email
-      const webAppUrl = process.env['WEB_APP_URL'] ?? 'http://localhost:3001';
-      const resetUrl = `${webAppUrl}/reset-password?token=${resetToken}`;
+        // Build reset URL and send email
+        const webAppUrl = process.env['WEB_APP_URL'] ?? 'http://localhost:3001';
+        const resetUrl = `${webAppUrl}/reset-password?token=${resetToken}`;
 
-      const { sendEmail } = await import('../services/notifications/email.js');
-      await sendEmail(
-        user.email,
-        'Reset your RV Trax password',
-        `<!DOCTYPE html>
+        const { sendEmail } = await import('../services/notifications/email.js');
+        await sendEmail(
+          user.email,
+          'Reset your RV Trax password',
+          `<!DOCTYPE html>
 <html><body style="font-family:sans-serif;margin:0;padding:32px;background:#f3f4f6;">
 <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:12px;padding:32px;box-shadow:0 1px 3px rgba(0,0,0,.1);">
   <h2 style="margin:0 0 16px;color:#111827;">Reset your password</h2>
@@ -385,25 +392,29 @@ export default async function authRoutes(app: FastifyInstance): Promise<void> {
   <p style="color:#9ca3af;font-size:13px;">If you didn't request this, you can safely ignore this email.</p>
 </div>
 </body></html>`,
-      );
-    }
+        );
+      }
 
-    return reply.status(200).send({
-      message: 'If an account with that email exists, a password reset link has been sent.',
-    });
-  });
+      return reply.status(200).send({
+        message: 'If an account with that email exists, a password reset link has been sent.',
+      });
+    },
+  );
 
   // ── POST /reset-password ---------------------------------------------------
 
   app.post('/reset-password', async (request: FastifyRequest, reply: FastifyReply) => {
-    const { token, password } = z.object({
-      token: z.string().min(1, 'Reset token is required'),
-      password: z.string()
-        .min(8, 'Password must be at least 8 characters')
-        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-        .regex(/[0-9]/, 'Password must contain at least one number'),
-    }).parse(request.body);
+    const { token, password } = z
+      .object({
+        token: z.string().min(1, 'Reset token is required'),
+        password: z
+          .string()
+          .min(8, 'Password must be at least 8 characters')
+          .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+          .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+          .regex(/[0-9]/, 'Password must contain at least one number'),
+      })
+      .parse(request.body);
 
     // Hash the incoming token and look up in Redis
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
@@ -429,12 +440,7 @@ export default async function authRoutes(app: FastifyInstance): Promise<void> {
     await app.db
       .update(refreshTokens)
       .set({ revokedAt: new Date() })
-      .where(
-        and(
-          eq(refreshTokens.userId, userId),
-          isNull(refreshTokens.revokedAt),
-        ),
-      );
+      .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)));
 
     return reply.status(200).send({
       message: 'Password has been reset successfully.',
