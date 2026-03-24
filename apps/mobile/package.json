@@ -14,7 +14,7 @@
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.0.0",
     "@op-engineering/op-sqlite": "^9.0.0",
-    "@react-navigation/bottom-tabs": "^7.0.0",
+    "@react-navigation/bottom-tabs": "^7.15.7",
     "@react-native-community/netinfo": "^11.0.0",
     "@react-native-firebase/app": "^21.0.0",
     "@react-native-firebase/messaging": "^21.0.0",
