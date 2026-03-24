@@ -86,7 +86,7 @@ async function buildApp() {
   });
 
   await app.register(rateLimit, {
-    max: process.env['NODE_ENV'] === 'production' ? 100 : 1000,
+    max: 500,
     timeWindow: '1 minute',
   });
 
