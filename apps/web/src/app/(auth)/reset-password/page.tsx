@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { MapPin } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 
 // ---------------------------------------------------------------------------
@@ -35,7 +34,7 @@ export default function ResetPasswordPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#C4943D] border-t-transparent" />
         </div>
       }
     >
@@ -88,14 +87,12 @@ function ResetPasswordForm() {
     return (
       <div className="w-full max-w-md px-4">
         <div className="rounded-xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-red-600">
-            <MapPin className="h-8 w-8 text-white" />
-          </div>
+          <img src="/icons/icon.svg" alt="RV Trax" className="mx-auto mb-3 h-14 w-14 rounded-xl" />
           <h1 className="text-xl font-bold text-white mb-2">Invalid Link</h1>
-          <p className="text-sm text-slate-400 mb-6">
+          <p className="text-sm text-[#B5A48A] mb-6">
             This password reset link is invalid or has expired.
           </p>
-          <a href="/forgot-password" className="text-blue-400 hover:text-blue-300 text-sm">
+          <a href="/forgot-password" className="text-[#D4A456] hover:text-[#E8D5B5] text-sm">
             Request a new reset link
           </a>
         </div>
@@ -108,11 +105,12 @@ function ResetPasswordForm() {
       <div className="rounded-xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600">
-            <MapPin className="h-8 w-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">New Password</h1>
-          <p className="mt-1 text-sm text-slate-400">Choose a new password for your account</p>
+          <img src="/icons/icon.svg" alt="RV Trax" className="mx-auto mb-3 h-14 w-14 rounded-xl" />
+          <h1 className="text-2xl font-bold">
+            <span className="text-[#E8D5B5]">RV</span>
+            <span className="text-[#C4943D]"> Trax</span>
+          </h1>
+          <p className="mt-1 text-sm text-[#B5A48A]">Choose a new password for your account</p>
         </div>
 
         {success ? (
@@ -134,8 +132,8 @@ function ResetPasswordForm() {
                 autoComplete="new-password"
                 placeholder="At least 8 characters"
                 error={errors.password?.message}
-                className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-blue-500"
-                labelClassName="text-slate-300"
+                className="border-white/10 bg-white/5 text-white placeholder:text-[#9a8876] focus:border-[#C4943D]"
+                labelClassName="text-[#D4C4A8]"
                 {...register('password')}
               />
 
@@ -145,8 +143,8 @@ function ResetPasswordForm() {
                 autoComplete="new-password"
                 placeholder="Re-enter your password"
                 error={errors.confirmPassword?.message}
-                className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-blue-500"
-                labelClassName="text-slate-300"
+                className="border-white/10 bg-white/5 text-white placeholder:text-[#9a8876] focus:border-[#C4943D]"
+                labelClassName="text-[#D4C4A8]"
                 {...register('confirmPassword')}
               />
 
@@ -163,9 +161,9 @@ function ResetPasswordForm() {
           </>
         )}
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-[#9a8876]">
           Remember your password?{' '}
-          <a href="/login" className="text-blue-400 hover:text-blue-300">
+          <a href="/login" className="text-[#D4A456] hover:text-[#E8D5B5]">
             Sign in
           </a>
         </p>

@@ -24,10 +24,11 @@ export default function LandingPage() {
       <nav className="fixed top-0 z-50 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-lg">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-              <MapPin className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-lg font-bold tracking-tight">RV Trax</span>
+            <img src="/icons/icon.svg" alt="RV Trax" className="h-8 w-8 rounded-lg" />
+            <span className="text-lg font-bold tracking-tight">
+              <span className="text-[#E8D5B5]">RV</span>
+              <span className="text-[#C4943D]"> Trax</span>
+            </span>
           </div>
           <div className="hidden items-center gap-8 md:flex">
             <a
@@ -64,7 +65,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/login"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+              className="rounded-lg bg-[#C4943D] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#8a6126]"
             >
               Get Started
             </Link>
@@ -74,17 +75,17 @@ export default function LandingPage() {
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-32">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-blue-50/50 to-white" />
-        <div className="absolute top-0 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-blue-100/30 blur-3xl" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#fdf8f0]/50 to-white" />
+        <div className="absolute top-0 left-1/2 -z-10 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-[#C4943D]/15 blur-3xl" />
 
         <div className="mx-auto max-w-7xl px-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-sm text-blue-700">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#C4943D]/30 bg-[#fdf8f0] px-4 py-1.5 text-sm text-[#8a6126]">
             <Satellite className="h-3.5 w-3.5" />
             LoRaWAN-powered GPS tracking
           </div>
 
           <h1 className="mx-auto mt-6 max-w-4xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Know where every unit is. <span className="text-blue-600">Every second.</span>
+            Know where every unit is. <span className="text-[#C4943D]">Every second.</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600 lg:text-xl">
@@ -95,7 +96,7 @@ export default function LandingPage() {
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/login"
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-lg shadow-blue-600/25 transition-all hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30"
+              className="flex items-center gap-2 rounded-lg bg-[#C4943D] px-6 py-3 text-base font-medium text-white shadow-lg shadow-[#C4943D]/25 transition-all hover:bg-[#8a6126] hover:shadow-xl hover:shadow-[#C4943D]/30"
             >
               Start Free Trial
               <ChevronRight className="h-4 w-4" />
@@ -110,7 +111,7 @@ export default function LandingPage() {
 
           {/* Hero screenshot */}
           <div className="relative mx-auto mt-16 max-w-5xl">
-            <div className="overflow-hidden rounded-xl border border-slate-200 shadow-2xl shadow-slate-900/10">
+            <div className="overflow-hidden rounded-xl border border-slate-200 shadow-2xl shadow-[#1a120b]/10">
               <Image
                 src="/screenshots/02-dashboard.png"
                 alt="RV Trax Dashboard — real-time lot overview with inventory metrics, tracker health, and interactive map"
@@ -121,7 +122,7 @@ export default function LandingPage() {
               />
             </div>
             {/* Glow effect */}
-            <div className="absolute -inset-4 -z-10 rounded-2xl bg-gradient-to-r from-blue-100 via-blue-50 to-blue-100 opacity-60 blur-2xl" />
+            <div className="absolute -inset-4 -z-10 rounded-2xl bg-gradient-to-r from-[#C4943D]/20 via-[#fdf8f0] to-[#C4943D]/20 opacity-60 blur-2xl" />
           </div>
         </div>
       </section>
@@ -136,7 +137,7 @@ export default function LandingPage() {
             { value: '5min', label: 'Average setup time' },
           ].map((stat) => (
             <div key={stat.label}>
-              <div className="text-3xl font-bold text-blue-600">{stat.value}</div>
+              <div className="text-3xl font-bold text-[#C4943D]">{stat.value}</div>
               <div className="mt-1 text-sm text-slate-600">{stat.label}</div>
             </div>
           ))}
@@ -215,9 +216,9 @@ export default function LandingPage() {
             ].map((feature) => (
               <div
                 key={feature.title}
-                className="group rounded-xl border border-slate-200 p-6 transition-all hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50"
+                className="group rounded-xl border border-slate-200 p-6 transition-all hover:border-[#C4943D]/30 hover:shadow-lg hover:shadow-[#fdf8f0]"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fdf8f0] text-[#C4943D] transition-colors group-hover:bg-[#C4943D] group-hover:text-white">
                   <feature.icon className="h-5 w-5" />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold">{feature.title}</h3>
@@ -266,10 +267,10 @@ export default function LandingPage() {
               },
             ].map((item) => (
               <div key={item.step} className="text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/25">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#C4943D] text-white shadow-lg shadow-[#C4943D]/25">
                   <item.icon className="h-6 w-6" />
                 </div>
-                <div className="mt-4 text-xs font-bold uppercase tracking-widest text-blue-600">
+                <div className="mt-4 text-xs font-bold uppercase tracking-widest text-[#C4943D]">
                   Step {item.step}
                 </div>
                 <h3 className="mt-2 text-xl font-semibold">
@@ -327,7 +328,7 @@ export default function LandingPage() {
               },
             ].map((screenshot) => (
               <div key={screenshot.label} className="group">
-                <div className="overflow-hidden rounded-xl border border-slate-200 transition-all group-hover:border-blue-200 group-hover:shadow-lg">
+                <div className="overflow-hidden rounded-xl border border-slate-200 transition-all group-hover:border-[#C4943D]/30 group-hover:shadow-lg">
                   <Image
                     src={screenshot.src}
                     alt={screenshot.alt}
@@ -346,14 +347,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── Multi-Tenant Callout ────────────────────────────────────────────── */}
-      <section className="bg-slate-900 py-24 text-white">
+      <section className="bg-[#1a120b] py-24 text-white">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
                 Built for multi-location dealers
               </h2>
-              <p className="mt-4 text-lg text-slate-300">
+              <p className="mt-4 text-lg text-[#D4C4A8]">
                 Manage multiple lots from a single dashboard. Dealership groups, role-based access,
                 and inter-lot transfers — all with complete data isolation between locations.
               </p>
@@ -365,13 +366,13 @@ export default function LandingPage() {
                   'Per-location billing and feature configuration',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <Check className="mt-0.5 h-5 w-5 shrink-0 text-blue-400" />
-                    <span className="text-slate-300">{item}</span>
+                    <Check className="mt-0.5 h-5 w-5 shrink-0 text-[#D4A456]" />
+                    <span className="text-[#D4C4A8]">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="overflow-hidden rounded-xl border border-slate-700 shadow-2xl">
+            <div className="overflow-hidden rounded-xl border border-[#3d2b1f] shadow-2xl">
               <Image
                 src="/screenshots/10-settings.png"
                 alt="Multi-location settings with dealership group management"
@@ -457,26 +458,26 @@ export default function LandingPage() {
                 key={plan.name}
                 className={`relative rounded-xl border p-8 ${
                   plan.highlighted
-                    ? 'border-blue-600 shadow-xl shadow-blue-600/10'
+                    ? 'border-[#C4943D] shadow-xl shadow-[#C4943D]/10'
                     : 'border-slate-200'
                 }`}
               >
                 {plan.highlighted && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-blue-600 px-3 py-0.5 text-xs font-medium text-white">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#C4943D] px-3 py-0.5 text-xs font-medium text-white">
                     Most Popular
                   </div>
                 )}
                 <h3 className="text-lg font-semibold">{plan.name}</h3>
                 <div className="mt-4 flex items-baseline gap-1">
                   <span className="text-4xl font-bold">{plan.price}</span>
-                  <span className="text-slate-500">{plan.period}</span>
+                  <span className="text-[#9a8876]">{plan.period}</span>
                 </div>
                 <p className="mt-3 text-sm text-slate-600">{plan.description}</p>
                 <Link
                   href="/login"
                   className={`mt-6 block rounded-lg px-4 py-2.5 text-center text-sm font-medium transition-colors ${
                     plan.highlighted
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      ? 'bg-[#C4943D] text-white hover:bg-[#8a6126]'
                       : 'border border-slate-300 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -485,7 +486,7 @@ export default function LandingPage() {
                 <ul className="mt-8 space-y-3">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-3 text-sm">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#C4943D]" />
                       <span className="text-slate-600">{feature}</span>
                     </li>
                   ))}
@@ -510,8 +511,8 @@ export default function LandingPage() {
             Full REST API, webhook events, and DMS connectors. Integrate with your existing systems
             or build custom workflows.
           </p>
-          <div className="mx-auto mt-10 max-w-2xl overflow-hidden rounded-xl border border-slate-300 bg-slate-900 p-6 text-left">
-            <pre className="text-sm leading-relaxed text-slate-300">
+          <div className="mx-auto mt-10 max-w-2xl overflow-hidden rounded-xl border border-slate-300 bg-[#1a120b] p-6 text-left">
+            <pre className="text-sm leading-relaxed text-[#D4C4A8]">
               <code>{`curl -X GET https://api.rvtrax.com/v1/units \\
   -H "Authorization: Bearer sk_live_..." \\
   -H "Content-Type: application/json"
@@ -536,31 +537,31 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA ────────────────────────────────────────────────────────────── */}
-      <section className="bg-blue-600 py-24">
+      <section className="bg-[#C4943D] py-24">
         <div className="mx-auto max-w-4xl px-6 text-center">
           <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Stop losing units. Start tracking them.
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-blue-100">
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-[#E8D5B5]">
             Join dealerships that have eliminated lot walks, reduced theft risk, and streamlined
             their operations with RV Trax.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/login"
-              className="flex items-center gap-2 rounded-lg bg-white px-8 py-3 text-base font-semibold text-blue-600 shadow-lg transition-all hover:bg-blue-50 hover:shadow-xl"
+              className="flex items-center gap-2 rounded-lg bg-white px-8 py-3 text-base font-semibold text-[#C4943D] shadow-lg transition-all hover:bg-[#fdf8f0] hover:shadow-xl"
             >
               Start Free Trial
               <ChevronRight className="h-4 w-4" />
             </Link>
             <a
               href="mailto:sales@rvtrax.com"
-              className="rounded-lg border border-blue-400 px-8 py-3 text-base font-medium text-white transition-colors hover:bg-blue-700"
+              className="rounded-lg border border-[#D4A456] px-8 py-3 text-base font-medium text-white transition-colors hover:bg-[#8a6126]"
             >
               Contact Sales
             </a>
           </div>
-          <p className="mt-6 text-sm text-blue-200">14-day free trial. No credit card required.</p>
+          <p className="mt-6 text-sm text-[#D4C4A8]">14-day free trial. No credit card required.</p>
         </div>
       </section>
 
@@ -570,18 +571,19 @@ export default function LandingPage() {
           <div className="grid gap-8 md:grid-cols-4">
             <div>
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600">
-                  <MapPin className="h-3.5 w-3.5 text-white" />
-                </div>
-                <span className="text-base font-bold">RV Trax</span>
+                <img src="/icons/icon.svg" alt="RV Trax" className="h-7 w-7 rounded-lg" />
+                <span className="text-base font-bold">
+                  <span className="text-[#E8D5B5]">RV</span>
+                  <span className="text-[#C4943D]"> Trax</span>
+                </span>
               </div>
-              <p className="mt-3 text-sm text-slate-500">
+              <p className="mt-3 text-sm text-[#9a8876]">
                 Real-time GPS lot management for RV dealerships.
               </p>
             </div>
             <div>
               <h4 className="text-sm font-semibold">Product</h4>
-              <ul className="mt-3 space-y-2 text-sm text-slate-500">
+              <ul className="mt-3 space-y-2 text-sm text-[#9a8876]">
                 <li>
                   <a href="#features" className="hover:text-slate-900">
                     Features
@@ -606,7 +608,7 @@ export default function LandingPage() {
             </div>
             <div>
               <h4 className="text-sm font-semibold">Developers</h4>
-              <ul className="mt-3 space-y-2 text-sm text-slate-500">
+              <ul className="mt-3 space-y-2 text-sm text-[#9a8876]">
                 <li>
                   <a href="#" className="hover:text-slate-900">
                     API Documentation
@@ -626,7 +628,7 @@ export default function LandingPage() {
             </div>
             <div>
               <h4 className="text-sm font-semibold">Company</h4>
-              <ul className="mt-3 space-y-2 text-sm text-slate-500">
+              <ul className="mt-3 space-y-2 text-sm text-[#9a8876]">
                 <li>
                   <a href="mailto:support@rvtrax.com" className="hover:text-slate-900">
                     Support
@@ -645,7 +647,7 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-          <div className="mt-8 border-t border-slate-200 pt-8 text-center text-sm text-slate-400">
+          <div className="mt-8 border-t border-slate-200 pt-8 text-center text-sm text-[#B5A48A]">
             &copy; {new Date().getFullYear()} RV Trax. All rights reserved.
           </div>
         </div>

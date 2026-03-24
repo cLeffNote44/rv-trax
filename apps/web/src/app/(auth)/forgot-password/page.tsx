@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { MapPin } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 
 // ---------------------------------------------------------------------------
@@ -45,9 +44,7 @@ export default function ForgotPasswordPage() {
       });
       setSubmitted(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Something went wrong. Please try again.'
-      );
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     }
   };
 
@@ -56,19 +53,20 @@ export default function ForgotPasswordPage() {
       <div className="rounded-xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600">
-            <MapPin className="h-8 w-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">Reset Password</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <img src="/icons/icon.svg" alt="RV Trax" className="mx-auto mb-3 h-14 w-14 rounded-xl" />
+          <h1 className="text-2xl font-bold">
+            <span className="text-[#E8D5B5]">RV</span>
+            <span className="text-[#C4943D]"> Trax</span>
+          </h1>
+          <p className="mt-1 text-sm text-[#B5A48A]">
             Enter your email and we&apos;ll send you a reset link
           </p>
         </div>
 
         {submitted ? (
           <div className="rounded-lg border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-300">
-            If an account with that email exists, a password reset link has been
-            sent. Check your inbox.
+            If an account with that email exists, a password reset link has been sent. Check your
+            inbox.
           </div>
         ) : (
           <>
@@ -85,8 +83,8 @@ export default function ForgotPasswordPage() {
                 autoComplete="email"
                 placeholder="you@dealership.com"
                 error={errors.email?.message}
-                className="border-white/10 bg-white/5 text-white placeholder:text-slate-500 focus:border-blue-500"
-                labelClassName="text-slate-300"
+                className="border-white/10 bg-white/5 text-white placeholder:text-[#9a8876] focus:border-[#C4943D]"
+                labelClassName="text-[#D4C4A8]"
                 {...register('email')}
               />
 
@@ -103,9 +101,9 @@ export default function ForgotPasswordPage() {
           </>
         )}
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-[#9a8876]">
           Remember your password?{' '}
-          <a href="/login" className="text-blue-400 hover:text-blue-300">
+          <a href="/login" className="text-[#D4A456] hover:text-[#E8D5B5]">
             Sign in
           </a>
         </p>
