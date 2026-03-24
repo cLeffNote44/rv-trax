@@ -5,6 +5,31 @@ All notable changes to RV Trax will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-03-24
+
+### Fixed
+
+- **Unit Detail Crash** — `formatDate` and `formatRelativeTime` now guard
+  against null/undefined/invalid dates instead of throwing "Invalid time value"
+- **Analytics Blank Page** — API errors were silently swallowed; added error
+  state with retry button so users see feedback instead of an empty page
+- **Session Timeout** — JWT expiry increased from 15 minutes to 1 hour;
+  cookie maxAge updated to match so users aren't kicked out mid-workflow
+
+### Infrastructure
+
+- **Render Deployment** — API server deployed to Render free tier with
+  `render.yaml` blueprint, Node 22, and auto-deploy from GitHub
+- **Neon PostgreSQL** — Cloud Postgres with auto-SSL detection for
+  `sslmode=require` and `.neon.tech` hosts
+- **Upstash Redis** — Serverless Redis with TLS connection
+- **Production Proxy** — Vercel rewrites `/api/v1/*` to Render API,
+  eliminating CORS issues and keeping cookies same-origin
+- **Rate Limits** — Increased login rate limit and relaxed CSRF sameSite
+  for cross-origin proxy compatibility
+- **Build Fixes** — Resolved TypeScript errors for production CI, moved
+  `@types/node` to dependencies, skip husky in production builds
+
 ## [1.1.0] - 2026-03-23
 
 ### Added
