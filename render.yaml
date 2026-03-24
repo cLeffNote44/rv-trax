@@ -11,15 +11,13 @@ services:
     buildCommand: |
       corepack enable &&
       corepack prepare pnpm@9 --activate &&
-      pnpm install --frozen-lockfile &&
+      NODE_ENV=development pnpm install --frozen-lockfile &&
       pnpm --filter @rv-trax/shared build &&
       pnpm --filter @rv-trax/db build &&
       pnpm --filter @rv-trax/api build
-    startCommand: node apps/api/dist/server.js
+    startCommand: NODE_ENV=production node apps/api/dist/server.js
     healthCheckPath: /health
     envVars:
-      - key: NODE_ENV
-        value: production
       - key: API_HOST
         value: 0.0.0.0
       - key: API_PORT
