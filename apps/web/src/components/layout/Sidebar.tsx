@@ -91,10 +91,14 @@ export function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onCloseMobile
     <div className="flex h-full flex-col bg-[var(--color-bg-sidebar)]">
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-white/10 px-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-brand-500)]">
           <MapPin className="h-5 w-5 text-white" />
         </div>
-        {!collapsed && <span className="text-lg font-bold text-white">RV Trax</span>}
+        {!collapsed && (
+          <span className="text-lg font-bold text-white">
+            RV <span className="text-[var(--color-gold)]">Trax</span>
+          </span>
+        )}
 
         {/* Mobile close button */}
         <button
