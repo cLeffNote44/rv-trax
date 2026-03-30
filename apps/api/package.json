@@ -14,7 +14,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@sentry/node": "^9.0.0",
+    "@sentry/node": "^10.46.0",
     "@aws-sdk/client-sesv2": "^3.995.0",
     "@fastify/cookie": "^11.0.0",
     "@fastify/cors": "^11.0.0",
