@@ -1,4 +1,6 @@
-jest.mock('@env', () => ({ WS_URL: 'ws://localhost:3001' }));
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+
+vi.mock('@env', () => ({ WS_URL: 'ws://localhost:3001' }));
 
 // Minimal WebSocket mock
 class MockWebSocket {
@@ -33,18 +35,18 @@ class MockWebSocket {
 import { WebSocketManager } from '../websocket';
 
 beforeEach(() => {
-  jest.useFakeTimers();
+  vi.useFakeTimers();
 });
 
 afterEach(() => {
-  jest.useRealTimers();
+  vi.useRealTimers();
 });
 
 describe('WebSocketManager', () => {
   it('sends auth token on connect', () => {
     const mgr = new WebSocketManager();
     mgr.connect('test-token');
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     // Access internal ws
     const ws = (mgr as any).ws as MockWebSocket;
@@ -59,7 +61,7 @@ describe('WebSocketManager', () => {
     expect(mgr.isConnected).toBe(false);
 
     mgr.connect('tok');
-    jest.runAllTimers();
+    vi.runAllTimers();
     expect(mgr.isConnected).toBe(true);
 
     mgr.disconnect();
@@ -68,11 +70,11 @@ describe('WebSocketManager', () => {
 
   it('dispatches location_update to registered handlers', () => {
     const mgr = new WebSocketManager();
-    const handler = jest.fn();
+    const handler = vi.fn();
     mgr.onLocationUpdate(handler);
 
     mgr.connect('tok');
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     const ws = (mgr as any).ws as MockWebSocket;
     const payload = { unit_id: 'u1', lat: 40, lng: -90, zone: 'A', row: '1', spot: 1, timestamp: '' };
@@ -85,11 +87,11 @@ describe('WebSocketManager', () => {
 
   it('dispatches unit_status_change to registered handlers', () => {
     const mgr = new WebSocketManager();
-    const handler = jest.fn();
+    const handler = vi.fn();
     mgr.onUnitStatusChange(handler);
 
     mgr.connect('tok');
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     const ws = (mgr as any).ws as MockWebSocket;
     const payload = { unit_id: 'u1', old_status: 'available', new_status: 'sold', changed_by: 'user1' };
@@ -102,11 +104,11 @@ describe('WebSocketManager', () => {
 
   it('dispatches alert events to registered handlers', () => {
     const mgr = new WebSocketManager();
-    const handler = jest.fn();
+    const handler = vi.fn();
     mgr.onAlert(handler);
 
     mgr.connect('tok');
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     const ws = (mgr as any).ws as MockWebSocket;
     const payload = { alert_id: 'a1', alert_type: 'geofence', message: 'Unit left lot' };
@@ -119,11 +121,11 @@ describe('WebSocketManager', () => {
 
   it('dispatches tracker_status to registered handlers', () => {
     const mgr = new WebSocketManager();
-    const handler = jest.fn();
+    const handler = vi.fn();
     mgr.onTrackerStatus(handler);
 
     mgr.connect('tok');
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     const ws = (mgr as any).ws as MockWebSocket;
     const payload = { tracker_id: 't1', status: 'online', battery_pct: 85 };
@@ -136,11 +138,11 @@ describe('WebSocketManager', () => {
 
   it('notifies connection handlers on connected message', () => {
     const mgr = new WebSocketManager();
-    const handler = jest.fn();
+    const handler = vi.fn();
     mgr.onConnectionChange(handler);
 
     mgr.connect('tok');
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     const ws = (mgr as any).ws as MockWebSocket;
     ws.onmessage?.({ data: JSON.stringify({ type: 'connected', dealership_id: 'd1' }) } as any);
@@ -153,7 +155,7 @@ describe('WebSocketManager', () => {
   it('responds to ping with pong', () => {
     const mgr = new WebSocketManager();
     mgr.connect('tok');
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     const ws = (mgr as any).ws as MockWebSocket;
     // Clear the auth message
@@ -168,12 +170,12 @@ describe('WebSocketManager', () => {
 
   it('unsubscribes handlers correctly', () => {
     const mgr = new WebSocketManager();
-    const handler = jest.fn();
+    const handler = vi.fn();
     const unsub = mgr.onLocationUpdate(handler);
     unsub();
 
     mgr.connect('tok');
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     const ws = (mgr as any).ws as MockWebSocket;
     ws.onmessage?.({
@@ -187,11 +189,11 @@ describe('WebSocketManager', () => {
 
   it('ignores invalid JSON messages', () => {
     const mgr = new WebSocketManager();
-    const handler = jest.fn();
+    const handler = vi.fn();
     mgr.onLocationUpdate(handler);
 
     mgr.connect('tok');
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     const ws = (mgr as any).ws as MockWebSocket;
     // Should not throw
@@ -205,7 +207,7 @@ describe('WebSocketManager', () => {
   it('disconnect prevents reconnection', () => {
     const mgr = new WebSocketManager();
     mgr.connect('tok');
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     mgr.disconnect();
 

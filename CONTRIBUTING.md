@@ -113,4 +113,6 @@ When adding features, update the relevant docs:
 - New API endpoints → `docs/api-endpoint-catalog.md`
 - New database tables → `docs/DATABASE.md`
 - Architecture changes → `docs/ARCHITECTURE.md`
+- Security-relevant changes → `docs/SECURITY_CONTROLS.md`
+- Secret additions/changes → `docs/SECRETS_MANAGEMENT.md`
 - User-facing features → `CHANGELOG.md`

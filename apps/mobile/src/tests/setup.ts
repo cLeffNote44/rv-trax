@@ -1,12 +1,14 @@
 // ---------------------------------------------------------------------------
-// Mobile test setup — mock native modules not available in Jest
+// Mobile test setup — mock native modules not available in Vitest
 // ---------------------------------------------------------------------------
 
+import { vi } from 'vitest';
+
 // Mock react-native-mmkv
-jest.mock('react-native-mmkv', () => {
+vi.mock('react-native-mmkv', () => {
   const store = new Map<string, unknown>();
   return {
-    MMKV: jest.fn().mockImplementation(() => ({
+    MMKV: vi.fn().mockImplementation(() => ({
       getString: (key: string) => {
         const v = store.get(key);
         return typeof v === 'string' ? v : undefined;
@@ -30,21 +32,21 @@ jest.mock('react-native-mmkv', () => {
 });
 
 // Mock react-native-gesture-handler
-jest.mock('react-native-gesture-handler', () => ({
+vi.mock('react-native-gesture-handler', () => ({
   GestureHandlerRootView: ({ children }: { children: React.ReactNode }) => children,
-  Swipeable: jest.fn(),
-  DrawerLayout: jest.fn(),
+  Swipeable: vi.fn(),
+  DrawerLayout: vi.fn(),
   State: {},
-  PanGestureHandler: jest.fn(),
-  TapGestureHandler: jest.fn(),
+  PanGestureHandler: vi.fn(),
+  TapGestureHandler: vi.fn(),
 }));
 
 // Mock react-native-reanimated
-jest.mock('react-native-reanimated', () => ({
-  useSharedValue: jest.fn((v) => ({ value: v })),
-  useAnimatedStyle: jest.fn(() => ({})),
-  withTiming: jest.fn((v) => v),
-  default: { createAnimatedComponent: jest.fn((c: unknown) => c) },
+vi.mock('react-native-reanimated', () => ({
+  useSharedValue: vi.fn((v: unknown) => ({ value: v })),
+  useAnimatedStyle: vi.fn(() => ({})),
+  withTiming: vi.fn((v: unknown) => v),
+  default: { createAnimatedComponent: vi.fn((c: unknown) => c) },
 }));
 
 export {};

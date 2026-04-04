@@ -1,19 +1,21 @@
+import { vi, describe, it, expect } from 'vitest';
+
 // Mock ky before any imports that reference it
-jest.mock('ky', () => ({
+vi.mock('ky', () => ({
   __esModule: true,
   default: {
-    create: jest.fn(() => ({
-      get: jest.fn(),
-      post: jest.fn(),
-      patch: jest.fn(),
-      put: jest.fn(),
-      delete: jest.fn(),
+    create: vi.fn(() => ({
+      get: vi.fn(),
+      post: vi.fn(),
+      patch: vi.fn(),
+      put: vi.fn(),
+      delete: vi.fn(),
     })),
   },
 }));
 
 // Mock @env
-jest.mock('@env', () => ({ API_URL: 'http://localhost:3000' }));
+vi.mock('@env', () => ({ API_URL: 'http://localhost:3000' }));
 
 import { AppError, bindAuthAccessors } from '../api';
 

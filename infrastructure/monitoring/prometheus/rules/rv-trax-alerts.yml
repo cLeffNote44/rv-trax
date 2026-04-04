@@ -1,0 +1,98 @@
+groups:
+  - name: rv-trax-api
+    rules:
+      - alert: HighErrorRate
+        expr: rate(rvtrax_http_errors_total[5m]) / rate(rvtrax_http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API error rate above 5%"
+          description: "HTTP 5xx error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+
+      - alert: HighLatency
+        expr: rvtrax_http_request_duration_ms_p99 > 5000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API p99 latency above 5s"
+          description: "P99 request latency is {{ $value }}ms."
+
+      - alert: APIDown
+        expr: up{job="rv-trax-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "API server is down"
+          description: "The RV Trax API server has been unreachable for more than 1 minute."
+
+  - name: rv-trax-websocket
+    rules:
+      - alert: NoWebSocketConnections
+        expr: rvtrax_ws_active_connections == 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No WebSocket connections for 30 minutes"
+          description: "This may indicate clients cannot connect or no dealers are active."
+
+  - name: rv-trax-iot
+    rules:
+      - alert: IoTPipelineLag
+        expr: rvtrax_iot_pipeline_lag_seconds > 60
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "IoT pipeline lag above 60 seconds"
+          description: "Telemetry processing is falling behind. Queue depth: {{ $value }}."
+
+      - alert: IoTPipelineCriticalLag
+        expr: rvtrax_iot_pipeline_lag_seconds > 300
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CRITICAL: IoT pipeline lag above 5 minutes"
+          description: "Events are severely backed up. Immediate investigation required."
+
+      - alert: IoTIngestDown
+        expr: up{job="rv-trax-iot-ingest"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "IoT Ingest server is down"
+          description: "The telemetry pipeline has been unreachable for more than 1 minute."
+
+      - alert: TrackerOffline
+        expr: rvtrax_trackers_offline > 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Trackers offline for 30+ minutes"
+          description: "{{ $value }} tracker(s) haven't reported in 30 minutes."
+
+  - name: rv-trax-infrastructure
+    rules:
+      - alert: DatabaseConnectionPoolExhaustion
+        expr: rvtrax_db_pool_active / rvtrax_db_pool_size > 0.9
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool >90% utilized"
+          description: "Pool usage at {{ $value | humanizePercentage }}. Risk of connection exhaustion."
+
+      - alert: RedisHighMemory
+        expr: redis_used_memory_bytes / redis_maxmemory > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage above 85%"
+          description: "Redis is using {{ $value | humanizePercentage }} of max memory."

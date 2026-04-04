@@ -8,6 +8,34 @@
       "when": 1708300800000,
       "tag": "0000_initial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1708387200000,
+      "tag": "0001_placeholder",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1708473600000,
+      "tag": "0002_placeholder",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1708560000000,
+      "tag": "0003_add_missing_indexes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1708646400000,
+      "tag": "0004_v030_dealer_ready",
+      "breakpoints": true
     }
   ]
 }

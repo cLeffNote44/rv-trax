@@ -1,22 +1,24 @@
-const mockGetUnits = jest.fn();
-const mockUpdateUnitStatus = jest.fn();
-const mockAddUnitNote = jest.fn();
-const mockAssignTracker = jest.fn();
-const mockCacheUnits = jest.fn();
-const mockGetPendingActions = jest.fn();
-const mockRemovePendingAction = jest.fn();
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-jest.mock('../../services/api', () => ({
+const mockGetUnits = vi.fn();
+const mockUpdateUnitStatus = vi.fn();
+const mockAddUnitNote = vi.fn();
+const mockAssignTracker = vi.fn();
+const mockCacheUnits = vi.fn();
+const mockGetPendingActions = vi.fn();
+const mockRemovePendingAction = vi.fn();
+
+vi.mock('../../services/api', () => ({
   apiClient: {
     getUnits: (...args: unknown[]) => mockGetUnits(...args),
     updateUnitStatus: (...args: unknown[]) => mockUpdateUnitStatus(...args),
     addUnitNote: (...args: unknown[]) => mockAddUnitNote(...args),
     assignTracker: (...args: unknown[]) => mockAssignTracker(...args),
   },
-  bindAuthAccessors: jest.fn(),
+  bindAuthAccessors: vi.fn(),
 }));
 
-jest.mock('../../services/offline', () => ({
+vi.mock('../../services/offline', () => ({
   cacheUnits: (...args: unknown[]) => mockCacheUnits(...args),
   getPendingActions: () => mockGetPendingActions(),
   removePendingAction: (...args: unknown[]) => mockRemovePendingAction(...args),

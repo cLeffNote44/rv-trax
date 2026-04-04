@@ -17,7 +17,19 @@ const serverEnvSchema = z.object({
   REDIS_URL: z.string().default('redis://localhost:6379'),
 
   // ── Authentication ────────────────────────────────────────────────────
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters').refine(
+    (val) => {
+      const placeholders = [
+        'change-this-to-a-random-64-char-string',
+        'your-secret-here',
+        'replace-me',
+        'changeme',
+        'secret',
+      ];
+      return !placeholders.some((p) => val.toLowerCase().includes(p));
+    },
+    { message: 'JWT_SECRET contains a placeholder value — generate a real secret (e.g. openssl rand -base64 48)' },
+  ),
   COOKIE_SECRET: z.string().optional(),
 
   // ── External services (optional in development) ───────────────────────

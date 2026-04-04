@@ -1,14 +1,16 @@
-const mockGetUnits = jest.fn();
-const mockSearchUnits = jest.fn();
-const mockUpdateUnitStatus = jest.fn();
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-jest.mock('../../services/api', () => ({
+const mockGetUnits = vi.fn();
+const mockSearchUnits = vi.fn();
+const mockUpdateUnitStatus = vi.fn();
+
+vi.mock('../../services/api', () => ({
   apiClient: {
     getUnits: (...args: unknown[]) => mockGetUnits(...args),
     searchUnits: (...args: unknown[]) => mockSearchUnits(...args),
     updateUnitStatus: (...args: unknown[]) => mockUpdateUnitStatus(...args),
   },
-  bindAuthAccessors: jest.fn(),
+  bindAuthAccessors: vi.fn(),
 }));
 
 import { useUnitStore } from '../unitStore';

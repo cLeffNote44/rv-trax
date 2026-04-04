@@ -2479,3 +2479,251 @@ Query parameters: `?page=1&limit=25&sort=createdAt&order=desc`
 ```
 
 **Available widget IDs**: `inventory_summary`, `tracker_health`, `alert_feed`, `aging_chart`, `lot_utilization`, `recent_activity`, `unit_status_breakdown`, `quick_actions`
+
+---
+
+## Request/Response Examples
+
+### Authentication
+
+#### POST /api/v1/auth/login
+```json
+// Request
+{
+  "email": "manager@example.com",
+  "password": "SecureP@ss123"
+}
+
+// Response 200
+{
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIs...",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+    "user": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "manager@example.com",
+      "name": "Jane Smith",
+      "role": "manager",
+      "dealership_id": "d1234567-89ab-cdef-0123-456789abcdef"
+    }
+  }
+}
+
+// Response 401
+{
+  "error": "Invalid email or password",
+  "status_code": 401
+}
+```
+
+#### POST /api/v1/auth/refresh
+```json
+// Request
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
+}
+
+// Response 200
+{
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIs...",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
+  }
+}
+```
+
+### Units (Inventory)
+
+#### GET /api/v1/units
+```
+GET /api/v1/units?status=available&limit=20&cursor=abc123
+Authorization: Bearer <token>
+```
+```json
+// Response 200
+{
+  "data": [
+    {
+      "id": "u-550e8400-e29b-41d4-a716-446655440000",
+      "stock_number": "RV-2025-001",
+      "vin": "1UJBJ0BS7L1AB1234",
+      "year": 2025,
+      "make": "Jayco",
+      "model": "Eagle HT 28.5RSTS",
+      "unit_type": "travel_trailer",
+      "status": "available",
+      "current_zone": "A",
+      "current_row": "3",
+      "current_spot": 12,
+      "msrp": "45999.00",
+      "arrived_at": "2025-12-15T10:30:00Z",
+      "last_moved_at": "2026-01-20T14:22:00Z",
+      "created_at": "2025-12-15T10:30:00Z"
+    }
+  ],
+  "pagination": {
+    "cursor": "def456",
+    "has_more": true
+  }
+}
+```
+
+#### POST /api/v1/units
+```json
+// Request
+{
+  "stock_number": "RV-2025-042",
+  "vin": "1UJBJ0BS7L1AB5678",
+  "year": 2025,
+  "make": "Winnebago",
+  "model": "View 24D",
+  "unit_type": "class_c",
+  "msrp": "142500.00",
+  "lot_id": "lot-123"
+}
+
+// Response 201
+{
+  "data": {
+    "id": "u-660e8400-e29b-41d4-a716-446655440001",
+    "stock_number": "RV-2025-042",
+    "status": "new_arrival",
+    "created_at": "2026-04-03T15:00:00Z"
+  }
+}
+```
+
+### Trackers
+
+#### GET /api/v1/trackers
+```
+GET /api/v1/trackers
+Authorization: Bearer <token>
+```
+```json
+// Response 200
+{
+  "data": [
+    {
+      "id": "t-001",
+      "device_eui": "A84041FFFF1E4B2C",
+      "status": "assigned",
+      "battery_pct": 87,
+      "unit_id": "u-550e8400-e29b-41d4-a716-446655440000",
+      "last_seen_at": "2026-04-03T14:55:00Z",
+      "firmware_version": "1.2.3"
+    }
+  ]
+}
+```
+
+### Alerts
+
+#### GET /api/v1/alerts
+```
+GET /api/v1/alerts?severity=high&acknowledged=false
+Authorization: Bearer <token>
+```
+```json
+// Response 200
+{
+  "data": [
+    {
+      "id": "alert-001",
+      "alert_type": "geofence_exit",
+      "severity": "high",
+      "message": "Unit RV-2025-001 exited lot boundary",
+      "unit_id": "u-550e8400-e29b-41d4-a716-446655440000",
+      "acknowledged": false,
+      "created_at": "2026-04-03T02:15:00Z"
+    }
+  ]
+}
+```
+
+### Work Orders
+
+#### POST /api/v1/work-orders
+```json
+// Request
+{
+  "unit_id": "u-550e8400-e29b-41d4-a716-446655440000",
+  "order_type": "pdi",
+  "priority": "high",
+  "description": "Pre-delivery inspection for unit RV-2025-001",
+  "assigned_to": "user-tech-001"
+}
+
+// Response 201
+{
+  "data": {
+    "id": "wo-001",
+    "unit_id": "u-550e8400-e29b-41d4-a716-446655440000",
+    "order_type": "pdi",
+    "priority": "high",
+    "status": "open",
+    "created_at": "2026-04-03T15:30:00Z"
+  }
+}
+```
+
+### Analytics
+
+#### GET /api/v1/analytics/inventory
+```
+GET /api/v1/analytics/inventory
+Authorization: Bearer <token>
+```
+```json
+// Response 200
+{
+  "data": {
+    "total_units": 247,
+    "by_status": {
+      "available": 182,
+      "sold": 31,
+      "in_service": 18,
+      "new_arrival": 12,
+      "delivered": 4
+    },
+    "by_type": {
+      "travel_trailer": 98,
+      "fifth_wheel": 67,
+      "class_a": 42,
+      "class_c": 28,
+      "toy_hauler": 12
+    },
+    "average_days_on_lot": 45.2,
+    "total_msrp_value": "12450000.00"
+  }
+}
+```
+
+### WebSocket
+
+#### Connect to /ws
+```json
+// 1. Client sends auth message
+{ "type": "auth", "token": "eyJhbGciOiJIUzI1NiIs..." }
+
+// 2. Server responds with connected
+{ "type": "connected", "dealership_id": "d1234567-..." }
+
+// 3. Server pushes location updates
+{
+  "type": "location_update",
+  "unit_id": "u-550e8400-...",
+  "latitude": 27.9506,
+  "longitude": -82.4572,
+  "zone": "A",
+  "row": "3",
+  "spot": 12,
+  "timestamp": "2026-04-03T14:55:00Z"
+}
+
+// 4. Server sends heartbeat pings
+{ "type": "ping" }
+
+// 5. Client responds with pong
+{ "type": "pong" }
+```

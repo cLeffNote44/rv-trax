@@ -114,29 +114,32 @@ async function handleMessage(
   config: AppConfig,
   logger: FastifyBaseLogger,
 ): Promise<void> {
+  const correlationId = `iot_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const log = logger.child({ correlationId, topic });
+
   try {
     const event = normalizeChirpStackEvent(topic, payload);
 
     if (!event) {
       // Non-uplink event (status, join) or unparseable — silently skip
-      logger.debug({ topic }, 'Ignoring non-uplink or unparseable MQTT message');
+      log.debug('Ignoring non-uplink or unparseable MQTT message');
       return;
     }
 
     const result = await validateAndEnqueue(event, redis, db, config);
 
     if (result.accepted) {
-      logger.info(
-        { device_eui: event.device_eui, dedup_id: event.deduplication_id },
+      log.info(
+        { deviceEui: event.device_eui, dedupId: event.deduplication_id },
         'Event accepted and enqueued',
       );
     } else {
-      logger.debug(
-        { device_eui: event.device_eui, reason: result.reason },
+      log.debug(
+        { deviceEui: event.device_eui, reason: result.reason },
         'Event rejected',
       );
     }
   } catch (err) {
-    logger.error({ err, topic }, 'Unhandled error processing MQTT message');
+    log.error({ err }, 'Unhandled error processing MQTT message');
   }
 }

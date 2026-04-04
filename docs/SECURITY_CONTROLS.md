@@ -54,15 +54,16 @@ Third-party integrations authenticate via API keys rather than JWTs.
 
 ### 1.4 Rate Limiting
 
-Rate limiting is enforced at two levels using `@fastify/rate-limit`:
+Rate limiting is enforced at three levels:
 
 | Level            | Configuration                                                                                     |
 | ---------------- | ------------------------------------------------------------------------------------------------- |
-| Per-endpoint     | Default: 100 requests/minute for authenticated endpoints, 20 requests/minute for public endpoints |
+| Per-endpoint     | Default: 500 requests/minute via `@fastify/rate-limit`                                            |
 | Per-API-key      | Configurable per key; default 1,000 requests/hour                                                 |
 | Auth endpoints   | Stricter limits: 5 login attempts/minute per IP, 3 password reset requests/hour per email         |
+| WebSocket        | 50 connections per dealership; 60 messages per minute per client (sliding window)                  |
 | Response headers | `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` included on all responses       |
-| Backing store    | Redis for distributed rate limit counters (consistent across API instances)                       |
+| Backing store    | Redis for distributed HTTP rate limit counters; in-memory for WebSocket (per-process)             |
 
 ### 1.5 CSRF Protection
 
@@ -192,13 +193,15 @@ Outgoing webhook payloads are signed to allow receivers to verify authenticity.
 | `.env` files  | Listed in `.gitignore`; never committed to version control                  |
 | CI/CD         | GitHub Actions secrets used for deployment credentials                      |
 | Rotation      | API keys and webhook secrets support rotation with grace periods            |
-| Documentation | `.env.example` documents required variables without exposing values         |
+| Validation    | Startup rejects placeholder JWT_SECRET values and enforces minimum 32-char length |
+| Documentation | `.env.example` documents required variables; `docs/SECRETS_MANAGEMENT.md` provides rotation procedures |
 
 ### 3.5 Dependency Management
 
 | Control    | Implementation                                                                                          |
 | ---------- | ------------------------------------------------------------------------------------------------------- |
 | Dependabot | Configured in `.github/dependabot.yml` for automated dependency update PRs                              |
+| Auto-merge | Patch updates and dev-dependency minor updates auto-merged via `.github/workflows/dependabot-auto-merge.yml` |
 | CodeQL     | Static analysis runs on every push to `main` and on every pull request (`.github/workflows/codeql.yml`) |
 | Lock files | `pnpm-lock.yaml` committed to ensure reproducible builds                                                |
 | Audit      | `pnpm audit` can be run manually to check for known vulnerabilities                                     |
@@ -236,24 +239,65 @@ Audit log entries are append-only. The application database role does not have D
 
 ### 4.3 Health Monitoring
 
-| Endpoint      | Purpose                                                      |
-| ------------- | ------------------------------------------------------------ |
-| `GET /health` | Basic liveness check (returns 200 if the process is running) |
-| `GET /ready`  | Readiness check (verifies database and Redis connectivity)   |
+| Endpoint       | Purpose                                                      |
+| -------------- | ------------------------------------------------------------ |
+| `GET /health`  | Basic liveness check (returns 200 if the process is running) |
+| `GET /healthz` | Kubernetes-style alias for `/health`                         |
+| `GET /ready`   | Readiness check (verifies database and Redis connectivity)   |
+| `GET /readyz`  | Kubernetes-style alias for `/ready`                          |
+| `GET /metrics` | Prometheus-format metrics (HTTP requests, latency, WebSocket stats, uptime) |
 
-Health checks are used by container orchestrators and load balancers to route traffic only to healthy instances.
+Health and readiness endpoints are available on both the API server (port 3000) and IoT Ingest service (port 3002). The IoT Ingest `/metrics` endpoint also includes pipeline lag monitoring data.
 
 ### 4.4 Structured Logging
 
-| Control         | Implementation                                                                        |
-| --------------- | ------------------------------------------------------------------------------------- |
-| Library         | Pino (JSON-structured logging)                                                        |
-| Format          | JSON with `level`, `timestamp`, `msg`, `requestId`, `dealershipId` fields             |
-| Sensitive data  | Passwords, tokens, and API keys are redacted from log output via Pino redaction paths |
-| Log levels      | `error`, `warn`, `info`, `debug`; production runs at `info` level                     |
-| Request logging | Every HTTP request logged with method, URL, status code, and response time            |
+| Control          | Implementation                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| Library          | Pino (JSON-structured logging)                                                        |
+| Format           | JSON with `level`, `timestamp`, `msg`, `requestId`, `dealershipId` fields             |
+| Correlation IDs  | IoT pipeline uses `correlationId` per MQTT message for end-to-end tracing             |
+| Sensitive data   | Passwords, tokens, and API keys are redacted from log output via Pino redaction paths |
+| Log levels       | `error`, `warn`, `info`, `debug`; production runs at `info` level                     |
+| Request logging  | Every HTTP request logged with method, URL, status code, and response time            |
 
-### 4.5 Gateway Monitoring
+### 4.5 Observability Stack
+
+Prometheus + Grafana configuration is provided in `infrastructure/monitoring/`:
+
+| Component | Config Location | Description |
+| --------- | --------------- | ----------- |
+| Prometheus | `infrastructure/monitoring/prometheus/prometheus.yml` | Scrapes `/metrics` from API and IoT Ingest |
+| Alert rules | `infrastructure/monitoring/prometheus/rules/rv-trax-alerts.yml` | 10 alerting rules (see below) |
+| Grafana dashboard | `infrastructure/monitoring/grafana/dashboards/rv-trax-overview.json` | Overview dashboard with 8 panels |
+| Grafana provisioning | `infrastructure/monitoring/grafana/provisioning/` | Auto-configures datasource and dashboards |
+
+**Alerting rules:**
+
+| Alert | Condition | Severity |
+| ----- | --------- | -------- |
+| HighErrorRate | HTTP 5xx rate > 5% for 5m | Critical |
+| HighLatency | P99 latency > 5s for 5m | Warning |
+| APIDown | API unreachable for 1m | Critical |
+| NoWebSocketConnections | 0 connections for 30m | Warning |
+| IoTPipelineLag | Lag > 60s for 5m | Warning |
+| IoTPipelineCriticalLag | Lag > 300s for 2m | Critical |
+| IoTIngestDown | Ingest unreachable for 1m | Critical |
+| TrackerOffline | Trackers offline > 30m | Warning |
+| DatabaseConnectionPoolExhaustion | Pool > 90% utilized for 5m | Critical |
+| RedisHighMemory | Memory > 85% for 10m | Warning |
+
+### 4.6 IoT Pipeline Lag Monitoring
+
+The IoT Ingest service includes a dedicated lag monitor (`apps/iot-ingest/src/monitoring/lag-monitor.ts`) that checks the Redis stream every 30 seconds:
+
+| Threshold | Level | Action |
+| --------- | ----- | ------ |
+| > 60 seconds | Warning | Logs warning with queue depth and lag |
+| > 300 seconds | Critical | Logs critical alert; triggers Prometheus alert rule |
+
+The lag snapshot is exposed via the `/metrics` endpoint under `pipeline_lag`.
+
+### 4.7 Gateway Monitoring
 
 LoRaWAN gateway health is actively monitored:
 
@@ -303,7 +347,7 @@ The following controls are identified as gaps and are planned for future impleme
 | Key management service (AWS KMS or HashiCorp Vault) | Medium   | Q4 2026 |
 | Web Application Firewall (WAF)                      | Medium   | Q3 2026 |
 | Intrusion detection system (IDS)                    | Medium   | Q4 2026 |
-| Log aggregation and alerting (ELK/Datadog)          | Medium   | Q3 2026 |
+| ~~Log aggregation and alerting~~ *(Resolved: Prometheus + Grafana with 10 alert rules)* | ~~Medium~~ | ~~Q3 2026~~ |
 | Penetration testing (annual)                        | High     | Q2 2026 |
 | Blue/green deployment strategy                      | Low      | Q4 2026 |
 | Disaster recovery runbook                           | High     | Q2 2026 |
@@ -354,6 +398,7 @@ The following controls are identified as gaps and are planned for future impleme
 | `docs/COMPLIANCE_CHECKLIST.md`    | SOC 2 readiness checklist                                 |
 | `docs/DATA_HANDLING.md`           | Data handling and privacy documentation                   |
 | `docs/ARCHITECTURE.md`            | System architecture overview                              |
+| `docs/SECRETS_MANAGEMENT.md`      | Secret rotation procedures and management guide           |
 | `docs/DATABASE.md`                | Database schema and migration guide                       |
 | `.github/workflows/ci.yml`        | CI/CD pipeline definition                                 |
 | `.github/workflows/codeql.yml`    | CodeQL security analysis workflow                         |

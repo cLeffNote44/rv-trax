@@ -105,9 +105,12 @@ Or run services individually:
 
 ### 5. Verify
 
-- API health: http://localhost:3000/health
+- API health: http://localhost:3000/health (or `/healthz`, `/readyz`)
+- API metrics: http://localhost:3000/metrics (Prometheus format)
 - API docs (Swagger): http://localhost:3000/api/docs
 - Web dashboard: http://localhost:3001
+- IoT Ingest health: http://localhost:3002/health (or `/healthz`, `/readyz`)
+- IoT Ingest metrics: http://localhost:3002/metrics
 - ChirpStack UI: http://localhost:8080 (if running)
 
 ## Project Structure
@@ -155,6 +158,7 @@ rv-trax/
 │           └── migrations/     # SQL migrations
 ├── infrastructure/
 │   ├── docker/                 # docker-compose.yml (Postgres, Redis, MQTT, ChirpStack)
+│   ├── monitoring/             # Prometheus rules, Grafana dashboards, alerting config
 │   ├── chirpstack/             # ChirpStack configuration
 │   └── scripts/                # DB init scripts
 ├── .github/workflows/          # CI pipeline (lint, typecheck, test)
@@ -331,6 +335,7 @@ GitHub Actions pipelines:
 - **CI** (`.github/workflows/ci.yml`) — Lint, typecheck, test with coverage across all apps
 - **CodeQL** (`.github/workflows/codeql.yml`) — Weekly SAST security scanning + dependency audit
 - **Dependabot** — Weekly automated dependency update PRs
+- **Dependabot Auto-Merge** (`.github/workflows/dependabot-auto-merge.yml`) — Auto-squashes patch updates and dev-dependency minor updates
 - **Pre-commit** — husky + lint-staged runs ESLint/Prettier on staged files
 - **Commit linting** — commitlint enforces [Conventional Commits](https://www.conventionalcommits.org/)
 

@@ -12,6 +12,9 @@ import type { WsInboundMessage, WsOutboundMessage } from './types.js';
 const HEARTBEAT_INTERVAL_MS = 30_000;
 const WS_PATH = '/ws';
 
+const MAX_CONNECTIONS_PER_DEALERSHIP = 50;
+const MAX_MESSAGES_PER_MINUTE = 60;
+
 export const roomManager = new RoomManager();
 
 // Track per-client pong state for heartbeats
@@ -19,6 +22,9 @@ const pendingPongs = new Map<string, NodeJS.Timeout>();
 
 // Track Redis subscriptions per dealership to avoid duplicates
 const subscriptions = new Map<string, Redis>();
+
+// Track inbound message rate per client: clientId -> { count, resetAt }
+const messageRates = new Map<string, { count: number; resetAt: number }>();
 
 let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -69,6 +75,25 @@ export function setupWebSocket(server: FastifyInstance, redis: Redis): void {
         return;
       }
 
+      // ── Message rate limiting (authenticated clients only) -----------------
+      if (authenticated && clientId) {
+        const now = Date.now();
+        let rate = messageRates.get(clientId);
+        if (!rate || now >= rate.resetAt) {
+          rate = { count: 0, resetAt: now + 60_000 };
+          messageRates.set(clientId, rate);
+        }
+        rate.count += 1;
+        if (rate.count > MAX_MESSAGES_PER_MINUTE) {
+          sendMessage(ws, {
+            type: 'error',
+            message: 'Message rate limit exceeded — slow down',
+            code: 'RATE_LIMITED',
+          });
+          return;
+        }
+      }
+
       // ── Auth message -------------------------------------------------------
       if (msg.type === 'auth' && !authenticated) {
         if (authTimeout) {
@@ -90,6 +115,17 @@ export function setupWebSocket(server: FastifyInstance, redis: Redis): void {
         if (!dealershipId) {
           sendMessage(ws, { type: 'error', message: 'Missing dealership context', code: 'NO_DEALERSHIP' });
           ws.close(4001, 'Missing dealership context');
+          return;
+        }
+
+        // Enforce per-dealership connection limit before adding the client
+        if (roomManager.getClientCount(dealershipId) >= MAX_CONNECTIONS_PER_DEALERSHIP) {
+          sendMessage(ws, {
+            type: 'error',
+            message: `Connection limit reached for this dealership (max ${MAX_CONNECTIONS_PER_DEALERSHIP})`,
+            code: 'CONNECTION_LIMIT',
+          });
+          ws.close(4029, 'Connection limit reached');
           return;
         }
 
@@ -137,6 +173,9 @@ export function setupWebSocket(server: FastifyInstance, redis: Redis): void {
           clearTimeout(pongTimeout);
           pendingPongs.delete(clientId);
         }
+
+        // Clean up message rate tracking
+        messageRates.delete(clientId);
 
         // If no more clients in this dealership, unsubscribe from Redis
         if (dealershipId && roomManager.getClientCount(dealershipId) === 0) {

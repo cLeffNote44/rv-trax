@@ -1,14 +1,16 @@
-const mockGetTrackers = jest.fn();
-const mockAssignTracker = jest.fn();
-const mockUnassignTracker = jest.fn();
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-jest.mock('../../services/api', () => ({
+const mockGetTrackers = vi.fn();
+const mockAssignTracker = vi.fn();
+const mockUnassignTracker = vi.fn();
+
+vi.mock('../../services/api', () => ({
   apiClient: {
     getTrackers: (...args: unknown[]) => mockGetTrackers(...args),
     assignTracker: (...args: unknown[]) => mockAssignTracker(...args),
     unassignTracker: (...args: unknown[]) => mockUnassignTracker(...args),
   },
-  bindAuthAccessors: jest.fn(),
+  bindAuthAccessors: vi.fn(),
 }));
 
 import { useTrackerStore } from '../trackerStore';

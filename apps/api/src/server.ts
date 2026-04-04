@@ -50,6 +50,7 @@ import serviceBayRoutes from './routes/service-bays.js';
 import dashboardConfigRoutes from './routes/dashboard-config.js';
 import pricingRoutes from './routes/pricing.js';
 import v2Routes from './routes/v2/index.js';
+import metricsRoutes from './routes/metrics.js';
 
 // Validate all environment variables at startup — fail fast on misconfiguration
 const serverEnv = validateServerEnv();
@@ -223,6 +224,17 @@ async function buildApp() {
       timestamp: new Date().toISOString(),
     });
   });
+
+  // Kubernetes-style aliases
+  app.get('/healthz', async (_request, reply) => {
+    return reply.redirect('/health');
+  });
+  app.get('/readyz', async (_request, reply) => {
+    return reply.redirect('/ready');
+  });
+
+  // ── Metrics ---------------------------------------------------------------
+  await app.register(metricsRoutes);
 
   // ── Routes ----------------------------------------------------------------
   await app.register(authRoutes, { prefix: '/api/v1/auth' });

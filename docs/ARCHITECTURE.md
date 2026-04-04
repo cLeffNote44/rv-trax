@@ -47,6 +47,7 @@ rv-trax/
 │   └── db/            # Drizzle ORM schema, migrations, seed
 └── infrastructure/
     ├── docker/        # Docker Compose for local dev
+    ├── monitoring/    # Prometheus + Grafana dashboards and alerting rules
     ├── chirpstack/    # LoRaWAN server config
     └── scripts/       # Database init scripts
 ```

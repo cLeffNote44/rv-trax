@@ -1,17 +1,18 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { MMKV } from 'react-native-mmkv';
 
 // Mock the api module before importing the store
-const mockLogin = jest.fn();
-const mockLogout = jest.fn();
-const mockRefresh = jest.fn();
+const mockLogin = vi.fn();
+const mockLogout = vi.fn();
+const mockRefresh = vi.fn();
 
-jest.mock('../../services/api', () => ({
+vi.mock('../../services/api', () => ({
   apiClient: {
     login: (...args: unknown[]) => mockLogin(...args),
     logout: (...args: unknown[]) => mockLogout(...args),
     refresh: (...args: unknown[]) => mockRefresh(...args),
   },
-  bindAuthAccessors: jest.fn(),
+  bindAuthAccessors: vi.fn(),
 }));
 
 import { useAuthStore, type AuthUser } from '../authStore';
@@ -35,7 +36,7 @@ beforeEach(() => {
 
   // Clear MMKV mock storage
   const storage = new MMKV({ id: 'rv-trax-auth' });
-  storage.clearAll();
+  (storage as any).clearAll?.();
 
   mockLogin.mockReset();
   mockLogout.mockReset();

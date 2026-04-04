@@ -1,10 +1,11 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { MMKV } from 'react-native-mmkv';
 import { useSettingsStore } from '../settingsStore';
 
 beforeEach(() => {
   // Clear MMKV and reset store
   const storage = new MMKV({ id: 'rv-trax-settings' });
-  storage.clearAll();
+  (storage as any).clearAll?.();
 
   useSettingsStore.setState({
     notificationsEnabled: true,

@@ -6,10 +6,12 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import Redis from 'ioredis';
 import { createDb } from '@rv-trax/db';
+import { sql as rawSql } from 'drizzle-orm';
 import { loadConfig } from './config.js';
 import { startMqttSubscriber, stopMqttSubscriber } from './mqtt/subscriber.js';
 import webhookRoutes from './routes/webhook.js';
 import { getMetrics } from './utils/metrics.js';
+import { startLagMonitor, stopLagMonitor, getLagSnapshot } from './monitoring/lag-monitor.js';
 
 const PKG_VERSION = '0.1.0';
 
@@ -57,6 +59,14 @@ async function buildApp() {
 
   startMqttSubscriber(config, redis, db, app.log);
 
+  // ── Pipeline lag monitoring ─────────────────────────────────────────────
+  startLagMonitor(redis, app.log, {
+    streamKey: config.redis.streamKey,
+    intervalMs: 30_000,
+    warnThresholdSec: 60,
+    criticalThresholdSec: 300,
+  });
+
   // ── HTTP webhook routes ─────────────────────────────────────────────────
 
   await app.register(webhookRoutes, {
@@ -83,8 +93,35 @@ async function buildApp() {
   // ── Metrics endpoint ────────────────────────────────────────────────────
 
   app.get('/metrics', async () => {
-    return getMetrics(redis, config.redis.streamKey);
+    const metrics = await getMetrics(redis, config.redis.streamKey);
+    const lag = getLagSnapshot();
+    return { ...metrics, pipeline_lag: lag };
   });
+
+  // Readiness — verifies Redis and DB are reachable
+  app.get('/readyz', async (_request, reply) => {
+    const checks: Record<string, 'ok' | 'fail'> = { redis: 'fail', db: 'fail' };
+
+    try {
+      const pong = await redis.ping();
+      if (pong === 'PONG') checks['redis'] = 'ok';
+    } catch { /* redis unreachable */ }
+
+    try {
+      await db.execute(rawSql`SELECT 1`);
+      checks['db'] = 'ok';
+    } catch { /* db unreachable */ }
+
+    const allOk = Object.values(checks).every((v) => v === 'ok');
+    return reply.status(allOk ? 200 : 503).send({
+      status: allOk ? 'ready' : 'not_ready',
+      checks,
+      version: PKG_VERSION,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  app.get('/healthz', async (_request, reply) => reply.redirect('/health'));
 
   // ── Graceful shutdown ───────────────────────────────────────────────────
 
@@ -92,6 +129,7 @@ async function buildApp() {
     app.log.info(`Received ${signal}, shutting down gracefully...`);
     try {
       // 1. Stop accepting MQTT messages
+      stopLagMonitor();
       await stopMqttSubscriber(app.log);
 
       // 2. Close HTTP server (stop accepting new requests, drain in-flight)
