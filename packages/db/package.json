@@ -19,7 +19,7 @@
     "postgres": "^3.4.0",
     "@rv-trax/shared": "workspace:*",
     "@types/bcrypt": "^5.0.0",
-    "@types/node": "^22.0.0",
+    "@types/node": "^25.5.2",
     "typescript": "^5.7.0"
   },
   "devDependencies": {
