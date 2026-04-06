@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "bcrypt": "^5.1.0",
-    "drizzle-orm": "^0.38.0",
+    "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.9",
     "@rv-trax/shared": "workspace:*",
     "@types/bcrypt": "^5.0.0",
