@@ -32,7 +32,7 @@
     "react-hook-form": "^7.72.0",
     "recharts": "^2.13.0",
     "tailwind-merge": "^2.6.0",
-    "posthog-js": "^1.364.1",
+    "posthog-js": "^1.364.7",
     "zod": "^3.24.0"
   },
   "devDependencies": {
