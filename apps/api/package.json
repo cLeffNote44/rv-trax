@@ -42,7 +42,7 @@
     "@types/bcrypt": "^5.0.0",
     "@types/node": "^22.0.0",
     "@types/ws": "^8.5.0",
-    "typescript": "^5.7.0"
+    "typescript": "^6.0.2"
   },
   "devDependencies": {
     "pino-pretty": "^13.0.0",
